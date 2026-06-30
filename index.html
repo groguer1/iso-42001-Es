@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 M18 PT-BR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:14px}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:all .3s;white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--acento);transform:scale(1.3)}.dot.done{background:rgba(255,255,255,.55)}
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,40px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:18px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.meta-item{font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 16px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:50px;margin-bottom:14px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:13px;max-width:700px;line-height:1.2}
+.concept-body{font-size:14.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:18px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:11px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,90px);color:#fff;line-height:1;margin-bottom:5px}
+.stat-unit{font-size:17px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:15px}
+.stat-desc{font-size:15px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:20px}
+.stat-src{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;max-width:760px;margin-top:16px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 16px;text-align:left;flex:1;min-width:140px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:24px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;line-height:1.4}
+.slide-content{background:var(--gris-claro);padding:26px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-26px -26px 18px;padding:15px 22px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.3vw,21px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:12.5px}
+.ct th{background:var(--azul);color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px}
+.ct th:first-child{border-radius:7px 0 0 0}.ct th:last-child{border-radius:0 7px 0 0}
+.ct td{padding:8px 10px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.03)}.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:8px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+.slide-accordion{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:14px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.5vw,21px);color:var(--azul);margin-bottom:3px}
+.acc-su{font-size:12px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.acc-item{background:#fff;border-radius:9px;border:1.5px solid #dde3ee;overflow:hidden;transition:all .3s}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-num{width:25px;height:25px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:13px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:10px;color:var(--gris-medio);transition:transform .3s}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s}
+.acc-item.open .acc-body{max-height:600px}
+.acc-content{padding:0 13px 11px 50px;font-size:12.5px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:4px}
+.acc-content li{padding:2px 0 2px 12px;position:relative}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:14px;line-height:1.2}
+.slide-reveal{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:13px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,21px);color:var(--azul);margin-bottom:3px}
+.rv-su{font-size:12px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:135px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul)}
+.ff-icon{font-size:26px;margin-bottom:7px}.ff-title{font-size:12.5px;font-weight:600;color:#fff;line-height:1.3}
+.ff-hint{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.fb-text{font-size:11.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:9px;font-size:11px;color:var(--gris-medio)}
+.slide-case{background:var(--gris-claro);padding:18px 22px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:13px 17px;margin-bottom:11px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(13px,2vw,18px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:5px 12px;border-radius:17px;border:1.5px solid #dde3ee;background:#fff;font-size:12px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:all .3s}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}.case-pnl.active{display:block}
+.c-st{font-size:11px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.c-tx{font-size:13px;color:var(--texto);line-height:1.75;margin-bottom:8px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;color:var(--texto);line-height:1.6;margin:6px 0}
+.slide-quiz{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:17px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:12.5px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.3vw,21px);color:var(--azul);margin-bottom:15px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:7px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:9px;padding:10px 13px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:13px;color:var(--texto);transition:all .3s;display:flex;align-items:center;gap:9px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:24px;height:24px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:all .3s}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:12px;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12px;color:var(--acento);font-weight:600;margin-top:7px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:54px;margin-bottom:12px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,32px);color:#fff;margin-bottom:6px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,68px);line-height:1;margin:6px 0}
+.res-su{font-size:13.5px;color:rgba(255,255,255,.65);margin-bottom:15px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.rb{text-align:center}.rb-n{font-family:'DM Serif Display',serif;font-size:26px;color:#fff}
+.rb-l{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 17px;max-width:560px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:13px;background:var(--acento);color:#fff;border:none;border-radius:27px;padding:10px 23px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer}</style></head><body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar"><div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer · PT-BR</div><div id="slide-counter">1 / 13</div></div>
+  <div id="stage"><div class="slide slide-cover active" data-index="0">
+<div class="cover-badge">Módulo 18 de 12</div>
+<div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer · PT-BR</div>
+<div class="cover-clause">Módulo 18 — Simulado de Exame PECB</div>
+<h1 class="cover-title">Questões de Exame com Explicações Detalhadas:<br>Sua Preparação Final para o Lead Auditor ISO 42001</h1>
+<p class="cover-subtitle">O exame PECB Lead Auditor ISO 42001 tem 80 questões em 180 minutos, com mínimo de 70% para aprovação. É open-book. As questões são de julgamento, não de memorização — avaliam se você sabe aplicar a norma a situações reais. Este módulo replica o formato e a dificuldade do exame real, com foco no contexto brasileiro.</p>
+<div class="cover-meta"><span class="meta-item">⏱ 90 min</span><span class="meta-item">14 slides · 6 questões (simulado)</span></div>
+<div class="cover-obj"><h3>Objetivos</h3><ul><li>Familiarizar-se com o formato e a tipologia de questões do exame PECB Lead Auditor ISO 42001</li><li>Praticar as questões mais frequentes de cada domínio do exame</li><li>Identificar os temas com maior peso no exame e priorizar a revisão</li><li>Conhecer estratégias de resolução de questões de julgamento (open-book)</li><li>Desenhar o plano de carreira como Lead Auditor de ISO 42001 no Brasil</li></ul></div></div><div class="slide slide-content" data-index="1">
+<div class="content-header"><div class="ch-ey">Estrutura do exame PECB · ISO 42001 Lead Auditor</div><h2 class="ch-ti">Os 5 domínios, seus pesos e os módulos deste curso que os cobrem</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Domínio</th><th>Peso</th><th>Questões (de 80)</th><th>Módulos de referência</th><th>Tipo de questões</th></tr></thead><tbody><tr><td>D1: Fundamentos SGSIA</td><td>13,75%</td><td>11</td><td>M01, M02</td><td>Definições, conceitos de IA, princípios da ISO 42001</td></tr><tr><td>D2: Implementar SGSIA</td><td>26,25%</td><td>21</td><td>M03-M09, M17</td><td>Cláusulas 4-10, Anexo A, modelos, casos de implementação</td></tr><tr><td>D3: Planejar auditoria</td><td>18,75%</td><td>15</td><td>M10</td><td>ISO 19011, equipe auditora, programa, etapa 1, escopo</td></tr><tr><td>D4: Conduzir auditoria</td><td>17,5%</td><td>14</td><td>M11</td><td>Técnicas de campo, entrevistas, amostragem, evidências</td></tr><tr><td>D5: Gerir o programa</td><td>23,75%</td><td>19</td><td>M12</td><td>Classificação de NC, redação, relatório, encerramento</td></tr><tr><td><strong>TOTAL</strong></td><td><strong>100%</strong></td><td><strong>80 questões</strong></td><td><strong>M01-M18</strong></td><td><strong>Open-book · 180 min · Mínimo 56/80 (70%)</strong></td></tr></tbody></table></div></div><div class="slide slide-concept" data-index="2">
+<div class="concept-icon">🧠</div><div class="concept-tag">Estratégia de exame · Open-book</div>
+<h2 class="concept-title">Como usar o open-book estrategicamente no exame PECB</h2><p class="concept-body">O exame PECB Lead Auditor é open-book, o que muda completamente a estratégia. <strong style='color:#fff'>Não procure respostas nos livros durante a prova</strong> — se precisar buscar a definição de uma cláusula, você irá devagar demais. O open-book serve para verificar detalhes específicos (número exato de controles, artigo exato da LGPD, peso exato de um domínio). As questões de julgamento não se respondem buscando — respondem-se aplicando o framework. <strong style='color:#fff'>O erro mais frequente</strong> de candidatos reprovados: buscar cada resposta no livro, esgotar o tempo, e não chegar às últimas 20 questões. Estratégia: responda primeiro tudo o que sabe, marque as dúvidas, volte com o tempo restante.</p>
+<div class="concept-pills"><span class="pill">Open-book: para verificar, não para buscar</span><span class="pill">Questões de julgamento, não de memorização</span><span class="pill">Tempo: 2,25 min por questão</span><span class="pill">Marcar dúvidas e voltar</span><span class="pill">70% = 56/80 corretas</span></div></div><div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 1 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D1] Uma organização brasileira define o escopo de seu SGSIA como 'todos os sistemas de inteligência artificial da empresa'. O auditor de etapa 1 avalia esse escopo como:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,3)"><span class="opt-l">A</span>Conforme — a definição é ampla e inclusiva, o que é positivo em um SGSIA</button><button class="quiz-opt" onclick="answer(this,1,3)"><span class="opt-l">B</span>NC Menor — o escopo deve listar explicitamente cada sistema por nome</button><button class="quiz-opt" onclick="answer(this,2,3)"><span class="opt-l">C</span>Insuficiente para a etapa 1: o escopo deve identificar os limites do SGSIA de forma verificável. 'Todos os sistemas de IA' sem definir quais sistemas existem, quais critérios os incluem ou excluem, não permite ao auditor planejar a etapa 2 nem verificar a conformidade de cada sistema</button><button class="quiz-opt" onclick="answer(this,3,3)"><span class="opt-l">D</span>NC Maior — o escopo deve ser aprovado pela alta direção e assinado pelo CEO</button></div>
+<div id="fb-3" class="quiz-fb"></div>
+<div id="must-3" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-quiz" data-index="4" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 2 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D2] Uma empresa brasileira inclui o controle A.6.5 (verificação e testes) em seu SoA. A referência de implementação é 'Processo de QA do departamento de tecnologia v3.1'. O auditor pede o último relatório de testes antes de um deploy recente do sistema de crédito. A empresa apresenta relatório de testes de regressão com AUC de 0,91. Não há métricas de fairness racial. O auditor classifica:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,4)"><span class="opt-l">A</span>Conforme — AUC de 0,91 demonstra alta qualidade do modelo</button><button class="quiz-opt" onclick="answer(this,1,4)"><span class="opt-l">B</span>Observação — seria conveniente adicionar métricas de fairness em versões futuras</button><button class="quiz-opt" onclick="answer(this,2,4)"><span class="opt-l">C</span>NC — o controle A.6.5 para sistemas que tomam decisões sobre pessoas requer verificação de fairness além das métricas de desempenho global, especialmente no contexto racial brasileiro. Um processo de QA de tecnologia geral não cobre os requisitos específicos do A.6.5 da ISO 42001</button><button class="quiz-opt" onclick="answer(this,3,4)"><span class="opt-l">D</span>NC Maior — o sistema de crédito deve ser retirado de produção imediatamente</button></div>
+<div id="fb-4" class="quiz-fb"></div>
+<div id="must-4" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 3 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D3] Um auditor planeja a auditoria de etapa 2 de uma empresa brasileira com 5 sistemas de IA: scoring de crédito (alto risco), chatbot de atendimento (baixo risco), recomendador de produtos (baixo risco), detecção de fraude (alto risco) e otimização logística interna (baixo risco). Seguindo a ISO 19011, como deve distribuir o tempo de campo?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,5)"><span class="opt-l">A</span>Dividir o tempo em 5 partes iguais — todos os sistemas têm a mesma importância no SGSIA</button><button class="quiz-opt" onclick="answer(this,1,5)"><span class="opt-l">B</span>Dedicar a maior parte do tempo ao scoring de crédito e à detecção de fraude (sistemas de alto risco) e o restante aos três sistemas de baixo risco, com atenção especial ao scoring de crédito por seu maior impacto social potencial, incluindo a dimensão racial</button><button class="quiz-opt" onclick="answer(this,2,5)"><span class="opt-l">C</span>Auditar apenas os sistemas de alto risco — os de baixo risco não fazem parte do SGSIA</button><button class="quiz-opt" onclick="answer(this,3,5)"><span class="opt-l">D</span>Começar pelos sistemas de baixo risco para 'aquecer' e depois abordar os de alto risco</button></div>
+<div id="fb-5" class="quiz-fb"></div>
+<div id="must-5" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-quiz" data-index="6" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 4 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D4] Durante a auditoria de campo, o auditor pede para ver o dashboard de monitoramento em tempo real do sistema de scoring de crédito. O responsável técnico diz: 'O dashboard está em manutenção hoje — pode ver as capturas de tela que preparamos para a auditoria.' O auditor:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,6)"><span class="opt-l">A</span>Aceita as capturas — são evidência visual suficiente do dashboard</button><button class="quiz-opt" onclick="answer(this,1,6)"><span class="opt-l">B</span>Aceita se as capturas tiverem data e hora do mesmo dia</button><button class="quiz-opt" onclick="answer(this,2,6)"><span class="opt-l">C</span>Solicita acesso direto ao sistema de monitoramento ou, se não for possível hoje, agenda uma demonstração verificada para a tarde do mesmo dia. Capturas preparadas para a auditoria não são evidência objetiva — o auditor não pode verificar que refletem o estado real do sistema</button><button class="quiz-opt" onclick="answer(this,3,6)"><span class="opt-l">D</span>NC Maior — o dashboard deve estar sempre disponível para auditoria</button></div>
+<div id="fb-6" class="quiz-fb"></div>
+<div id="must-6" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 5 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D5] Ao final da auditoria de etapa 2, a equipe auditora identificou: ausência de AIIA para o sistema de scoring de crédito (§ 6.1.4), canal de revisão humana não operacional (A.8.5), e ausência de fairness testing racial no último deploy (A.6.5). Qual é a recomendação do auditor chefe?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,7)"><span class="opt-l">A</span>Recomendar a certificação com 3 NCs menores que podem ser corrigidas em 90 dias</button><button class="quiz-opt" onclick="answer(this,1,7)"><span class="opt-l">B</span>Não recomendar a certificação — as 3 NCs identificadas são todas Maiores (ausência de AIIA, canal de revisão não operacional, e ausência de fairness testing racial são requisitos fundamentais do SGSIA) e devem estar fechadas e verificadas antes de emitir o certificado</button><button class="quiz-opt" onclick="answer(this,2,7)"><span class="opt-l">C</span>Recomendar a certificação provisória — as NCs podem ser corrigidas durante o primeiro ano</button><button class="quiz-opt" onclick="answer(this,3,7)"><span class="opt-l">D</span>Solicitar uma nova auditoria de etapa 1 completa</button></div>
+<div id="fb-7" class="quiz-fb"></div>
+<div id="must-7" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">QUESTÃO 6 / 6</span><span class="quiz-prog">PT-BR · Avaliação</span></div>
+<p class="quiz-q">[SIMULADO D5] Um auditor redige a seguinte NC: 'O sistema de aprovação de crédito da empresa não realiza fairness testing racial antes dos deploys. Recomendamos que a empresa implemente um processo de fairness testing com métricas de paridade demográfica por raça e gênero, com frequência mínima mensal, reportando ao comitê de risco de IA.' Qual é o problema com esta redação?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,8)"><span class="opt-l">A</span>Nenhum — a NC é completa, correta e útil para a empresa</button><button class="quiz-opt" onclick="answer(this,1,8)"><span class="opt-l">B</span>A NC prescreve a solução ('implementar fairness testing mensal com paridade racial e de gênero') e estabelece a frequência e o canal de reporte. O auditor descreve o incumprimento com evidência e referência normativa — não desenha a solução. A empresa decide como corrigir a NC</button><button class="quiz-opt" onclick="answer(this,2,8)"><span class="opt-l">C</span>Falta apenas a referência normativa — o resto está correto</button><button class="quiz-opt" onclick="answer(this,3,8)"><span class="opt-l">D</span>O problema é que a NC é longa demais — deve ter no máximo duas frases</button></div>
+<div id="fb-8" class="quiz-fb"></div>
+<div id="must-8" class="quiz-must">⚠ Selecione uma resposta antes de continuar</div></div><div class="slide slide-content" data-index="9">
+<div class="content-header"><div class="ch-ey">Revisão · Os 10 conceitos mais frequentes no exame</div><h2 class="ch-ti">Os 10 conceitos que mais frequentemente aparecem em questões do exame PECB Lead Auditor ISO 42001</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Conceito</th><th>Por que é frequente</th><th>Chave para o exame</th><th>Módulo de referência</th></tr></thead><tbody><tr><td>Risk Assessment vs. AIIA</td><td>A confusão mais frequente entre candidatos</td><td>RA olha para dentro (organização); AIIA olha para fora (pessoas)</td><td>M04</td></tr><tr><td>NC Maior vs. NC Menor vs. Observação</td><td>Aparece em cenários de classificação</td><td>Maior = sistêmico ou ausência de requisito fundamental; Menor = pontual</td><td>M12</td></tr><tr><td>A.6.5 Fairness testing</td><td>Questão quase garantida</td><td>Não é teste de qualidade genérico — é específico de paridade demográfica, incluindo raça no Brasil</td><td>M09</td></tr><tr><td>A.9.4 Supervisão humana</td><td>Questões sobre operadores que não sabem intervir</td><td>Verificar com operador real, não com o RASGSIA</td><td>M11</td></tr><tr><td>A.10.2 Contratos com fornecedores de IA</td><td>Questões sobre serviços em nuvem (AWS, Azure)</td><td>Contratos SaaS padrão não cumprem A.10.2 — precisam de cláusulas de IA</td><td>M13</td></tr><tr><td>§ 6.1.4 AIIA — componentes obrigatórios</td><td>Questões de análise de caso com AIIA incompleta</td><td>Sem análise quantitativa de afetados → NC. No Brasil: dimensão racial obrigatória</td><td>M04, M17</td></tr><tr><td>Independência do auditor (ISO 19011)</td><td>Questões de conflito de interesse</td><td>Auditar o próprio trabalho = NC de independência</td><td>M10</td></tr><tr><td>Estrutura de NC (evidência + referência + achado)</td><td>Questões de redação e classificação</td><td>NC não pode incluir causa raiz nem solução prescrita</td><td>M12</td></tr><tr><td>PL 2338/2023 e LGPD Art. 20</td><td>Integração regulatória brasileira</td><td>LGPD vigente desde 2020; PL 2338 em tramitação com análise racial obrigatória</td><td>M16</td></tr><tr><td>Canal A.8.5 — LGPD Art. 20</td><td>Questões sobre canal operacional vs. declarado</td><td>Canal na política ≠ canal operacional. O auditor verificará que funciona</td><td>M06, M11</td></tr></tbody></table></div></div><div class="slide slide-accordion" data-index="10">
+<div class="acc-hd"><div class="acc-ey">Plano de carreira · Lead Auditor ISO 42001 no Brasil</div><h2 class="acc-ti">O roteiro para a certificação e o mercado profissional brasileiro</h2><p class="acc-su">A demanda por Lead Auditors de ISO 42001 cresce significativamente no Brasil entre 2025-2027</p></div>
+<div class="acc-list"><div class="acc-item open">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">1</div><span class="acc-label">Passo 1: Certificar-se como Lead Auditor PECB</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">A rota mais direta ao mercado:
+<ul><li>Completar os 18 módulos deste curso (cobertura completa dos 5 domínios)</li>
+<li>5 dias de formação credenciada (PECB e parceiros oferecem turmas no Brasil)</li>
+<li>Exame: 80 questões · 180 min · Open-book · 70% mínimo</li>
+<li>Experiência: 2 anos de experiência em sistemas de gestão + participar de ao menos uma auditoria de ISO 42001</li>
+<li>Validade: 3 anos com CPD anual (30 horas de formação contínua)</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">2</div><span class="acc-label">Passo 2: Construir experiência no mercado brasileiro</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Os primeiros passos após a certificação:
+<ul><li><strong>Auditorias internas:</strong> Oferecer auditorias internas de ISO 42001 a empresas do setor financeiro e de saúde — a via mais rápida para acumular horas reais</li>
+<li><strong>Associar-se a consultorias:</strong> KPMG, Deloitte, PwC, EY e consultorias especializadas buscam auditores com dupla competência ISO 27001 + ISO 42001 + LGPD</li>
+<li><strong>Acompanhar auditores sênior:</strong> Como auditor técnico de IA em equipe com Lead Auditor certificado</li>
+<li><strong>Setor financeiro:</strong> Bancos e fintechs são o setor com maior demanda inicial no Brasil, dado o contexto regulatório do BACEN</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">3</div><span class="acc-label">Passo 3: Especializações que maximizam o valor de mercado</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Combinações de certificações que multiplicam o valor para o empregador:
+<ul><li><strong>ISO 42001 Lead Auditor + ISO 27001 Lead Auditor:</strong> A combinação mais demandada — permite auditar o SGSIA+SGSI integrado</li>
+<li><strong>ISO 42001 Lead Auditor + DPO/LGPD:</strong> Perfil-chave para o mercado brasileiro — um auditor que domina ISO 42001 e LGPD cobre as necessidades regulatórias do momento</li>
+<li><strong>ISO 42001 Lead Auditor + especialização em fairness racial:</strong> Diferencial único no mercado brasileiro dado o contexto de desigualdade histórica</li>
+<li><strong>ISO 42001 Lead Auditor + experiência setorial (BACEN, ANVISA):</strong> Auditores com conhecimento de regulação setorial específica são mais valorizados</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">4</div><span class="acc-label">Saídas profissionais e faixas salariais no Brasil 2025</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">O mercado em números:
+<ul><li><strong>AI Compliance Officer (empresa de tecnologia):</strong> R$ 12.000-22.000/mês no Brasil</li>
+<li><strong>Lead Auditor ISO 42001 (freelance):</strong> R$ 500-1.500/hora de auditoria (2024-2025)</li>
+<li><strong>AI Governance Consultant (Big 4 / consultoria):</strong> R$ 15.000-25.000/mês + variável</li>
+<li><strong>RASGSIA (Responsável pelo SGSIA):</strong> R$ 14.000-25.000/mês conforme o porte da empresa</li>
+<li><strong>Tendência:</strong> Crescimento de demanda de 40%+ ao ano esperado entre 2025-2027 com a tramitação do PL 2338/2023</li></ul></div></div></div></div></div><div class="slide slide-concept" data-index="11">
+<div class="concept-icon">🏆</div><div class="concept-tag">M18 · Mensagem final</div>
+<h2 class="concept-title">Você concluiu o curso mais completo de ISO/IEC 42001:2023 Lead Auditor em português</h2><p class="concept-body">18 módulos, mais de 200 slides, 70+ questões de prática e os casos de referência mais relevantes do mercado: AWS, Microsoft, KPMG, EU AI Act e a regulação completa do Brasil e da América Latina. Agora você tem o conhecimento para se certificar como Lead Auditor PECB ISO 42001 e para implementar SGSIAs que suportem a auditoria mais exigente — com a profundidade que o contexto brasileiro exige. O próximo passo é seu: agende seu exame, acumule horas de auditoria e torne-se o profissional que o mercado de governança de IA mais precisa neste momento no Brasil.</p>
+<div class="concept-pills"><span class="pill">18 módulos completos · PT-BR</span><span class="pill">200+ slides · 70+ questões</span><span class="pill">Casos: AWS · Microsoft · KPMG</span><span class="pill">PL 2338 · LGPD · regulação setorial BR</span><span class="pill">Boa sorte no exame PECB! 🎓</span></div></div><div class="slide slide-result" data-index="12">
+<div class="res-icon" id="res-icon">🎯</div>
+<h2 class="res-ti" id="res-ti">Resultado do Módulo</h2>
+<div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+<p class="res-su" id="res-sub"></p>
+<div class="res-bk">
+<div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Corretas</div></div>
+<div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorretas</div></div>
+<div class="rb"><div class="rb-n" id="rb-t">6</div><div class="rb-l">Total</div></div>
+</div>
+<div class="res-msg" id="res-msg"></div>
+<button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Rever e tentar novamente</button></div></div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Próximo →</button>
+  </div>
+</div>
+<script>function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function initDots(){const el=document.getElementById('slide-dots');for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function updUI(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);document.getElementById('btn-next').disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);updUI();if(C===TOTAL-1)showResult();}
+function answer(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length,pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'Módulo concluído!':'Revise o conteúdo';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Você acertou '+c+'/'+t+' questões.':'Acertou '+c+'/'+t+'. Precisa de 70% para avançar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+var C=0,TOTAL=13,QS=[3, 4, 5, 6, 7, 8],QA={3:false,4:false,5:false,6:false,7:false,8:false},QC={3:2,4:2,5:1,6:2,7:1,8:1},QSC={3:false,4:false,5:false,6:false,7:false,8:false},FB={3:{ok:"✅ Correto. O escopo do SGSIA (§ 4.3) deve ser específico o suficiente para que o auditor possa verificar quais sistemas estão incluídos. 'Todos os sistemas de IA' sem definir critérios não permite planejar nem executar a auditoria.",fail:'❌ Incorreto. O escopo não precisa listar cada sistema por nome se definir claramente os critérios de inclusão. Mas sem critérios e sem inventário não é um escopo verificável.'},4:{ok:"✅ Correto. O controle A.6.5 para sistemas que tomam decisões sobre pessoas requer verificação específica de fairness, especialmente no contexto racial brasileiro, não apenas métricas de desempenho global. O SoA diz 'implementado' mas a evidência mostra implementação parcial.",fail:'❌ Incorreto. AUC de 0,91 é métrica de desempenho global que não mede discriminação racial. O A.6.5 para sistemas de crédito no Brasil exige fairness testing racial específico.'},5:{ok:'✅ Correto. A ISO 19011 estabelece o princípio de abordagem baseada em riscos. Sistemas de alto risco (scoring de crédito e detecção de fraude) têm maior potencial de impacto, incluindo a dimensão racial brasileira, e devem receber maior cobertura.',fail:'❌ Incorreto. Dividir o tempo igualmente independentemente do risco viola o princípio de abordagem baseada em riscos da ISO 19011.'},6:{ok:'✅ Correto. Capturas preparadas para a auditoria não são evidência objetiva. O auditor deve acessar diretamente o sistema de monitoramento ou organizar demonstração verificada.',fail:'❌ Incorreto. Capturas preparadas para a auditoria podem ser selecionadas para mostrar apenas o que a organização deseja. O auditor precisa de acesso direto ou demonstração verificada.'},7:{ok:'✅ Correto. As três NCs identificadas são todas Maiores: ausência de AIIA, canal de revisão não operacional, e ausência de fairness testing racial são requisitos fundamentais do SGSIA. Com 3 NC Maiores, não se recomenda a certificação.',fail:'❌ Incorreto. Essas três NCs são incumprimentos de requisitos fundamentais do SGSIA — não são correções menores. Não é possível emitir o certificado com NCs Maiores abertas.'},8:{ok:'✅ Correto. A NC prescreve a solução (métricas específicas, frequência mensal, canal de reporte). O auditor descreve incumprimentos com evidência e referência normativa — não desenha a solução. Isso é responsabilidade da empresa.',fail:'❌ Incorreto. Uma NC que prescreve a solução específica confunde o papel do auditor com o do implementador. O auditor identifica o incumprimento; a empresa decide como resolvê-lo.'}},NEXT_MSG='🎓 Parabéns! Você concluiu o curso completo de 18 módulos ISO/IEC 42001:2023 Lead Auditor e Implementer em português. Boa sorte no seu exame PECB!',RETRY_MSG='Recomendação: Revise os conceitos do slide 9, pratique o simulado novamente e agende seu exame PECB. Você está preparado!';
+
+initDots();updUI();</script></body></html>
