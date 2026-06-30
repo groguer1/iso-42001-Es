@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M04 – Planificación (Cláusula 6)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;
+  --verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;
+  --morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;
+  --blanco:#FFFFFF;--texto:#1C2B3A;
+  --trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+
+/* ══ COVER ══ */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:16px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,44px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14.5px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:22px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-objectives{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:18px 22px;text-align:left;max-width:700px;width:100%}
+.cover-objectives h3{font-size:12px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cover-objectives li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 18px;position:relative;line-height:1.5}
+.cover-objectives li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+
+/* ══ CONCEPT ══ */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:52px;margin-bottom:18px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:14px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:22px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+
+/* ══ STAT ══ */
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-eyebrow{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:14px}
+.stat-number{font-family:'DM Serif Display',serif;font-size:clamp(56px,9vw,100px);color:#fff;line-height:1;margin-bottom:6px}
+.stat-unit{font-size:20px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:18px}
+.stat-description{font-size:16px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:24px}
+.stat-source{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:24px;max-width:760px}
+.stat-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 20px;text-align:left;flex:1;min-width:160px}
+.sc-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--amarillo);line-height:1}
+.sc-label{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+
+/* ══ CONTENT TABLE ══ */
+.slide-content{background:var(--gris-claro);padding:32px 32px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-32px -32px 24px;padding:20px 28px}
+.ch-eyebrow{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-title{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.8vw,26px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13.5px}
+.ct th{background:var(--azul);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px;letter-spacing:.04em}
+.ct th:first-child{border-radius:8px 0 0 0}.ct th:last-child{border-radius:0 8px 0 0}
+.ct td{padding:10px 12px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}
+
+/* ══ FLOWCHART (proceso AI risk) ══ */
+.slide-flowchart{background:var(--gris-claro);padding:22px 28px;min-height:100%;display:flex;flex-direction:column}
+.fc-header{text-align:center;margin-bottom:16px;flex-shrink:0}
+.fc-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.fc-title{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:var(--azul);margin-bottom:3px}
+.fc-sub{font-size:12.5px;color:var(--gris-medio)}
+.fc-body{display:flex;gap:16px;flex:1;min-height:0;align-items:flex-start}
+.fc-flow{display:flex;flex-direction:column;gap:0;flex:1}
+.fc-step{display:flex;gap:0;align-items:stretch;cursor:pointer}
+.fc-step-left{display:flex;flex-direction:column;align-items:center;width:42px;flex-shrink:0}
+.fc-step-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;transition:var(--trans)}
+.fc-step-line{width:2px;flex:1;margin:3px 0;min-height:16px}
+.fc-step-box{flex:1;border-radius:10px;padding:11px 14px;margin:2px 0;border:2px solid transparent;transition:var(--trans)}
+.fc-step.active-step .fc-step-box{border-color:var(--azul-mid)}
+.fc-step-clause{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;opacity:.7}
+.fc-step-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.fc-step-brief{font-size:12px;line-height:1.45}
+.fc-panel{width:260px;flex-shrink:0;background:var(--azul);border-radius:12px;padding:16px;display:flex;flex-direction:column}
+.fc-panel-title{font-size:12px;font-weight:700;color:var(--amarillo);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.fc-panel-content{font-size:12.5px;color:rgba(255,255,255,.82);line-height:1.6;flex:1}
+.fc-panel-items{list-style:none;margin-top:8px}
+.fc-panel-items li{padding:3px 0 3px 14px;position:relative;font-size:12px;color:rgba(255,255,255,.75)}
+.fc-panel-items li::before{content:"·";position:absolute;left:0;color:var(--acento);font-size:16px;line-height:1.1;font-weight:900}
+.fc-hint{text-align:center;font-size:11.5px;color:var(--gris-medio);margin-top:8px;flex-shrink:0}
+
+/* Step colors by index */
+.sn-0{background:#E85820}.sl-0{background:#fde8df}
+.sb-0{background:#fff8f5}.sc-0{color:var(--acento)}
+.sn-1{background:#2563A8}.sl-1{background:#dde8f5}
+.sb-1{background:#f0f5fb}.sc-1{color:var(--azul-mid)}
+.sn-2{background:#2D8B5A}.sl-2{background:#d4f0e1}
+.sb-2{background:#f0faf5}.sc-2{color:var(--verde)}
+.sn-3{background:#6B48A8}.sl-3{background:#e8e0f5}
+.sb-3{background:#f6f3fc}.sc-3{color:var(--morado)}
+.sn-4{background:#F0A500}.sl-4{background:#fef3d6}
+.sb-4{background:#fffdf0}.sc-4{color:#a06b00}
+.sn-5{background:#1A3A5C}.sl-5{background:#dde3ee}
+.sb-5{background:#f4f6fa}.sc-5{color:var(--azul)}
+
+/* ══ RISK MATRIX ══ */
+.slide-matrix{background:var(--gris-claro);padding:22px 28px;min-height:100%;display:flex;flex-direction:column}
+.mx-header{text-align:center;margin-bottom:14px;flex-shrink:0}
+.mx-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.mx-title{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:var(--azul);margin-bottom:3px}
+.mx-sub{font-size:12.5px;color:var(--gris-medio)}
+.mx-body{display:flex;gap:16px;flex:1;min-height:0}
+.mx-left{flex:1;display:flex;flex-direction:column}
+.mx-grid-wrap{position:relative;flex:1}
+.mx-y-label{position:absolute;left:-28px;top:50%;transform:translateY(-50%) rotate(-90deg);font-size:11px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+.mx-grid{display:grid;grid-template-columns:40px repeat(4,1fr);grid-template-rows:repeat(4,1fr) 40px;gap:3px;height:100%;min-height:260px}
+.mx-cell{border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;transition:var(--trans);position:relative}
+.mx-cell:hover{transform:scale(1.04);z-index:2}
+.mx-axis-x{background:transparent;font-size:10.5px;font-weight:700;color:var(--azul-mid);text-align:center;display:flex;align-items:flex-end;padding-bottom:2px;justify-content:center}
+.mx-axis-y{background:transparent;font-size:10.5px;font-weight:700;color:var(--azul-mid);text-align:right;padding-right:4px;justify-content:flex-end;display:flex;align-items:center}
+.mx-corner{background:transparent}
+.mx-low{background:#d4f0e1;color:var(--verde)}
+.mx-med{background:#fef3d6;color:#a06b00}
+.mx-high{background:#ffe0cc;color:#8a3800}
+.mx-crit{background:#fdecea;color:var(--rojo)}
+.mx-cell.selected-cell{box-shadow:0 0 0 3px var(--azul),0 0 0 5px rgba(37,99,168,.4);z-index:3}
+.mx-dot{width:22px;height:22px;border-radius:50%;background:var(--azul);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;position:absolute;cursor:pointer;transition:var(--trans)}
+.mx-dot:hover{transform:scale(1.2)}
+.mx-x-label{text-align:center;font-size:11px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+.mx-right{width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.mx-panel{background:var(--azul);border-radius:10px;padding:14px;flex:1}
+.mx-panel-title{font-size:11px;font-weight:700;color:var(--amarillo);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.mx-panel-text{font-size:12.5px;color:rgba(255,255,255,.82);line-height:1.6}
+.mx-legend{background:#fff;border-radius:10px;padding:12px;border:1px solid #dde3ee}
+.mx-leg-title{font-size:11px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.mx-leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--texto);margin-bottom:5px}
+.mx-leg-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+
+/* ══ SOA BUILDER ══ */
+.slide-soa{background:var(--gris-claro);padding:22px 28px;min-height:100%;display:flex;flex-direction:column}
+.soa-header{text-align:center;margin-bottom:14px;flex-shrink:0}
+.soa-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.soa-title{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:var(--azul);margin-bottom:3px}
+.soa-sub{font-size:12.5px;color:var(--gris-medio)}
+.soa-body{display:grid;grid-template-columns:1fr 280px;gap:14px;flex:1;min-height:0}
+.soa-table-wrap{overflow-y:auto;background:#fff;border-radius:10px;border:1px solid #dde3ee}
+.soa-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.soa-table th{background:var(--azul);color:#fff;padding:9px 10px;text-align:left;font-weight:600;font-size:11.5px;position:sticky;top:0;z-index:1}
+.soa-table th:first-child{border-radius:9px 0 0 0}.soa-table th:last-child{border-radius:0 9px 0 0}
+.soa-table td{padding:8px 10px;border-bottom:1px solid #eef0f5;vertical-align:middle;line-height:1.4}
+.soa-table tr:hover td{background:rgba(37,99,168,.03)}
+.soa-cb{accent-color:var(--azul-mid);width:14px;height:14px;cursor:pointer}
+.soa-status{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:8px}
+.s-inc{background:#d4f0e1;color:var(--verde)}.s-exc{background:#fdecea;color:var(--rojo)}.s-na{background:#eef0f5;color:var(--gris-medio)}
+.soa-side{display:flex;flex-direction:column;gap:10px}
+.soa-stats{background:var(--azul);border-radius:10px;padding:14px}
+.soa-stats-title{font-size:11px;font-weight:700;color:var(--amarillo);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.soa-stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12.5px}
+.soa-stat-row:last-child{border-bottom:none}
+.soa-stat-label{color:rgba(255,255,255,.7)}
+.soa-stat-val{font-weight:700;color:#fff}
+.soa-note{background:#fff;border-radius:10px;padding:14px;border:1px solid #dde3ee;font-size:12.5px;color:var(--texto);line-height:1.6}
+.soa-note strong{color:var(--azul-mid)}
+.soa-progress{height:8px;background:#dde3ee;border-radius:4px;overflow:hidden;margin-top:8px}
+.soa-progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));transition:width .4s ease;border-radius:4px}
+
+/* ══ CASE ══ */
+.slide-case{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.case-header{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:18px 22px;margin-bottom:16px;flex-shrink:0}
+.case-badge{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.case-title{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.3vw,20px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:6px 16px;border-radius:20px;border:1.5px solid #dde3ee;background:#fff;font-size:12.5px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-panel{display:none;flex:1;overflow-y:auto}
+.case-panel.active{display:block}
+.case-section-title{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.case-text{font-size:13.5px;color:var(--texto);line-height:1.75;margin-bottom:10px}
+.case-highlight{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--texto);line-height:1.6;margin:8px 0}
+.case-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+/* ══ QUIZ ══ */
+.slide-quiz{background:var(--gris-claro);padding:26px 32px;min-height:100%;display:flex;flex-direction:column}
+.quiz-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-badge{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-progress-text{font-size:13px;color:var(--gris-medio)}
+.quiz-question{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,23px);color:var(--azul);margin-bottom:20px;line-height:1.4;max-width:720px}
+.quiz-options{display:flex;flex-direction:column;gap:9px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:13px 16px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:11px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.quiz-opt .opt-letter{width:26px;height:26px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-letter{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-letter{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-feedback{margin-top:16px;padding:13px 16px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-feedback.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must-answer{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:8px;display:none;max-width:720px}
+.quiz-must-answer.show{display:block}
+
+/* ══ RESULT ══ */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.result-icon{font-size:60px;margin-bottom:14px;line-height:1}
+.result-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:7px}
+.result-score{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,76px);line-height:1;margin:7px 0}
+.result-sub{font-size:14.5px;color:rgba(255,255,255,.65);margin-bottom:20px;max-width:500px;line-height:1.7}
+.result-breakdown{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.rb-item{text-align:center}
+.rb-num{font-family:'DM Serif Display',serif;font-size:30px;color:#fff}
+.rb-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.result-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 22px;max-width:560px;font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:18px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:11px 28px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 16</div>
+  </div>
+
+  <div id="stage">
+
+    <!-- ══ S1: COVER ══ -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 4 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 6 — Planificación</div>
+      <h1 class="cover-title">El Corazón Técnico del AIMS:<br>Risk Assessment, AIIA y SoA</h1>
+      <p class="cover-subtitle">La cláusula 6 es donde la gobernanza de IA deja de ser teoría y se convierte en artefactos auditables. El AI Risk Assessment, el AI Impact Assessment (AIIA) y el Statement of Applicability son los tres documentos que un auditor externo revisará con más detenimiento en toda la certificación.</p>
+      <div class="cover-meta">
+        <span class="meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          60 minutos
+        </span>
+        <span class="meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          16 slides · 4 preguntas
+        </span>
+        <span class="meta-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Nivel avanzado
+        </span>
+      </div>
+      <div class="cover-objectives">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Distinguir el AI Risk Assessment (6.1.2) del AI Impact Assessment AIIA (6.1.4) — la confusión más frecuente en exámenes</li>
+          <li>Ejecutar el proceso de evaluación de riesgos de IA de extremo a extremo</li>
+          <li>Construir una matriz de riesgo de IA con ejemplos reales de sistemas de alto riesgo</li>
+          <li>Redactar el Statement of Applicability (SoA) seleccionando controles del Anexo A</li>
+          <li>Establecer objetivos de IA medibles conforme a la cláusula 6.2</li>
+          <li>Aplicar el proceso al caso real de un sistema de scoring crediticio bajo el EU AI Act</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ S2: CONCEPT — visión general cláusula 6 ══ -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">⚙️</div>
+      <div class="concept-tag">Cláusula 6 · Estructura</div>
+      <h2 class="concept-title">La cláusula 6 en tres artefactos clave</h2>
+      <p class="concept-body">La cláusula 6 tiene tres subclausulas principales. La <strong style="color:#fff">6.1.2</strong> exige un AI Risk Assessment documentado (¿qué puede salir mal con nuestros sistemas de IA?). La <strong style="color:#fff">6.1.4</strong> exige un AI Impact Assessment —AIIA— (¿qué impacto tienen sobre personas y sociedad?). Y la <strong style="color:#fff">6.2</strong> exige objetivos de IA medibles con planes para alcanzarlos. Los tres deben ser coherentes entre sí y con el alcance del 4.3. El resultado es el <strong style="color:#fff">Statement of Applicability</strong>: la declaración de qué controles del Anexo A aplican y por qué.</p>
+      <div class="concept-pills">
+        <span class="pill">6.1.2 AI Risk Assessment</span>
+        <span class="pill">6.1.3 AI Risk Treatment</span>
+        <span class="pill">6.1.4 AIIA</span>
+        <span class="pill">6.2 Objetivos IA</span>
+        <span class="pill">SoA — Anexo A</span>
+      </div>
+    </div>
+
+    <!-- ══ S3: STAT — por qué el riesgo de IA es diferente ══ -->
+    <div class="slide slide-stat" data-index="2">
+      <div class="stat-eyebrow">La escala del riesgo de IA</div>
+      <div class="stat-number">800M</div>
+      <div class="stat-unit">personas potencialmente afectadas</div>
+      <p class="stat-description">El sistema de crédito social de una única implementación de IA puede afectar a cientos de millones de personas simultáneamente. Esto es cualitativamente distinto a un incidente de seguridad de la información clásico. Por eso ISO/IEC 42001 exige una evaluación de <strong style="color:#fff">impacto social</strong> (AIIA) separada de la evaluación de riesgos para la organización.</p>
+      <p class="stat-source">Fuente: estimaciones de alcance de sistemas de IA de escala nacional, MIT Technology Review 2023</p>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="sc-num">6.1.2</div>
+          <div class="sc-label">AI Risk Assessment: riesgos para la organización y sus objetivos</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num">6.1.4</div>
+          <div class="sc-label">AIIA: impacto sobre individuos, grupos y sociedad en general</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num">≠</div>
+          <div class="sc-label">Son complementarios, no sustitutivos. Ambos son obligatorios en ISO 42001</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S4: FLOWCHART — proceso AI Risk Assessment ══ -->
+    <div class="slide slide-flowchart" data-index="3">
+      <div class="fc-header">
+        <div class="fc-eyebrow">Cláusula 6.1.2 · Proceso interactivo</div>
+        <h2 class="fc-title">El proceso de AI Risk Assessment — 6 pasos auditables</h2>
+        <p class="fc-sub">Haz clic en cada paso para ver los requisitos, evidencias y errores frecuentes</p>
+      </div>
+      <div class="fc-body">
+        <div class="fc-flow" id="fc-flow">
+          <div class="fc-step" onclick="fcClick(0)">
+            <div class="fc-step-left"><div class="fc-step-num sn-0">1</div><div class="fc-step-line sl-0"></div></div>
+            <div class="fc-step-box sb-0"><div class="fc-step-clause sc-0">§ 6.1.2.a</div><div class="fc-step-title">Criterios de riesgo de IA</div><div class="fc-step-brief">Define escala de probabilidad, impacto y niveles de aceptación</div></div>
+          </div>
+          <div class="fc-step" onclick="fcClick(1)">
+            <div class="fc-step-left"><div class="fc-step-num sn-1">2</div><div class="fc-step-line sl-1"></div></div>
+            <div class="fc-step-box sb-1"><div class="fc-step-clause sc-1">§ 6.1.2.b</div><div class="fc-step-title">Identificación de riesgos de IA</div><div class="fc-step-brief">¿Qué puede fallar? Bias, drift, opacidad, mal uso, impacto no deseado</div></div>
+          </div>
+          <div class="fc-step" onclick="fcClick(2)">
+            <div class="fc-step-left"><div class="fc-step-num sn-2">3</div><div class="fc-step-line sl-2"></div></div>
+            <div class="fc-step-box sb-2"><div class="fc-step-clause sc-2">§ 6.1.2.c</div><div class="fc-step-title">Análisis de riesgos</div><div class="fc-step-brief">Evalúa probabilidad e impacto de cada riesgo identificado</div></div>
+          </div>
+          <div class="fc-step" onclick="fcClick(3)">
+            <div class="fc-step-left"><div class="fc-step-num sn-3">4</div><div class="fc-step-line sl-3"></div></div>
+            <div class="fc-step-box sb-3"><div class="fc-step-clause sc-3">§ 6.1.2.d</div><div class="fc-step-title">Evaluación y priorización</div><div class="fc-step-brief">Compara resultados con criterios de aceptación → riesgos a tratar</div></div>
+          </div>
+          <div class="fc-step" onclick="fcClick(4)">
+            <div class="fc-step-left"><div class="fc-step-num sn-4">5</div><div class="fc-step-line sl-4"></div></div>
+            <div class="fc-step-box sb-4"><div class="fc-step-clause sc-4">§ 6.1.3</div><div class="fc-step-title">Tratamiento de riesgos + SoA</div><div class="fc-step-brief">Selecciona controles Anexo A → crea el Statement of Applicability</div></div>
+          </div>
+          <div class="fc-step" onclick="fcClick(5)">
+            <div class="fc-step-left"><div class="fc-step-num sn-5">6</div><div class="fc-step-line" style="background:transparent"></div></div>
+            <div class="fc-step-box sb-5"><div class="fc-step-clause sc-5">§ 9.1</div><div class="fc-step-title">Revisión periódica</div><div class="fc-step-brief">El proceso se repite mínimo anualmente y ante cambios en sistemas de IA</div></div>
+          </div>
+        </div>
+        <div class="fc-panel" id="fc-panel">
+          <div class="fc-panel-title" id="fcp-title">← Selecciona un paso</div>
+          <div class="fc-panel-content" id="fcp-content">Haz clic en cualquier paso del proceso para ver los requisitos normativos, las evidencias documentales esperadas y los errores más frecuentes detectados en auditorías reales de ISO 42001.</div>
+        </div>
+      </div>
+      <div class="fc-hint">Haz clic en cada paso del flujo para ver el detalle</div>
+    </div>
+
+    <!-- ══ S5: QUIZ 1 ══ -->
+    <div class="slide slide-quiz" data-index="4" data-quiz="true" data-correct="3">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 1 / 4</span>
+        <span class="quiz-progress-text">Módulo 4 · Evaluación</span>
+      </div>
+      <p class="quiz-question">¿Cuál es la diferencia fundamental entre el AI Risk Assessment (§ 6.1.2) y el AI Impact Assessment — AIIA (§ 6.1.4) en ISO/IEC 42001?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,4)"><span class="opt-letter">A</span>El Risk Assessment es obligatorio y el AIIA es opcional según el nivel de riesgo del sistema</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,4)"><span class="opt-letter">B</span>Son el mismo proceso con distinto nombre; ISO 42001 los trata de forma intercambiable</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,4)"><span class="opt-letter">C</span>El Risk Assessment cubre riesgos para la seguridad de la información; el AIIA cubre riesgos operacionales</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,4)"><span class="opt-letter">D</span>El Risk Assessment evalúa riesgos para la organización y sus objetivos; el AIIA evalúa el impacto sobre individuos, grupos y la sociedad. Son complementarios y ambos son obligatorios</button>
+      </div>
+      <div id="feedback-4" class="quiz-feedback"></div>
+      <div id="must-4" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ S6: MATRIX — risk matrix interactiva ══ -->
+    <div class="slide slide-matrix" data-index="5">
+      <div class="mx-header">
+        <div class="mx-eyebrow">Cláusula 6.1.2 · Herramienta interactiva</div>
+        <h2 class="mx-title">Matriz de riesgo de IA 4×4 — Haz clic para explorar los riesgos reales</h2>
+        <p class="mx-sub">Los puntos numerados representan riesgos reales de un sistema de scoring crediticio. Haz clic para ver el detalle.</p>
+      </div>
+      <div class="mx-body">
+        <div class="mx-left">
+          <div class="mx-grid-wrap">
+            <div class="mx-y-label">IMPACTO →</div>
+            <div class="mx-grid" id="mx-grid">
+              <!-- Row 4 (alto) -->
+              <div class="mx-axis-y">4·Crítico</div>
+              <div class="mx-cell mx-high" data-r="4" data-c="1" onclick="mxClick(4,1)"></div>
+              <div class="mx-cell mx-high" data-r="4" data-c="2" onclick="mxClick(4,2)"></div>
+              <div class="mx-cell mx-crit" data-r="4" data-c="3" onclick="mxClick(4,3)"></div>
+              <div class="mx-cell mx-crit" data-r="4" data-c="4" onclick="mxClick(4,4)">
+                <div class="mx-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)" onclick="event.stopPropagation();mxDot(1)" title="R1">1</div>
+              </div>
+              <!-- Row 3 -->
+              <div class="mx-axis-y">3·Alto</div>
+              <div class="mx-cell mx-med" data-r="3" data-c="1" onclick="mxClick(3,1)"></div>
+              <div class="mx-cell mx-high" data-r="3" data-c="2" onclick="mxClick(3,2)">
+                <div class="mx-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)" onclick="event.stopPropagation();mxDot(2)" title="R2">2</div>
+              </div>
+              <div class="mx-cell mx-high" data-r="3" data-c="3" onclick="mxClick(3,3)"></div>
+              <div class="mx-cell mx-crit" data-r="3" data-c="4" onclick="mxClick(3,4)">
+                <div class="mx-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)" onclick="event.stopPropagation();mxDot(3)" title="R3">3</div>
+              </div>
+              <!-- Row 2 -->
+              <div class="mx-axis-y">2·Medio</div>
+              <div class="mx-cell mx-low" data-r="2" data-c="1" onclick="mxClick(2,1)"></div>
+              <div class="mx-cell mx-med" data-r="2" data-c="2" onclick="mxClick(2,2)">
+                <div class="mx-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)" onclick="event.stopPropagation();mxDot(4)" title="R4">4</div>
+              </div>
+              <div class="mx-cell mx-high" data-r="2" data-c="3" onclick="mxClick(2,3)"></div>
+              <div class="mx-cell mx-high" data-r="2" data-c="4" onclick="mxClick(2,4)"></div>
+              <!-- Row 1 -->
+              <div class="mx-axis-y">1·Bajo</div>
+              <div class="mx-cell mx-low" data-r="1" data-c="1" onclick="mxClick(1,1)">
+                <div class="mx-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)" onclick="event.stopPropagation();mxDot(5)" title="R5">5</div>
+              </div>
+              <div class="mx-cell mx-low" data-r="1" data-c="2" onclick="mxClick(1,2)"></div>
+              <div class="mx-cell mx-med" data-r="1" data-c="3" onclick="mxClick(1,3)"></div>
+              <div class="mx-cell mx-med" data-r="1" data-c="4" onclick="mxClick(1,4)"></div>
+              <!-- X axis -->
+              <div class="mx-corner"></div>
+              <div class="mx-axis-x">1·Raro</div>
+              <div class="mx-axis-x">2·Posible</div>
+              <div class="mx-axis-x">3·Probable</div>
+              <div class="mx-axis-x">4·Casi seguro</div>
+            </div>
+            <div class="mx-x-label">PROBABILIDAD →</div>
+          </div>
+        </div>
+        <div class="mx-right">
+          <div class="mx-panel">
+            <div class="mx-panel-title" id="mxp-title">← Haz clic en un riesgo</div>
+            <div class="mx-panel-text" id="mxp-text">Selecciona una celda o un riesgo numerado para ver el detalle del riesgo de IA y el control del Anexo A que lo mitiga.</div>
+          </div>
+          <div class="mx-legend">
+            <div class="mx-leg-title">Nivel de riesgo</div>
+            <div class="mx-leg-item"><div class="mx-leg-dot" style="background:#d4f0e1"></div>Bajo — Aceptable</div>
+            <div class="mx-leg-item"><div class="mx-leg-dot" style="background:#fef3d6"></div>Medio — Monitorizar</div>
+            <div class="mx-leg-item"><div class="mx-leg-dot" style="background:#ffe0cc"></div>Alto — Tratar urgente</div>
+            <div class="mx-leg-item"><div class="mx-leg-dot" style="background:#fdecea"></div>Crítico — Acción inmediata</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S7: CONCEPT — AIIA vs Risk Assessment ══ -->
+    <div class="slide slide-concept" data-index="6">
+      <div class="concept-icon">🔍</div>
+      <div class="concept-tag">Cláusula 6.1.4 · Concepto diferenciador</div>
+      <h2 class="concept-title">El AI Impact Assessment (AIIA): lo que ninguna otra norma pide</h2>
+      <p class="concept-body">El AIIA es el elemento más innovador de ISO 42001. A diferencia del AI Risk Assessment —que mira hacia dentro (riesgos para la organización)—, el AIIA mira hacia fuera: <strong style="color:#fff">¿qué impacto tiene este sistema de IA sobre los individuos que reciben sus decisiones, sobre grupos de población y sobre la sociedad en general?</strong> Incluye análisis de sesgo potencial, impacto en derechos fundamentales, y medidas de mitigación documentadas. Su alcance se solapa con el GDPR (Art. 35 DPIA) y con los requisitos del EU AI Act para sistemas de alto riesgo.</p>
+      <div class="concept-pills">
+        <span class="pill">Individuos afectados</span>
+        <span class="pill">Grupos vulnerables</span>
+        <span class="pill">Sociedad en conjunto</span>
+        <span class="pill">Medidas de mitigación</span>
+        <span class="pill">Solapamiento GDPR Art. 35</span>
+      </div>
+    </div>
+
+    <!-- ══ S8: CONTENT TABLE — AIIA componentes ══ -->
+    <div class="slide slide-content" data-index="7">
+      <div class="content-header">
+        <div class="ch-eyebrow">Cláusula 6.1.4 · AIIA</div>
+        <h2 class="ch-title">Los cinco componentes del AI Impact Assessment (AIIA)</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead>
+            <tr><th>#</th><th>Componente AIIA</th><th>Qué documenta</th><th>Fuente normativa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><strong>Descripción del sistema y su uso</strong></td>
+              <td>Qué hace el sistema, quién lo usa, en qué contexto, cómo afecta a las personas</td>
+              <td><span class="tv tv-b">ISO 42001 § 6.1.4</span></td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><strong>Identificación de individuos y grupos afectados</strong></td>
+              <td>Quiénes reciben las decisiones del sistema, incluidos grupos vulnerables o protegidos</td>
+              <td><span class="tv tv-b">ISO 42001 Anexo A.5</span></td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><strong>Análisis de impacto potencial</strong></td>
+              <td>Impacto sobre derechos fundamentales, dignidad, no discriminación, privacidad, autonomía</td>
+              <td><span class="tv tv-a">EU AI Act Art. 9</span> <span class="tv tv-b">GDPR Art. 35</span></td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td><strong>Evaluación de sesgos y fairness</strong></td>
+              <td>¿El sistema trata de forma diferente a grupos demográficos? Datos históricos sesgados, proxies discriminatorios</td>
+              <td><span class="tv tv-b">ISO 42001 Anexo A.6</span></td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td><strong>Medidas de mitigación y supervisión humana</strong></td>
+              <td>Controles implementados, mecanismos de recurso para afectados, frecuencia de revisión del AIIA</td>
+              <td><span class="tv tv-b">ISO 42001 Anexo A.9</span> <span class="tv tv-a">EU AI Act Art. 14</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ S9: QUIZ 2 ══ -->
+    <div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="2">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 2 / 4</span>
+        <span class="quiz-progress-text">Módulo 4 · Evaluación</span>
+      </div>
+      <p class="quiz-question">Una organización usa un sistema de IA para filtrar currículos en procesos de selección. Al revisar su AIIA, el auditor encuentra que el análisis solo incluye el impacto sobre la empresa (eficiencia en selección, reducción de costes) pero no incluye el impacto sobre los candidatos rechazados. ¿Cómo debe clasificar el auditor esta situación?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,8)"><span class="opt-letter">A</span>Conforme: el AIIA debe centrarse en el impacto para la organización que lo implementa</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,8)"><span class="opt-letter">B</span>Observación de mejora: es recomendable incluir el impacto en candidatos pero no es un requisito estricto de la cláusula 6.1.4</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,8)"><span class="opt-letter">C</span>No conformidad: la cláusula 6.1.4 exige evaluar explícitamente el impacto sobre los individuos afectados por las decisiones del sistema de IA, que en este caso son los candidatos rechazados</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,8)"><span class="opt-letter">D</span>No aplica: el AIIA solo es obligatorio para sistemas de alto riesgo definidos por el EU AI Act</button>
+      </div>
+      <div id="feedback-8" class="quiz-feedback"></div>
+      <div id="must-8" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ S10: SOA BUILDER ══ -->
+    <div class="slide slide-soa" data-index="9">
+      <div class="soa-header">
+        <div class="soa-eyebrow">Cláusula 6.1.3 · Statement of Applicability interactivo</div>
+        <h2 class="soa-title">Constructor de SoA — Selecciona los controles del Anexo A que aplican</h2>
+        <p class="soa-sub">El SoA documenta qué controles incluyes, cuáles excluyes y por qué. Es el documento más revisado en auditoría de certificación.</p>
+      </div>
+      <div class="soa-body">
+        <div class="soa-table-wrap">
+          <table class="soa-table">
+            <thead>
+              <tr><th style="width:38px">Inc.</th><th style="width:60px">Control</th><th>Nombre del control</th><th style="width:90px">Estado</th></tr>
+            </thead>
+            <tbody id="soa-tbody">
+            </tbody>
+          </table>
+        </div>
+        <div class="soa-side">
+          <div class="soa-stats">
+            <div class="soa-stats-title">📊 Estadísticas del SoA</div>
+            <div class="soa-stat-row"><span class="soa-stat-label">Total controles</span><span class="soa-stat-val">38</span></div>
+            <div class="soa-stat-row"><span class="soa-stat-label">Incluidos</span><span class="soa-stat-val" id="soa-inc">0</span></div>
+            <div class="soa-stat-row"><span class="soa-stat-label">Excluidos</span><span class="soa-stat-val" id="soa-exc">38</span></div>
+            <div class="soa-stat-row"><span class="soa-stat-label">Cobertura</span><span class="soa-stat-val" id="soa-pct">0%</span></div>
+            <div class="soa-progress"><div class="soa-progress-bar" id="soa-bar" style="width:0%"></div></div>
+          </div>
+          <div class="soa-note">
+            <strong>Regla de auditoría:</strong> El SoA debe justificar CADA exclusión. Un control excluido sin justificación documentada genera no conformidad. Seleccionar todos no es suficiente: debes demostrar que los incluidos están realmente implementados.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S11: QUIZ 3 ══ -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="1">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 3 / 4</span>
+        <span class="quiz-progress-text">Módulo 4 · Evaluación</span>
+      </div>
+      <p class="quiz-question">Al construir el Statement of Applicability (SoA) de un AIMS, ¿cuál de las siguientes afirmaciones es correcta según ISO/IEC 42001?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-letter">A</span>Todos los 38 controles del Anexo A deben incluirse siempre en el SoA sin posibilidad de exclusión</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-letter">B</span>La organización puede excluir controles del Anexo A, pero debe justificar documentalmente cada exclusión y verificar que ningún riesgo identificado queda sin tratamiento como consecuencia</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-letter">C</span>El SoA solo es necesario si la organización tiene más de 50 empleados</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-letter">D</span>La organización puede incluir en el SoA controles adicionales propios además de los del Anexo A, pero esto no está permitido por la norma</button>
+      </div>
+      <div id="feedback-10" class="quiz-feedback"></div>
+      <div id="must-10" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ S12: CASE — scoring crediticio ══ -->
+    <div class="slide slide-case" data-index="11">
+      <div class="case-header">
+        <div class="case-badge">📋 Caso práctico · Cláusula 6 completa</div>
+        <h2 class="case-title">FinBank: Planificación del AIMS para un sistema de scoring crediticio bajo el EU AI Act</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'ra')">Risk Assessment</button>
+        <button class="case-tab" onclick="switchCase(this,'aiia')">AIIA</button>
+        <button class="case-tab" onclick="switchCase(this,'soa')">SoA (extracto)</button>
+        <button class="case-tab" onclick="switchCase(this,'obj')">Objetivos 6.2</button>
+      </div>
+      <div class="case-panel active" id="cp-ra">
+        <div class="case-section-title">AI Risk Assessment — Riesgos identificados</div>
+        <p class="case-text">FinBank opera un motor de scoring crediticio (comprado a un proveedor fintech) que toma decisiones automáticas sobre solicitudes de crédito. El equipo de riesgo identificó los siguientes riesgos principales en el AI Risk Assessment:</p>
+        <div class="case-highlight"><strong>R1 [Crítico — 4×4]:</strong> Sesgo estadístico en el modelo: el modelo fue entrenado con datos históricos de aprobaciones de crédito de los últimos 10 años. Si las aprobaciones históricas reflejaron sesgos demográficos (género, zona geográfica), el modelo los perpetuará sistemáticamente. Control asociado: <strong>A.6.2 + AIIA § 6.1.4</strong>.</div>
+        <div class="case-highlight"><strong>R3 [Crítico — 3×4]:</strong> Incapacidad de explicar las decisiones: el modelo es una caja negra (ensemble de gradient boosting). Los clientes rechazados tienen derecho a recibir explicación bajo GDPR Art. 22. Sin explicabilidad documentada, hay riesgo legal y de multa. Control: <strong>A.6.2 + A.8.2</strong>.</div>
+      </div>
+      <div class="case-panel" id="cp-aiia">
+        <div class="case-section-title">AI Impact Assessment — Impacto sobre individuos</div>
+        <p class="case-text">El AIIA de FinBank identificó que los individuos afectados son los solicitantes de crédito (especialmente los rechazados) y que el impacto incluye la denegación de acceso a financiación, que puede afectar a la vivienda, la educación o los negocios de las personas.</p>
+        <div class="case-highlight"><strong>Hallazgo AIIA:</strong> Los datos muestran que la tasa de rechazo del modelo es un 23% mayor para solicitantes de determinadas regiones geográficas que históricamente tuvieron menor acceso al crédito. Esto constituye discriminación indirecta. Medida: <strong>reentrenamiento con datos balanceados + auditoría de fairness trimestral</strong>.</div>
+        <div class="case-highlight"><strong>Supervisión humana:</strong> Para todos los rechazos con puntuación entre 35-45 (zona de umbral), se requiere revisión manual por un analista de crédito antes de comunicar la decisión al cliente. Documentado en el AIIA como salvaguarda obligatoria.</div>
+      </div>
+      <div class="case-panel" id="cp-soa">
+        <div class="case-section-title">Extracto del Statement of Applicability</div>
+        <p class="case-text">FinBank incluyó 31 de los 38 controles del Anexo A. Los controles excluidos son:</p>
+        <div class="case-highlight"><strong>A.4.5 (Recursos de cómputo):</strong> EXCLUIDO — FinBank no desarrolla modelos de IA internamente; usa el sistema del proveedor fintech. Los recursos de cómputo son responsabilidad del proveedor según contrato (cláusula 8.3 del acuerdo). Justificación documentada en el inventario de sistemas (DOC-AIMS-INV-001).</div>
+        <div class="case-highlight"><strong>A.4.4 (Recursos de herramientas):</strong> EXCLUIDO — misma justificación que A.4.5. El proveedor es responsable de las herramientas de desarrollo del modelo.</div>
+        <p class="case-text" style="margin-top:8px;font-size:13px;color:var(--gris-medio)">⚠ El auditor verificó que las exclusiones tienen justificación documentada y que los riesgos asociados a esas áreas están cubiertos por los controles A.10.2 (acuerdos con terceros). Sin esta verificación cruzada, la exclusión generaría una NC.</p>
+      </div>
+      <div class="case-panel" id="cp-obj">
+        <div class="case-section-title">Objetivos de IA — Cláusula 6.2</div>
+        <p class="case-text">Los objetivos de IA de FinBank deben ser medibles, monitorizados, comunicados y actualizados. ISO 42001 cláusula 6.2 exige que incluyan: qué se hará, qué recursos se necesitan, quién es responsable, cuándo se completará y cómo se evaluará el resultado.</p>
+        <div class="case-highlight"><strong>Objetivo 1:</strong> "Reducir la tasa de rechazo sesgado geográficamente en un 15% en 12 meses (medida por auditoría de fairness trimestral del modelo). Responsable: AI Risk Officer. Hito: reentrenamiento completado antes de Q2 2026."</div>
+        <div class="case-highlight"><strong>Objetivo 2:</strong> "Implementar sistema de explicabilidad (SHAP values) para el 100% de las decisiones de rechazo antes de agosto 2026, en cumplimiento del GDPR Art. 22 y EU AI Act. Responsable: proveedor fintech + CISO. Hito: certificación de conformidad técnica Q3 2026."</div>
+      </div>
+    </div>
+
+    <!-- ══ S13: CONCEPT — objetivos de IA ══ -->
+    <div class="slide slide-concept" data-index="12">
+      <div class="concept-icon">🎯</div>
+      <div class="concept-tag">Cláusula 6.2 · Objetivos de IA</div>
+      <h2 class="concept-title">Cómo redactar objetivos de IA que superen la auditoría</h2>
+      <p class="concept-body">La cláusula 6.2 exige que los objetivos sean <strong style="color:#fff">SMART-AI</strong>: específicos (qué sistema, qué riesgo), medibles (KPI concreto), asignados (propietario nombrado), con recursos (presupuesto o tiempo asignado), con plazo, y vinculados a riesgos o impactos identificados en el Risk Assessment o AIIA. Un objetivo como "mejorar la gobernanza de IA" no cumple la cláusula 6.2. Un auditor lo marcará como observación en la primera auditoría y como no conformidad en la segunda.</p>
+      <div class="concept-pills">
+        <span class="pill">Específico por sistema</span>
+        <span class="pill">KPI medible</span>
+        <span class="pill">Propietario asignado</span>
+        <span class="pill">Plazo definido</span>
+        <span class="pill">Vinculado a riesgos</span>
+      </div>
+    </div>
+
+    <!-- ══ S14: QUIZ 4 ══ -->
+    <div class="slide slide-quiz" data-index="13" data-quiz="true" data-correct="0">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 4 / 4</span>
+        <span class="quiz-progress-text">Módulo 4 · Evaluación</span>
+      </div>
+      <p class="quiz-question">El Statement of Applicability (SoA) de una organización incluye el control A.6.2 (objetivos y requisitos de diseño del sistema de IA) pero el auditor no puede encontrar ningún documento que demuestre su implementación. ¿Qué hallazgo emite el auditor?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,13)"><span class="opt-letter">A</span>No conformidad: incluir un control en el SoA sin implementarlo es una NC, porque el SoA declara qué está implementado, no qué se pretende implementar</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,13)"><span class="opt-letter">B</span>Observación: el SoA es un documento de intenciones, no de implementación verificada</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,13)"><span class="opt-letter">C</span>Conforme: es normal que algunos controles del SoA estén en proceso de implementación durante el primer ciclo de certificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,13)"><span class="opt-letter">D</span>Observación menor: se documenta pero no impide la certificación en la primera auditoría</button>
+      </div>
+      <div id="feedback-13" class="quiz-feedback"></div>
+      <div id="must-13" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ S15: CONTENT TABLE — checklist cláusula 6 ══ -->
+    <div class="slide slide-content" data-index="14">
+      <div class="content-header">
+        <div class="ch-eyebrow">Checklist del Auditor · Cláusula 6 completa</div>
+        <h2 class="ch-title">Evidencias que el auditor revisará en la cláusula 6</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead>
+            <tr><th>Documento</th><th>Cláusula</th><th>Contenido mínimo</th><th>NC si falta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Registro de Riesgos de IA</strong></td>
+              <td><span class="tv tv-b">6.1.2</span></td>
+              <td>Riesgos identificados, propietario, probabilidad, impacto, nivel de riesgo, decisión de tratamiento</td>
+              <td><span class="tv tv-a">Mayor</span></td>
+            </tr>
+            <tr>
+              <td><strong>AI Impact Assessment (AIIA)</strong></td>
+              <td><span class="tv tv-b">6.1.4</span></td>
+              <td>Individuos afectados, análisis de impacto en derechos, análisis de fairness/sesgo, medidas de mitigación</td>
+              <td><span class="tv tv-a">Mayor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Statement of Applicability (SoA)</strong></td>
+              <td><span class="tv tv-b">6.1.3</span></td>
+              <td>38 controles Anexo A con estado (incluido/excluido), justificación de exclusiones, referencia a implementación</td>
+              <td><span class="tv tv-a">Mayor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Plan de Tratamiento de Riesgos</strong></td>
+              <td><span class="tv tv-b">6.1.3</span></td>
+              <td>Para cada riesgo no aceptable: acción, responsable, plazo, recursos, KPI de verificación</td>
+              <td><span class="tv tv-a">Menor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Objetivos de IA con plan de consecución</strong></td>
+              <td><span class="tv tv-b">6.2</span></td>
+              <td>Objetivos SMART-AI: qué, KPI, quién, cuándo, con qué recursos, cómo se evalúa</td>
+              <td><span class="tv tv-a">Menor</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ S16: RESULT ══ -->
+    <div class="slide slide-result" data-index="15" id="result-slide">
+      <div class="result-icon" id="result-icon">🎯</div>
+      <h2 class="result-title" id="result-title">Resultado del Módulo 4</h2>
+      <div class="result-score" id="result-score" style="color:var(--amarillo)">—</div>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="result-breakdown">
+        <div class="rb-item"><div class="rb-num" id="rb-correct">—</div><div class="rb-label">Correctas</div></div>
+        <div class="rb-item"><div class="rb-num" id="rb-wrong">—</div><div class="rb-label">Incorrectas</div></div>
+        <div class="rb-item"><div class="rb-num">4</div><div class="rb-label">Total</div></div>
+      </div>
+      <div class="result-msg" id="result-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar módulo y reintentar</button>
+    </div>
+
+  </div><!-- /stage -->
+
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+
+<script>
+/* ── SCORM 1.2 ── */
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+
+/* ── CORE ── */
+const TOTAL=16,QUIZ_SLIDES=[4,8,10,13],CORRECT={4:3,8:2,10:1,13:0};
+const FB={
+  4:{ok:"✅ Correcto. El AI Risk Assessment (§ 6.1.2) evalúa los riesgos para la organización: ¿qué puede fallar en el sistema de IA y cómo afecta a los objetivos organizacionales? El AIIA (§ 6.1.4) evalúa el impacto hacia fuera: ¿qué efecto tiene el sistema sobre los individuos que reciben sus decisiones, sobre grupos de población y sobre la sociedad? Ambos son obligatorios en ISO 42001 y se complementan.",
+     fail:"❌ Incorrecto. El AI Risk Assessment y el AIIA son dos documentos distintos y obligatorios con propósitos complementarios. El Risk Assessment mira hacia dentro (riesgos para la organización). El AIIA mira hacia fuera (impacto sobre individuos, grupos y sociedad). Ninguno sustituye al otro y ambos son requeridos por la cláusula 6."},
+  8:{ok:"✅ Correcto. La cláusula 6.1.4 de ISO 42001 exige evaluar explícitamente el impacto sobre los individuos afectados por las decisiones del sistema de IA. En el caso de un sistema de filtrado de currículos, los individuos afectados son precisamente los candidatos (especialmente los rechazados). Un AIIA que solo analiza el beneficio para la organización es incompleto y genera una no conformidad.",
+     fail:"❌ Incorrecto. El AIIA no es opcional ni se limita a los beneficios para la organización. La cláusula 6.1.4 exige analizar el impacto sobre las personas que son objeto de las decisiones del sistema de IA. En un filtro de currículos, los candidatos rechazados son las personas directamente afectadas y deben estar en el centro del AIIA."},
+  10:{ok:"✅ Correcto. La organización puede —y en muchos casos debe— excluir controles del Anexo A que no sean aplicables a su contexto. Pero cada exclusión debe estar documentada con su justificación y verificada para asegurar que ningún riesgo identificado queda sin tratamiento. Además, la organización puede añadir controles propios al SoA si considera que los del Anexo A no son suficientes para cubrir sus riesgos específicos.",
+     fail:"❌ Incorrecto. Los 38 controles del Anexo A no son todos obligatorios en todos los casos: la organización determina cuáles aplican mediante el proceso de evaluación y tratamiento de riesgos. Las exclusiones son válidas si están documentadas y justificadas. También se pueden añadir controles adicionales propios."},
+  13:{ok:"✅ Correcto. El SoA es una declaración de que los controles incluidos están implementados o en proceso de implementación con un plan y fecha. Incluir un control sin ninguna evidencia de implementación es una no conformidad porque el SoA declara la aplicabilidad real, no solo la intención. El auditor esperará ver la evidencia de implementación para cada control incluido.",
+     fail:"❌ Incorrecto. El Statement of Applicability no es un documento de intenciones: es una declaración de qué controles están implementados. Si un control está incluido en el SoA pero no hay ninguna evidencia de implementación, el auditor emitirá una no conformidad. Durante el primer ciclo puede haber un plan de implementación con fechas, pero para obtener la certificación los controles deben estar operativos."}
+};
+
+let current=0;
+const quizAnswered={4:false,8:false,10:false,13:false};
+const quizScores={4:false,8:false,10:false,13:false};
+
+const dotsEl=document.getElementById('slide-dots');
+for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);dotsEl.appendChild(d);}
+function updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===current?' active':(i<current?' done':''));});}
+function updateProgress(){document.getElementById('progress-bar').style.width=(((current+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(current+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(current));}
+function navigate(dir){const t=current+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QUIZ_SLIDES.includes(current)&&!quizAnswered[current]){document.getElementById('must-'+current).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const slides=document.querySelectorAll('.slide');slides[current].classList.remove('active');slides[current].classList.add('exit-left');setTimeout(()=>slides[current].classList.remove('exit-left'),460);current=idx;slides[current].classList.add('active');document.getElementById('btn-prev').disabled=(current===0);const nb=document.getElementById('btn-next');nb.disabled=(current===TOTAL-1)||(QUIZ_SLIDES.includes(current)&&!quizAnswered[current]);updateDots();updateProgress();if(current===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(quizAnswered[si])return;quizAnswered[si]=true;const correct=CORRECT[si];btn.closest('.quiz-options').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);quizScores[si]=ok;const fb=document.getElementById('feedback-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-feedback show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(quizScores),c=vals.filter(Boolean).length,t=4;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('result-icon').textContent=passed?'🏆':'📚';document.getElementById('result-title').textContent=passed?'¡Módulo 4 superado!':'Módulo 4 — Repasa el contenido';document.getElementById('result-score').textContent=pct+'%';document.getElementById('result-score').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-correct').textContent=c;document.getElementById('rb-wrong').textContent=t-c;document.getElementById('result-sub').textContent=passed?'Has superado la evaluación con '+c+' de '+t+' respuestas correctas.':'Has obtenido '+c+' de '+t+' respuestas correctas. Necesitas un 70% para avanzar.';document.getElementById('result-msg').innerHTML=passed?'<strong>Próximo paso:</strong> El Módulo 5 cubre la Cláusula 7 — Soporte: recursos, competencias, concienciación, comunicación e información documentada. Después llegará la Cláusula 8, el núcleo operativo donde se implementa el ciclo de vida del sistema de IA.':'<strong>Recomendación:</strong> Las preguntas de la cláusula 6 son las más exigentes del examen PECB Lead Auditor. Revisa especialmente la diferencia entre Risk Assessment y AIIA (slide 3 y 7) y la naturaleza declarativa del SoA (slide 10 y 14).';if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+
+/* ── FLOWCHART ── */
+const fcData=[
+  {title:'Paso 1 — Criterios de riesgo de IA',text:'Define los criterios con los que evaluarás y aceptarás o rechazarás los riesgos. Debes establecer la escala de probabilidad (p.ej. 1-4), la escala de impacto (1-4) y el nivel de riesgo aceptable (umbral de tratamiento). Este paso se documenta y aprueba por la dirección antes de iniciar las evaluaciones.',items:['Escala de probabilidad documentada','Escala de impacto con ejemplos concretos para IA','Umbral de aceptación definido y aprobado','Criterios coherentes con los objetivos de IA del 6.2']},
+  {title:'Paso 2 — Identificación de riesgos',text:'Para cada sistema de IA en el alcance, identifica qué puede fallar. Las fuentes de riesgo específicas de IA incluyen: datos de entrenamiento (sesgo, calidad), arquitectura del modelo (opacidad, robustez), despliegue (mal uso, uso fuera del contexto), y monitoreo (model drift, comportamiento inesperado).',items:['Lista de riesgos por cada sistema de IA en el AIMS','Fuentes de riesgo: datos, modelo, despliegue, operación','Propietario asignado a cada riesgo identificado','Referencia al Anexo C de ISO 42001 (fuentes de riesgo)']},
+  {title:'Paso 3 — Análisis de riesgos',text:'Para cada riesgo identificado, evalúa probabilidad e impacto usando los criterios del paso 1. El resultado es un nivel de riesgo (p.ej. Bajo/Medio/Alto/Crítico) representable en una matriz 4×4. Documenta la justificación de cada puntuación.',items:['Evaluación de probabilidad para cada riesgo','Evaluación de impacto (incluido impacto sobre personas)','Nivel de riesgo resultante (producto P×I o similar)','Justificación documentada de cada puntuación']},
+  {title:'Paso 4 — Evaluación y priorización',text:'Compara el nivel de riesgo de cada riesgo con el umbral de aceptación definido en el paso 1. Decide: aceptar (documentado), tratar (→ paso 5), transferir (seguro, contrato con proveedor) o evitar (no usar el sistema de IA). Los riesgos no aceptados deben pasar al plan de tratamiento.',items:['Lista de riesgos inaceptables que requieren tratamiento','Decisión documentada para cada riesgo (aceptar/tratar/transferir/evitar)','Aprobación de la decisión de aceptación por nivel competente','Base para seleccionar controles del Anexo A']},
+  {title:'Paso 5 — Tratamiento + SoA',text:'Para cada riesgo a tratar, selecciona los controles del Anexo A que lo mitigan. La comparación obligatoria con el Anexo A (§ 6.1.3.c) garantiza que no olvidas controles. El resultado es el Statement of Applicability: qué controles incluyes, cuáles excluyes y por qué.',items:['Plan de Tratamiento de Riesgos con propietario y plazo','Statement of Applicability: 38 controles evaluados','Justificación de exclusiones documentada','Verificación de que todos los riesgos tienen tratamiento']},
+  {title:'Paso 6 — Revisión periódica',text:'El proceso no termina con la certificación. La cláusula 9.1 exige monitoreo continuo. El AI Risk Assessment debe repetirse como mínimo: (a) anualmente, (b) cuando se introduce un nuevo sistema de IA en el alcance, (c) cuando el modelo es reentrenado con nuevos datos, y (d) tras un incidente de IA.',items:['Ciclo de revisión definido (mínimo anual)','Disparadores de revisión extraordinaria documentados','Registro de revisiones pasadas con resultados','Integración con las auditorías internas (§ 9.2)']}
+];
+function fcClick(idx){
+  document.querySelectorAll('.fc-step').forEach((s,i)=>s.classList.toggle('active-step',i===idx));
+  const d=fcData[idx];
+  document.getElementById('fcp-title').textContent=d.title;
+  document.getElementById('fcp-content').innerHTML=d.text+'<ul class="fc-panel-items">'+d.items.map(i=>`<li>${i}</li>`).join('')+'</ul>';
+}
+
+/* ── RISK MATRIX ── */
+const dotData={
+  1:{title:'R1 — Sesgo sistémico en datos de entrenamiento',text:'Probabilidad: 4 (casi seguro — datos históricos sesgados). Impacto: 4 (crítico — discriminación masiva de solicitantes de crédito). Control mitigador: A.6.2 (evaluación de sesgo en diseño), A.7.3 (calidad de datos de entrenamiento), AIIA § 6.1.4 (impacto en individuos). ACCIÓN: reentrenamiento con datos balanceados + auditoría trimestral de fairness.'},
+  2:{title:'R2 — Model drift no detectado',text:'Probabilidad: 2 (posible — el modelo puede degradarse con cambios económicos). Impacto: 3 (alto — decisiones de crédito incorrectas durante meses). Control mitigador: A.6.2.g (monitoreo del rendimiento del sistema), § 9.1 (evaluación de desempeño). ACCIÓN: dashboard de métricas con alertas automáticas + revisión trimestral.'},
+  3:{title:'R3 — Incapacidad de explicar decisiones (caja negra)',text:'Probabilidad: 4 (casi seguro — el modelo actual no tiene mecanismo de explicación). Impacto: 3 (alto — multa GDPR Art. 22 + reputación). Control mitigador: A.8.2 (documentación de capacidades y limitaciones), A.6.2 (requisitos de explicabilidad en diseño). ACCIÓN: implementar SHAP values + procedimiento de respuesta a solicitudes de explicación.'},
+  4:{title:'R4 — Uso del sistema fuera del contexto previsto',text:'Probabilidad: 2 (posible — usuarios de negocio pueden usar el scoring para fines no autorizados). Impacto: 2 (medio — decisiones incorrectas, responsabilidad legal). Control mitigador: A.9.2 (límites de uso del sistema), A.9.3 (salvaguardas contra mal uso). ACCIÓN: política de uso aceptable + logs de uso auditados.'},
+  5:{title:'R5 — Error en la integración con el proveedor',text:'Probabilidad: 1 (raro — la integración API está establecida y probada). Impacto: 1 (bajo — fallo técnico temporal, recuperable). Control mitigador: A.4.5 (recursos del sistema), A.10.2 (acuerdos con terceros). ACCIÓN: SLA con el proveedor + procedimiento de contingencia documentado.'}
+};
+function mxClick(r,c){document.getElementById('mxp-title').textContent=`Celda [Impacto ${r} × Probabilidad ${c}]`;document.getElementById('mxp-text').textContent='Zona de riesgo '+(r*c>=12?'CRÍTICO':(r*c>=6?'ALTO':(r*c>=3?'MEDIO':'BAJO')))+'. Haz clic en los puntos numerados para ver riesgos reales posicionados en esta zona.';}
+function mxDot(n){const d=dotData[n];document.getElementById('mxp-title').textContent=d.title;document.getElementById('mxp-text').textContent=d.text;}
+
+/* ── SOA ── */
+const soaControls=[
+  {id:'A.2.2',name:'Política de IA',obj:'A.2 Políticas',inc:true},
+  {id:'A.2.3',name:'Coherencia con otras políticas organizacionales',obj:'A.2 Políticas',inc:true},
+  {id:'A.2.4',name:'Revisión de la política de IA',obj:'A.2 Políticas',inc:true},
+  {id:'A.3.2',name:'Roles y responsabilidades de IA',obj:'A.3 Organización',inc:true},
+  {id:'A.3.3',name:'Reporte de inquietudes (canal de denuncia)',obj:'A.3 Organización',inc:true},
+  {id:'A.4.2',name:'Documentación de recursos de IA',obj:'A.4 Recursos',inc:true},
+  {id:'A.4.3',name:'Gestión de datos de entrenamiento',obj:'A.4 Recursos',inc:true},
+  {id:'A.4.4',name:'Herramientas de desarrollo de IA',obj:'A.4 Recursos',inc:false},
+  {id:'A.4.5',name:'Recursos de cómputo',obj:'A.4 Recursos',inc:false},
+  {id:'A.4.6',name:'Recursos humanos y competencias IA',obj:'A.4 Recursos',inc:true},
+  {id:'A.5.2',name:'Impacto de IA en individuos',obj:'A.5 Impacto',inc:true},
+  {id:'A.5.3',name:'Impacto de IA en grupos',obj:'A.5 Impacto',inc:true},
+  {id:'A.5.4',name:'Impacto de IA en la sociedad',obj:'A.5 Impacto',inc:true},
+  {id:'A.5.5',name:'Medidas de mitigación del impacto',obj:'A.5 Impacto',inc:true},
+  {id:'A.6.1',name:'Objetivos y requisitos del sistema de IA',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.2',name:'Proceso de diseño y desarrollo',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.3',name:'Estrategia de adquisición de datos',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.4',name:'Preparación de datos',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.5',name:'Verificación y pruebas del modelo',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.6',name:'Pruebas de integración del sistema',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.7',name:'Gestión del despliegue',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.8',name:'Monitoreo y mantenimiento del sistema de IA',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.6.9',name:'Retiro o decommissioning del sistema',obj:'A.6 Ciclo de vida',inc:true},
+  {id:'A.7.2',name:'Procesamiento de datos',obj:'A.7 Datos',inc:true},
+  {id:'A.7.3',name:'Calidad de los datos',obj:'A.7 Datos',inc:true},
+  {id:'A.7.4',name:'Procedencia y licencias de datos',obj:'A.7 Datos',inc:true},
+  {id:'A.7.5',name:'Privacidad de los datos',obj:'A.7 Datos',inc:true},
+  {id:'A.7.6',name:'Seguridad de los datos de IA',obj:'A.7 Datos',inc:true},
+  {id:'A.8.2',name:'Documentación de capacidades y limitaciones',obj:'A.8 Información PI',inc:true},
+  {id:'A.8.3',name:'Transparencia sobre el sistema de IA',obj:'A.8 Información PI',inc:true},
+  {id:'A.8.4',name:'Comunicación de incidentes de IA',obj:'A.8 Información PI',inc:true},
+  {id:'A.8.5',name:'Canal de reporte para afectados',obj:'A.8 Información PI',inc:true},
+  {id:'A.9.2',name:'Uso aceptable del sistema de IA',obj:'A.9 Uso',inc:true},
+  {id:'A.9.3',name:'Salvaguardas contra mal uso',obj:'A.9 Uso',inc:true},
+  {id:'A.9.4',name:'Supervisión humana de la IA',obj:'A.9 Uso',inc:true},
+  {id:'A.10.2',name:'Acuerdos de responsabilidad con terceros',obj:'A.10 Terceros',inc:true},
+  {id:'A.10.3',name:'Due diligence de proveedores de IA',obj:'A.10 Terceros',inc:true},
+  {id:'A.10.4',name:'Notificaciones y obligaciones hacia clientes',obj:'A.10 Terceros',inc:true},
+];
+function buildSoa(){
+  const tbody=document.getElementById('soa-tbody');
+  tbody.innerHTML='';
+  soaControls.forEach((c,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input type="checkbox" class="soa-cb" id="sc${i}" ${c.inc?'checked':''} onchange="soaChange(${i})"></td><td style="font-size:11.5px;font-weight:700;color:var(--azul-mid)">${c.id}</td><td>${c.name}<div style="font-size:10.5px;color:var(--gris-medio);margin-top:2px">${c.obj}</div></td><td><span class="soa-status ${c.inc?'s-inc':'s-exc'}" id="ss${i}">${c.inc?'Incluido':'Excluido'}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  soaUpdate();
+}
+function soaChange(i){
+  soaControls[i].inc=document.getElementById('sc'+i).checked;
+  const ss=document.getElementById('ss'+i);
+  ss.textContent=soaControls[i].inc?'Incluido':'Excluido';
+  ss.className='soa-status '+(soaControls[i].inc?'s-inc':'s-exc');
+  soaUpdate();
+}
+function soaUpdate(){
+  const inc=soaControls.filter(c=>c.inc).length;
+  const exc=38-inc;
+  const pct=Math.round((inc/38)*100);
+  document.getElementById('soa-inc').textContent=inc;
+  document.getElementById('soa-exc').textContent=exc;
+  document.getElementById('soa-pct').textContent=pct+'%';
+  document.getElementById('soa-bar').style.width=pct+'%';
+}
+function switchCase(btn,id){
+  document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.case-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cp-'+id).classList.add('active');
+}
+
+/* INIT */
+updateProgress();
+buildSoa();
+</script>
+</body>
+</html>

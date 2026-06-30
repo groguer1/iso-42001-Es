@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001|M10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,42px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:18px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.meta-item{font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 16px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:50px;margin-bottom:14px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:13px;max-width:700px;line-height:1.2}
+.concept-body{font-size:14.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:18px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+.slide-content{background:var(--gris-claro);padding:28px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-28px -28px 20px;padding:17px 24px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.5vw,23px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13px}
+.ct th{background:var(--azul);color:#fff;padding:9px 10px;text-align:left;font-weight:600;font-size:11.5px}
+.ct th:first-child{border-radius:7px 0 0 0}.ct th:last-child{border-radius:0 7px 0 0}
+.ct td{padding:8px 10px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.5;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.03)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+.slide-accordion{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:16px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.6vw,22px);color:var(--azul);margin-bottom:3px}
+.acc-su{font-size:12.5px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.acc-item{background:#fff;border-radius:9px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:26px;height:26px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:13.5px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:10px;color:var(--gris-medio);transition:transform .3s;margin-left:4px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:500px}
+.acc-content{padding:0 14px 12px 52px;font-size:12.5px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:4px}
+.acc-content li{padding:2px 0 2px 12px;position:relative}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:14px;line-height:1.2}
+.slide-case{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:14px 18px;margin-bottom:12px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,19px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:11px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:5px 13px;border-radius:18px;border:1.5px solid #dde3ee;background:#fff;font-size:12px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:11.5px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.c-tx{font-size:13px;color:var(--texto);line-height:1.75;margin-bottom:8px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:10px 13px;font-size:13px;color:var(--texto);line-height:1.6;margin:7px 0}
+.slide-reveal{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:15px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.6vw,22px);color:var(--azul);margin-bottom:3px}
+.rv-su{font-size:12.5px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:150px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 12px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:28px;margin-bottom:8px}
+.flip-front .ff-title{font-size:13px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:10px;font-size:11px;color:var(--gris-medio)}
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:11px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,94px);color:#fff;line-height:1;margin-bottom:5px}
+.stat-unit{font-size:17px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:15px}
+.stat-desc{font-size:15px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:20px}
+.stat-cards{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 16px;text-align:left;flex:1;min-width:145px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:24px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;line-height:1.4}
+.slide-quiz{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:18px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,22px);color:var(--azul);margin-bottom:16px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:11px 14px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:10px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:25px;height:25px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:13px;padding:11px 14px;border-radius:9px;font-size:13px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12px;color:var(--acento);font-weight:600;margin-top:7px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:56px;margin-bottom:13px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,33px);color:#fff;margin-bottom:6px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,70px);line-height:1;margin:6px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:16px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:27px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:13px 18px;max-width:560px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:14px;background:var(--acento);color:#fff;border:none;border-radius:28px;padding:10px 24px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+/* ANNEX DEEP EXPLORER */
+.slide-annexdeep{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.ad-hd{text-align:center;margin-bottom:12px;flex-shrink:0}
+.ad-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ad-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,21px);color:var(--azul);margin-bottom:3px}
+.ad-su{font-size:12px;color:var(--gris-medio)}
+.ad-body{display:flex;gap:12px;flex:1;min-height:0}
+.ad-nav{display:flex;flex-direction:column;gap:4px;width:170px;flex-shrink:0;overflow-y:auto}
+.ad-grp-btn{padding:8px 11px;border-radius:8px;border:1.5px solid #dde3ee;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--azul);text-align:left;transition:var(--trans)}
+.ad-grp-btn:hover{border-color:var(--azul-mid)}
+.ad-grp-btn.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+.ad-grp-badge{background:var(--acento);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:7px;float:right;margin-top:1px}
+.ad-main{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.ad-ctrl-card{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;padding:13px 15px;transition:var(--trans)}
+.ad-ctrl-card:hover{border-color:var(--azul-mid)}
+.ad-ctrl-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.ad-ctrl-id{background:var(--azul);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;flex-shrink:0}
+.ad-ctrl-name{font-size:13.5px;font-weight:700;color:var(--azul);flex:1;line-height:1.3}
+.ad-ctrl-critical{background:var(--rojo);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:7px}
+.ad-ctrl-body{font-size:12.5px;color:var(--texto);line-height:1.65}
+.ad-ctrl-evidence{margin-top:7px;background:var(--gris-claro);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--azul-mid);line-height:1.5}
+.ad-ctrl-evidence strong{display:block;margin-bottom:2px;color:var(--azul);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+/* AUDIT PROCESS */
+.slide-auditflow{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.af-hd{text-align:center;margin-bottom:14px;flex-shrink:0}
+.af-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.af-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:var(--azul);margin-bottom:3px}
+.af-su{font-size:12.5px;color:var(--gris-medio)}
+.af-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
+.af-phase{background:#fff;border-radius:11px;border:1.5px solid #dde3ee;padding:14px 15px;display:flex;flex-direction:column;cursor:pointer;transition:var(--trans)}
+.af-phase:hover{border-color:var(--azul-mid);transform:translateY(-2px)}
+.af-phase.af-active{border-color:var(--acento);box-shadow:0 4px 14px rgba(232,88,32,.15)}
+.af-phase-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-bottom:9px;flex-shrink:0}
+.af-phase-title{font-size:13px;font-weight:700;color:var(--azul);margin-bottom:5px;line-height:1.3}
+.af-phase-sub{font-size:11.5px;color:var(--gris-medio);line-height:1.5;flex:1}
+.af-detail{background:var(--azul);border-radius:11px;padding:16px 18px;margin-top:12px;display:none;flex-shrink:0}
+.af-detail.show{display:block}
+.af-det-title{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:8px}
+.af-det-body{font-size:13px;color:rgba(255,255,255,.82);line-height:1.65}
+.af-det-items{list-style:none;margin-top:8px}
+.af-det-items li{padding:3px 0 3px 14px;position:relative;font-size:12.5px;color:rgba(255,255,255,.78)}
+.af-det-items li::before{content:"→";position:absolute;left:0;color:var(--amarillo);font-weight:700;font-size:11px}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 15</div>
+  </div>
+  <div id="stage">
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 10 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Proceso de Auditoría — Fase 1: Planificación</div>
+      <h1 class="cover-title">Cómo Auditar el AIMS:<br>Planificación, Programa y Documentos de Trabajo</h1>
+      <p class="cover-subtitle">Un Lead Auditor que no sabe planificar bien la auditoría llega al terreno sin hoja de ruta, acumula hallazgos sin evidencia suficiente y produce informes que no resisten la revisión. Este módulo te da el marco completo para planificar una auditoría de ISO 42001 de principio a fin.</p>
+      <div class="cover-meta"><span class="meta-item">55 min</span><span class="meta-item">15 slides · 4 preguntas</span></div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Planificar un programa de auditoría ISO 42001 de etapa 1 y etapa 2</li>
+          <li>Seleccionar y preparar el equipo auditor con las competencias correctas</li>
+          <li>Elaborar el plan de auditoría, los criterios y el alcance</li>
+          <li>Preparar las listas de verificación (checklists) para el Anexo A</li>
+          <li>Gestionar conflictos de independencia del equipo auditor</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">🗓️</div>
+      <div class="concept-tag">Marco normativo · ISO 19011</div>
+      <h2 class="concept-title">La auditoría ISO 42001 según ISO 19011:2018</h2>
+      <p class="concept-body">Las auditorías de ISO 42001 siguen los principios y proceso de <strong style="color:#fff">ISO 19011:2018</strong> (Directrices para la auditoría de sistemas de gestión). Los principios son: <strong style="color:#fff">integridad</strong> (honestidad y responsabilidad), <strong style="color:#fff">presentación ecuánime</strong> (informar con verdad y objetividad), <strong style="color:#fff">cuidado profesional</strong> (diligencia y juicio), <strong style="color:#fff">confidencialidad</strong>, <strong style="color:#fff">independencia</strong> (base de la imparcialidad), <strong style="color:#fff">enfoque basado en evidencias</strong>, y el principio adicional de ISO 19011:2018: <strong style="color:#fff">enfoque basado en riesgos</strong>.</p>
+      <div class="concept-pills">
+        <span class="pill">ISO 19011:2018</span>
+        <span class="pill">7 principios</span>
+        <span class="pill">Independencia obligatoria</span>
+        <span class="pill">Basado en evidencias</span>
+      </div>
+    </div>
+
+    <div class="slide slide-auditflow" data-index="2">
+      <div class="af-hd">
+        <div class="af-ey">Proceso de auditoría ISO 42001 · Visión general</div>
+        <h2 class="af-ti">Las 6 fases de una auditoría de certificación ISO 42001</h2>
+        <p class="af-su">Haz clic en cada fase para ver los entregables, responsables y errores frecuentes</p>
+      </div>
+      <div class="af-grid" id="af-grid"></div>
+      <div class="af-detail" id="af-detail"></div>
+    </div>
+
+    <div class="slide slide-content" data-index="3">
+      <div class="content-header">
+        <div class="ch-ey">Equipo auditor · Competencias</div>
+        <h2 class="ch-ti">Competencias específicas del equipo auditor de ISO 42001</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Competencia</th><th>Nivel mínimo</th><th>Por qué es específica de IA</th><th>Cómo acreditarla</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Conocimiento de ISO 42001</strong></td><td>Lead Auditor certificado</td><td>Estructura HLS + Anexo A único vs. ISO 27001</td><td>Certificación PECB ISO 42001 Lead Auditor</td></tr>
+            <tr><td><strong>Fundamentos de ML e IA</strong></td><td>Básico (qué es, cómo funciona, limitaciones)</td><td>Sin entender ML no puede evaluar A.6.5, A.6.8 ni A.7.3</td><td>Curso introductorio ML + práctica en audit trail de modelos</td></tr>
+            <tr><td><strong>Evaluación de sesgo y fairness</strong></td><td>Intermedio</td><td>Es el riesgo más específico de IA; sin esta competencia no puede verificar el AIIA ni A.5.2-5.3</td><td>Formación en métricas de fairness + revisión de casos de sesgo en IA</td></tr>
+            <tr><td><strong>Regulación IA (EU AI Act, GDPR IA)</strong></td><td>Conocimiento de requisitos aplicables</td><td>El AIMS debe ser coherente con el marco regulatorio; el auditor debe identificar gaps regulatorios</td><td>Formación en EU AI Act + GDPR Art. 22 + regulación sectorial aplicable</td></tr>
+            <tr><td><strong>Auditoría de sistemas de gestión</strong></td><td>Experiencia previa (ISO 27001 o ISO 9001)</td><td>Habilidades de entrevista, toma de notas y redacción de hallazgos son transferibles</td><td>Experiencia acreditada + registros de auditorías previas</td></tr>
+            <tr><td><strong>Sector de la organización auditada</strong></td><td>Básico (según el auditor jefe)</td><td>Los riesgos de IA son muy distintos en salud, finanzas y retail; el auditor debe entender el contexto</td><td>Auditorías previas en el sector o formación sectorial específica</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="4" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 10 · Evaluación</span></div>
+      <p class="quiz-q">Una organización que quiere certificarse en ISO 42001 tiene ya certificación ISO 27001. El RAIMS propone que el mismo equipo auditor que auditó el SGSI el año pasado realice también la auditoría del AIMS este año, ya que ya conocen la organización. ¿Es esto correcto?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,4)"><span class="opt-l">A</span>Sí: conocer la organización es una ventaja que mejora la eficiencia de la auditoría</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,4)"><span class="opt-l">B</span>Sí: el mismo equipo puede auditar ambas normas simultáneamente en una auditoría integrada</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,4)"><span class="opt-l">C</span>Depende: el equipo puede ser el mismo si los auditores tienen competencias específicas en ISO 42001 y en evaluación de sesgo en sistemas de IA. Conocer la organización no es obstáculo, pero las competencias en IA son imprescindibles y no se adquieren por ser auditor ISO 27001</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,4)"><span class="opt-l">D</span>No: cada norma ISO debe ser auditada por equipos completamente distintos e independientes entre sí</button>
+      </div>
+      <div id="fb-4" class="quiz-fb"></div>
+      <div id="must-4" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-content" data-index="5">
+      <div class="content-header">
+        <div class="ch-ey">Etapa 1 · Revisión documental</div>
+        <h2 class="ch-ti">Checklist de la auditoría de etapa 1 — ¿Qué documentos revisar?</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Documento</th><th>Cláusula</th><th>Verificación etapa 1</th><th>Señal de alerta</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Alcance del AIMS</strong></td><td><span class="tv tv-b">4.3</span></td><td>Claridad, cobertura de sistemas de IA, justificación de exclusiones</td><td>Alcance tan amplio que es inauditabie, o tan estrecho que excluye sistemas de alto riesgo</td></tr>
+            <tr><td><strong>Política de IA</strong></td><td><span class="tv tv-b">5.2</span></td><td>Firmada, datada, con objetivos de IA, comunicada</td><td>Política genérica copiada de internet sin adaptación al contexto</td></tr>
+            <tr><td><strong>AI Risk Assessment</strong></td><td><span class="tv tv-b">6.1.2</span></td><td>Metodología, riesgos identificados, probabilidad, impacto, decisiones</td><td>Solo riesgos técnicos sin riesgos éticos (sesgo, opacidad, mal uso)</td></tr>
+            <tr><td><strong>AIIA</strong></td><td><span class="tv tv-b">6.1.4</span></td><td>Individuos afectados, análisis de fairness, medidas de mitigación</td><td>AIIA que analiza solo el impacto organizacional sin individuos afectados</td></tr>
+            <tr><td><strong>Statement of Applicability</strong></td><td><span class="tv tv-b">6.1.3</span></td><td>38 controles evaluados, estado, justificaciones de exclusiones</td><td>SoA con todos los controles incluidos sin justificación individualizada</td></tr>
+            <tr><td><strong>Objetivos de IA</strong></td><td><span class="tv tv-b">6.2</span></td><td>SMART-AI: específicos, medibles, con propietario y plazo</td><td>Objetivos genéricos como "mejorar la gobernanza de IA" sin KPI</td></tr>
+            <tr><td><strong>Evidencias de competencia</strong></td><td><span class="tv tv-b">7.2</span></td><td>Matriz de competencias, registros de formación, AI Literacy</td><td>Solo certificados técnicos sin formación en ética de IA para el equipo técnico</td></tr>
+            <tr><td><strong>Informe de auditoría interna</strong></td><td><span class="tv tv-b">9.2</span></td><td>Realizada, alcance completo, hallazgos gestionados</td><td>Auditoría interna realizada por el propio RAIMS (falta de independencia)</td></tr>
+            <tr><td><strong>Acta de revisión por la dirección</strong></td><td><span class="tv tv-b">9.3</span></td><td>Inputs completos (§ 9.3.2), outputs con responsable y plazo</td><td>Acta sin outputs concretos ("se continuará trabajando en mejorar el AIMS")</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="6" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 10 · Evaluación</span></div>
+      <p class="quiz-q">En la auditoría de etapa 1 de ISO 42001, el auditor revisa el AIIA y encuentra que el documento analiza en detalle los beneficios para la organización y los riesgos técnicos del modelo, pero la sección de "individuos afectados" solo dice: "Los afectados son los clientes del servicio. El impacto es positivo ya que mejora la experiencia de usuario". ¿Qué decide el auditor?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,6)"><span class="opt-l">A</span>La etapa 1 puede cerrase como conforme: el AIIA existe y menciona a los individuos afectados</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,6)"><span class="opt-l">B</span>El AIIA no cumple la cláusula 6.1.4: la mención de individuos afectados es superficial y no incluye análisis de impacto negativo potencial, análisis de sesgo ni medidas de mitigación. El auditor documenta una preocupación mayor que debe resolverse antes de la etapa 2</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,6)"><span class="opt-l">C</span>El auditor acepta el AIIA pero añade una recomendación de mejora en el informe de etapa 1</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,6)"><span class="opt-l">D</span>El AIIA es conforme porque es responsabilidad de la organización decidir qué nivel de detalle incluir</button>
+      </div>
+      <div id="fb-6" class="quiz-fb"></div>
+      <div id="must-6" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-accordion" data-index="7">
+      <div class="acc-hd">
+        <div class="acc-ey">Plan de auditoría · Etapa 2</div>
+        <h2 class="acc-ti">Cómo estructurar el plan de auditoría de etapa 2 de ISO 42001</h2>
+        <p class="acc-su">El plan de auditoría de etapa 2 debe distribuir el tiempo de forma que los controles críticos del Anexo A tengan la cobertura adecuada</p>
+      </div>
+      <div class="acc-list">
+        <div class="acc-item open">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">1</div><span class="acc-label">Apertura (2 horas) — Reunión inicial</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Presentación del equipo auditor, confirmación del alcance y metodología, agenda del día, recordatorio de confidencialidad. Entrevista inicial con la alta dirección para verificar la cláusula 5 (liderazgo real vs. nominal).
+            <ul><li>Preguntas clave a la dirección: ¿Puede describir los principales riesgos de IA de la organización? ¿Cómo apoya el AIMS activamente?</li>
+            <li>Señal de alerta: dirección que deriva todas las preguntas al RAIMS sin conocimiento propio</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">2</div><span class="acc-label">Cláusulas 4-7 (3 horas) — Contexto y soporte</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Entrevistas con RAIMS, AI Risk Officer, DPO. Verificación de: contexto, partes interesadas, alcance, política de IA, risk assessment, AIIA, SoA, objetivos, competencias, información documentada.
+            <ul><li>Técnica: pedir evidencias in situ, no documentos preparados con antelación</li>
+            <li>Foco especial: la diferencia entre el Risk Assessment y el AIIA en la práctica</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">3</div><span class="acc-label">Cláusula 8 + Anexo A (4 horas) — Corazón técnico</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            La parte más extensa. Entrevistas con el equipo técnico de IA, MLOps, operadores. Verificación de los controles críticos del Anexo A en el sistema de IA de mayor riesgo.
+            <ul><li>Pedir demostración en vivo del dashboard de monitoreo (A.6.8)</li>
+            <li>Pedir demostración del mecanismo de supervisión humana (A.9.4)</li>
+            <li>Revisar el informe de pruebas de fairness pre-despliegue (A.6.5)</li>
+            <li>Verificar el canal para afectados funcionando (A.8.5)</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">4</div><span class="acc-label">Cláusulas 9-10 (2 horas) — Evaluación y mejora</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Verificación de métricas de desempeño, resultados de auditoría interna, acta de revisión por la dirección, acciones correctivas y evidencias de mejora continua.
+            <ul><li>Revisar tendencias en las métricas de fairness: ¿mejoran o empeoran?</li>
+            <li>Verificar que las NC de la auditoría interna están cerradas con evidencia</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">5</div><span class="acc-label">Deliberación y cierre (1 hora) — Hallazgos y certificación</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            El equipo auditor delibera sin la organización. Clasifican los hallazgos, revisan si hay NC mayores que impidan la certificación, preparan la reunión de cierre.
+            <ul><li>NC mayor abierta = no se emite el certificado hasta que se cierre y se verifique</li>
+            <li>NC menores = certificado emitido con plan de acción correctiva acordado</li>
+            <li>Observaciones = se documentan para la siguiente auditoría de vigilancia</li></ul>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 10 · Evaluación</span></div>
+      <p class="quiz-q">Al planificar la auditoría de etapa 2 de ISO 42001, el auditor jefe decide dedicar el 40% del tiempo de la auditoría al sistema de IA de mayor riesgo (un sistema de toma de decisiones de crédito de alto riesgo según el EU AI Act) y distribuir el tiempo restante entre los demás sistemas. ¿Es correcta esta decisión?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,8)"><span class="opt-l">A</span>Sí: ISO 19011 recomienda el enfoque basado en riesgos en la auditoría, lo que justifica asignar más tiempo a los sistemas de IA de mayor riesgo. El sistema de crédito es de alto riesgo bajo el EU AI Act y tiene mayor potencial de impacto si no está bien gobernado</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,8)"><span class="opt-l">B</span>No: todos los sistemas de IA dentro del alcance deben recibir exactamente el mismo tiempo de auditoría para garantizar la imparcialidad</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,8)"><span class="opt-l">C</span>No: el enfoque basado en riesgos solo aplica al Risk Assessment, no a la planificación de la auditoría</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,8)"><span class="opt-l">D</span>Depende: solo es correcto si el cliente de la auditoría aprueba explícitamente esta distribución de tiempo</button>
+      </div>
+      <div id="fb-8" class="quiz-fb"></div>
+      <div id="must-8" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-case" data-index="9">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso práctico · Planificación de auditoría</div>
+        <h2 class="case-ttl">HealthAI: Planificando la auditoría de certificación ISO 42001 de un sistema de triaje hospitalario</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'ctx')">Contexto</button>
+        <button class="case-tab" onclick="switchCase(this,'plan')">Plan de auditoría</button>
+        <button class="case-tab" onclick="switchCase(this,'team')">Equipo auditor</button>
+      </div>
+      <div class="case-pnl active" id="cp-ctx">
+        <div class="c-st">Contexto de la auditoría</div>
+        <p class="c-tx">HealthAI ha implementado un sistema de IA de triaje en urgencias que evalúa la gravedad de los pacientes y sugiere la prioridad de atención. El sistema está clasificado como de alto riesgo bajo el EU AI Act (Anexo III.5: sistema de IA en sector salud). Tienen 3 sistemas de IA adicionales en alcance: scheduling de cirugías, detección de imágenes médicas y asistente de diagnóstico.</p>
+        <div class="c-hl">⚠ <strong>Desafío principal:</strong> El sistema de triaje toma decisiones que pueden afectar directamente a la vida de los pacientes. El auditor debe verificar que A.9.4 (supervisión humana) es efectivo en condiciones reales de urgencias, no solo en papel.</div>
+      </div>
+      <div class="case-pnl" id="cp-plan">
+        <div class="c-st">Plan de auditoría — 2 días</div>
+        <div class="c-hl"><strong>Día 1 (sistema de triaje — 60% del tiempo):</strong> Apertura + entrevistas a dirección médica, RAIMS y AI Risk Officer. Revisión del AIIA con foco en impacto en pacientes vulnerables. Verificación in situ del dashboard de monitoreo del sistema de triaje. Entrevista a enfermeros de urgencias (usuarios del sistema + afectados indirectos).</div>
+        <div class="c-hl"><strong>Día 2 (otros sistemas + cláusulas 9-10):</strong> Revisión de los tres sistemas adicionales (40% restante). Cláusulas 9 y 10: métricas, auditoría interna, revisión por la dirección. Reunión de cierre con presentación de hallazgos preliminares.</div>
+      </div>
+      <div class="case-pnl" id="cp-team">
+        <div class="c-st">Composición del equipo auditor</div>
+        <div class="c-hl"><strong>Auditor jefe:</strong> ISO 42001 Lead Auditor certificado + experiencia previa en ISO 27001 en sector salud. Responsable de los hallazgos finales y del informe.</div>
+        <div class="c-hl"><strong>Auditor técnico IA:</strong> Data scientist con 5 años de experiencia en ML + formación en auditoría de sistemas de IA. Responsable de verificar A.6.5 (pruebas de fairness), A.6.8 (monitoreo) y A.7.3 (calidad de datos). No tiene relación previa con HealthAI.</div>
+        <div class="c-hl"><strong>Experto sectorial:</strong> Médico con experiencia en sistemas de soporte a la decisión clínica. Apoya la interpretación del AIIA en contexto clínico y la evaluación de A.9.4 (supervisión humana en urgencias). Actúa como experto técnico, no como auditor.</div>
+      </div>
+    </div>
+
+    <div class="slide slide-content" data-index="10">
+      <div class="content-header">
+        <div class="ch-ey">Documentos de trabajo · Auditor</div>
+        <h2 class="ch-ti">Documentos de trabajo que el auditor prepara antes de la auditoría de etapa 2</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Documento de trabajo</th><th>Propósito</th><th>Contenido mínimo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Plan de auditoría</strong></td><td>Hoja de ruta de la auditoría aprobada por el cliente</td><td>Objetivos, alcance, criterios, fechas, agenda, roles del equipo auditor, logística</td></tr>
+            <tr><td><strong>Checklist de cláusulas 4-10</strong></td><td>Guía de verificación por cláusula</td><td>Preguntas por subcláusula, espacio para evidencia, referencia cruzada a documentos a revisar</td></tr>
+            <tr><td><strong>Checklist del Anexo A (38 controles)</strong></td><td>Verificación control por control</td><td>Estado en SoA (inc./exc.), evidencia esperada, columna para evidencia encontrada, estado (conforme/NC)</td></tr>
+            <tr><td><strong>Lista de documentos a revisar</strong></td><td>Asegurar que se revisan todos los documentos obligatorios</td><td>Docs obligatorios por cláusula, documentos adicionales identificados en etapa 1, versión a revisar</td></tr>
+            <tr><td><strong>Lista de entrevistados</strong></td><td>Cubrir todos los roles del AIMS con evidencia de entrevistas</td><td>Alta dirección, RAIMS, AI Risk Officer, DPO, equipo técnico, usuarios de los sistemas de IA</td></tr>
+            <tr><td><strong>Formulario de hallazgos</strong></td><td>Registrar NC y observaciones con toda la información</td><td>Referencia de la norma, descripción de la NC, evidencia, clasificación (mayor/menor/observación)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="11" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 10 · Evaluación</span></div>
+      <p class="quiz-q">El principio de independencia en la auditoría ISO 42001 exige que el equipo auditor sea independiente de la actividad que audita. ¿Cuál de las siguientes situaciones supone una violación del principio de independencia?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,11)"><span class="opt-l">A</span>El auditor jefe ha auditado a la misma organización en la auditoría de vigilancia del año anterior</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,11)"><span class="opt-l">B</span>El auditor técnico de IA usa como referencia los mismos frameworks de evaluación de sesgo que la organización auditada</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,11)"><span class="opt-l">C</span>El auditor jefe tiene experiencia en el sector salud y la organización auditada es un hospital</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,11)"><span class="opt-l">D</span>El auditor técnico de IA trabajó como consultor para la organización auditada hace 8 meses ayudando a implementar el control A.6.8 (monitoreo de modelos) que ahora debe auditar</button>
+      </div>
+      <div id="fb-11" class="quiz-fb"></div>
+      <div id="must-11" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-content" data-index="12">
+      <div class="content-header">
+        <div class="ch-ey">Dominios PECB · Planificación</div>
+        <h2 class="ch-ti">Dominios del examen PECB Lead Auditor ISO 42001 — Pesos y contenidos</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Dominio</th><th>Peso</th><th>Temas principales</th><th>Módulos de este curso</th></tr></thead>
+          <tbody>
+            <tr><td><strong>D1: Fundamentos AIMS</strong></td><td><span class="tv tv-b">13,75%</span></td><td>Conceptos IA, principios ética IA, panorama regulatorio</td><td>M01, M02</td></tr>
+            <tr><td><strong>D2: Implementar AIMS</strong></td><td><span class="tv tv-b">26,25%</span></td><td>Cláusulas 4-10, Anexo A, integración con ISO 27001</td><td>M03–M09</td></tr>
+            <tr><td><strong>D3: Planificar auditoría</strong></td><td><span class="tv tv-b">18,75%</span></td><td>ISO 19011, programa de auditoría, equipo auditor, documentos de trabajo</td><td>M10</td></tr>
+            <tr><td><strong>D4: Conducir auditoría</strong></td><td><span class="tv tv-b">17,5%</span></td><td>Técnicas de auditoría, recolección de evidencias, entrevistas</td><td>M11</td></tr>
+            <tr><td><strong>D5: Gestionar el programa</strong></td><td><span class="tv tv-b">23,75%</span></td><td>Hallazgos, clasificación NC, informe, cierre, mejora continua del programa</td><td>M12</td></tr>
+            <tr><td colspan="4" style="background:rgba(37,99,168,.05);text-align:center;color:var(--azul-mid);font-weight:600;padding:10px"><strong>Total: 80 preguntas · 180 minutos · Umbral de aprobación: 70% (56/80) · Open-book</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-concept" data-index="13">
+      <div class="concept-icon">📌</div>
+      <div class="concept-tag">Errores más comunes · Planificación</div>
+      <h2 class="concept-title">Los 5 errores de planificación que arruinan una auditoría de ISO 42001</h2>
+      <p class="concept-body"><strong style="color:#fff">1.</strong> No incluir un auditor con competencias en ML en el equipo → no puede verificar los controles técnicos del Anexo A. <strong style="color:#fff">2.</strong> Dedicar igual tiempo a todos los sistemas de IA → el sistema de alto riesgo no recibe la cobertura suficiente. <strong style="color:#fff">3.</strong> No revisar el AIIA en etapa 1 → sorpresas en etapa 2 cuando resulta incompleto. <strong style="color:#fff">4.</strong> Confundir los documentos de ISO 27001 con los de ISO 42001 → pedir evidencias incorrectas. <strong style="color:#fff">5.</strong> No planificar la demostración en vivo del mecanismo de supervisión humana (A.9.4) → no se puede verificar sin verlo funcionando.</p>
+      <div class="concept-pills">
+        <span class="pill">Competencias IA obligatorias</span>
+        <span class="pill">Risk-based time allocation</span>
+        <span class="pill">AIIA en etapa 1</span>
+        <span class="pill">Demo en vivo A.9.4</span>
+      </div>
+    </div>
+
+    <div class="slide slide-result" data-index="14">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 10</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+</div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updDots();_updProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+
+var C=0,TOTAL=15;
+var QS=[4,6,8,11],QA={4:false,6:false,8:false,11:false};
+var QC={4:2,6:1,8:0,11:3};
+var QSC={4:false,6:false,8:false,11:false};
+var FB={
+  4:{ok:"✅ Correcto. No hay incompatibilidad en que el mismo equipo audite ISO 27001 e ISO 42001. El problema es distinto: los auditores que auditaron el SGSI pueden no tener las competencias específicas de ISO 42001 (evaluación de sesgo, ML, ciclo de vida de la IA). Conocer la organización es una ventaja; carecer de competencias en IA es un problema independiente que debe resolverse.",
+     fail:"❌ Incorrecto. El principio de independencia no impide que el mismo equipo audite dos normas distintas en la misma organización, y tampoco se viola por conocer la organización de auditorías anteriores. El problema real en el enunciado es diferente: que los auditores de ISO 27001 pueden no tener las competencias específicas en IA (evaluación de sesgo, ML, ciclo de vida) que requiere ISO 42001."},
+  6:{ok:"✅ Correcto. El AIIA de la cláusula 6.1.4 debe incluir análisis de impacto negativo potencial sobre los individuos afectados, análisis de sesgo y medidas de mitigación. Una declaración genérica de que el impacto es positivo no cumple el requisito. El auditor documenta esto como preocupación mayor en la etapa 1, lo que significa que la organización debe resolverlo antes de que pueda realizarse la etapa 2.",
+     fail:"❌ Incorrecto. La etapa 1 no puede cerrarse como conforme si el AIIA no cumple los requisitos de la cláusula 6.1.4. Mencionar a los individuos afectados sin análisis de impacto negativo potencial, sin análisis de fairness y sin medidas de mitigación es insuficiente. El auditor debe documentar esto como preocupación mayor porque impide avanzar a la etapa 2 sin corrección."},
+  8:{ok:"✅ Correcto. ISO 19011:2018 introduce el enfoque basado en riesgos como principio de la auditoría. Esto significa que los sistemas, procesos o controles de mayor riesgo deben recibir mayor atención y tiempo en la auditoría. Un sistema de crédito de alto riesgo bajo el EU AI Act tiene mayor potencial de impacto negativo y por tanto justifica una mayor dedicación de tiempo en la auditoría.",
+     fail:"❌ Incorrecto. ISO 19011:2018 introduce el principio de enfoque basado en riesgos para la planificación de la auditoría, lo que justifica asignar más tiempo a los sistemas de mayor riesgo. No se requiere equiparación de tiempos entre sistemas. El cliente de la auditoría aprueba el plan de auditoría en su conjunto, pero la distribución de tiempo entre sistemas es una decisión técnica del auditor jefe."},
+  11:{ok:"✅ Correcto. Un auditor que ayudó a implementar el control que ahora debe auditar tiene un conflicto de independencia directo: estaría evaluando su propio trabajo. ISO 19011 exige que los auditores sean independientes de la actividad que auditan. 8 meses no es tiempo suficiente para considerar que la relación ha prescrito. Este auditor debe ser sustituido en la auditoría de ese control específico.",
+     fail:"❌ Incorrecto. Auditar a la misma organización en ciclos sucesivos (vigilancia anual) es práctica habitual y no viola la independencia. Usar los mismos frameworks que la organización es inevitable. Tener experiencia sectorial es un requisito de competencia, no un conflicto de independencia. El único escenario que viola el principio de independencia es el D: auditar un control que uno mismo implementó."}
+};
+var NEXT_MSG='<strong>Próximo paso:</strong> El Módulo 11 cubre las técnicas de auditoría en el terreno: entrevistas efectivas, observación directa, revisión de documentos y registros, muestreo y cómo obtener evidencias de los controles específicos de IA como el fairness testing y el model drift.';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa las competencias del equipo auditor (slide 4), el checklist de etapa 1 (slide 6), y el principio de independencia (slides 2 y 14). Son los conceptos más evaluados en el Dominio 3 del examen PECB.';
+
+/* AUDIT FLOW DATA */
+var afData=[
+  {title:'Inicio del programa',sub:'Mandato + recursos',color:'#E85820',detail:{title:'Inicio del programa de auditoría',body:'El programa de auditoría comienza con un mandato de la alta dirección o del cliente de la certificación. Se definen los objetivos generales (certificación, vigilancia o renovación), el alcance macro y los recursos disponibles.',items:['Definir objetivos del programa: certificación/vigilancia/renovación','Asignar presupuesto y tiempo para todas las auditorías del ciclo','Seleccionar el organismo certificador (si es de certificación)','Establecer el calendario tentativo del ciclo de 3 años']}},
+  {title:'Etapa 1 (Documental)',sub:'Revisión documental',color:'#2563A8',detail:{title:'Auditoría de etapa 1 — Revisión documental',body:'El auditor revisa todos los documentos del AIMS sin visitar las instalaciones. El objetivo es verificar que el AIMS está suficientemente desarrollado para proceder a la etapa 2. Si hay preocupaciones mayores, se documentan y la organización debe resolverlas.',items:['Revisar todos los documentos obligatorios del AIMS','Verificar alcance, política, Risk Assessment, AIIA, SoA','Identificar preocupaciones mayores que bloqueen la etapa 2','Producir informe de etapa 1 con conclusiones y agenda de etapa 2']}},
+  {title:'Planificación Etapa 2',sub:'Plan y asignaciones',color:'#2D8B5A',detail:{title:'Planificación de la auditoría de etapa 2',body:'Con los hallazgos de la etapa 1, el auditor jefe elabora el plan detallado de la etapa 2: agenda, asignación de cláusulas y controles a cada auditor, lista de entrevistados, documentos a revisar in situ.',items:['Plan de auditoría aprobado por el cliente','Asignación de cláusulas y controles por auditor','Preparación de checklists (cláusulas 4-10 + Anexo A)','Confirmación de entrevistados y documentos disponibles']}},
+  {title:'Etapa 2 (In situ)',sub:'Verificación en terreno',color:'#6B48A8',detail:{title:'Auditoría de etapa 2 — Verificación en terreno',body:'La etapa más intensa. El equipo auditor visita la organización, realiza entrevistas, observa procesos y revisa evidencias in situ. El objetivo es verificar que el AIMS está implementado y funciona eficazmente.',items:['Reunión de apertura con la alta dirección','Entrevistas por roles del AIMS','Revisión de evidencias operativas (dashboard, logs, registros)','Demostración en vivo de controles clave (A.6.8, A.9.4, A.8.5)']}},
+  {title:'Deliberación y hallazgos',sub:'Clasificación de NC',color:'#F0A500',detail:{title:'Deliberación y clasificación de hallazgos',body:'El equipo auditor delibera internamente (sin la organización). Cada hallazgo se clasifica: NC mayor (incumplimiento grave, impide certificación), NC menor (incumplimiento puntual, plan de corrección), observación (área de mejora sin NC).',items:['NC mayor: violación de requisito que afecta la eficacia del AIMS','NC menor: violación puntual con riesgo limitado','Observación: área de mejora sin incumplimiento actual','Reunión de cierre: presentación de hallazgos a la organización']}},
+  {title:'Informe y certificación',sub:'Seguimiento y emisión',color:'#1A3A5C',detail:{title:'Informe de auditoría y emisión del certificado',body:'El auditor produce el informe formal. Si no hay NC mayores abiertas, el organismo certificador emite el certificado ISO 42001 (válido 3 años con auditorías de vigilancia anuales). Las NC menores tienen un plan de acción acordado.',items:['Informe de auditoría con todos los hallazgos documentados','Plan de acción para NC menores con plazos acordados','Emisión del certificado (si no hay NC mayores)','Programar auditorías de vigilancia anuales del ciclo']}},
+];
+function initAF(){
+  const grid=document.getElementById('af-grid');
+  afData.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className='af-phase';
+    d.innerHTML=`<div class="af-phase-num" style="background:${f.color}">${i+1}</div><div class="af-phase-title">${f.title}</div><div class="af-phase-sub">${f.sub}</div>`;
+    d.onclick=()=>showAF(i);
+    grid.appendChild(d);
+  });
+}
+function showAF(i){
+  document.querySelectorAll('.af-phase').forEach((p,j)=>p.classList.toggle('af-active',j===i));
+  const d=document.getElementById('af-detail');
+  const f=afData[i].detail;
+  d.className='af-detail show';
+  d.innerHTML=`<div class="af-det-title">${f.title}</div><div class="af-det-body">${f.body}<ul class="af-det-items">${f.items.map(it=>`<li>${it}</li>`).join('')}</ul></div>`;
+}
+initAF();
+_initDots(TOTAL);_updProg();</script>
+</body></html>

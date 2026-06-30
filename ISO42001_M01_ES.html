@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M01 – Introducción a la IA y la Gobernanza Responsable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ── */
+:root{
+  --azul:#1A3A5C;
+  --azul-mid:#2563A8;
+  --acento:#E85820;
+  --verde:#2D8B5A;
+  --rojo:#C0392B;
+  --amarillo:#F0A500;
+  --gris-claro:#F4F6FA;
+  --gris-medio:#8A9BB0;
+  --blanco:#FFFFFF;
+  --texto:#1C2B3A;
+  --sombra:0 4px 24px rgba(26,58,92,.12);
+  --radio:14px;
+  --trans:all .35s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+
+/* ── LAYOUT SHELL ── */
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+
+/* ── PROGRESS BAR ── */
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+
+/* ── TOP BAR ── */
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px;letter-spacing:.04em}
+
+/* ── SLIDE STAGE ── */
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+
+/* ── INDIVIDUAL SLIDES ── */
+.slide{
+  position:absolute;inset:0;
+  opacity:0;
+  transform:translateX(60px);
+  transition:opacity .45s ease, transform .45s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+
+/* ── NAV BAR ── */
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 24px;border-radius:30px;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:600;
+  transition:var(--trans);white-space:nowrap;
+}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+
+/* ═══ SLIDE TYPES ═══ */
+
+/* COVER */
+.slide-cover{
+  background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 32px;gap:0;min-height:100%;
+}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:20px;display:inline-block}
+.cover-module{font-size:13px;color:rgba(255,255,255,.5);font-weight:500;margin-bottom:8px;letter-spacing:.05em}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(26px,4.5vw,48px);color:#fff;line-height:1.15;margin-bottom:16px;max-width:780px}
+.cover-subtitle{font-size:15px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:32px}
+.cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.meta-item{display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.55)}
+.meta-icon{width:18px;height:18px;opacity:.7}
+.cover-objectives{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 24px;text-align:left;max-width:680px;width:100%;margin-top:24px}
+.cover-objectives h3{font-size:13px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.cover-objectives li{list-style:none;font-size:13.5px;color:rgba(255,255,255,.75);padding:4px 0;padding-left:20px;position:relative;line-height:1.5}
+.cover-objectives li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+
+/* STAT */
+.slide-stat{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:48px 32px;min-height:100%;
+  background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%);
+}
+.stat-eyebrow{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:16px}
+.stat-number{font-family:'DM Serif Display',serif;font-size:clamp(60px,10vw,110px);color:#fff;line-height:1;margin-bottom:8px}
+.stat-unit{font-size:22px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:20px}
+.stat-description{font-size:17px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:28px}
+.stat-source{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.05em}
+.stat-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:28px;max-width:760px}
+.stat-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:18px 22px;text-align:left;flex:1;min-width:180px}
+.stat-card .sc-num{font-family:'DM Serif Display',serif;font-size:30px;color:var(--amarillo);line-height:1}
+.stat-card .sc-label{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+
+/* CONCEPT */
+.slide-concept{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:48px 32px;min-height:100%;
+  background:var(--azul-mid);
+}
+.concept-icon{font-size:56px;margin-bottom:20px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,38px);color:#fff;margin-bottom:16px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:24px}
+.concept-pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+
+/* CONTENT */
+.slide-content{background:var(--gris-claro);padding:36px 36px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-36px -36px 28px;padding:22px 32px}
+.content-header .ch-eyebrow{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.content-header .ch-title{font-family:'DM Serif Display',serif;font-size:clamp(18px,3vw,28px);color:#fff}
+.content-body{flex:1}
+.content-table{width:100%;border-collapse:collapse;font-size:14px}
+.content-table th{background:var(--azul);color:#fff;padding:11px 14px;text-align:left;font-weight:600;font-size:12.5px;letter-spacing:.04em}
+.content-table th:first-child{border-radius:8px 0 0 0}
+.content-table th:last-child{border-radius:0 8px 0 0}
+.content-table td{padding:11px 14px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.5;color:var(--texto)}
+.content-table tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.content-table tr:last-child td{border-bottom:none}
+.tag-verde{display:inline-block;background:#d4f0e1;color:var(--verde);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+.tag-azul{display:inline-block;background:#dde8f5;color:var(--azul-mid);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+.tag-acento{display:inline-block;background:#fde8df;color:var(--acento);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+
+/* REVEAL (flip cards) */
+.slide-reveal{background:var(--gris-claro);padding:28px 28px;min-height:100%;display:flex;flex-direction:column}
+.reveal-header{text-align:center;margin-bottom:24px}
+.reveal-header .rh-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.reveal-header .rh-title{font-family:'DM Serif Display',serif;font-size:clamp(18px,3vw,26px);color:var(--azul);margin-bottom:8px}
+.reveal-header .rh-sub{font-size:14px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:170px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{
+  position:absolute;inset:0;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:18px;text-align:center;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.flip-front{background:var(--azul);box-shadow:0 4px 16px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:32px;margin-bottom:10px}
+.flip-front .ff-title{font-size:14px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:11px;color:rgba(255,255,255,.45);margin-top:6px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:13px;color:var(--texto);line-height:1.6}
+.flip-all-hint{text-align:center;margin-top:14px;font-size:12px;color:var(--gris-medio)}
+
+/* TIMELINE */
+.slide-timeline{background:var(--gris-claro);padding:28px 28px;min-height:100%;display:flex;flex-direction:column}
+.tl-header{text-align:center;margin-bottom:20px}
+.tl-title{font-family:'DM Serif Display',serif;font-size:clamp(18px,3vw,26px);color:var(--azul);margin-bottom:6px}
+.tl-sub{font-size:13.5px;color:var(--gris-medio)}
+.tl-container{position:relative;max-width:780px;margin:0 auto;width:100%}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--azul),var(--acento));transform:translateX(-50%);border-radius:2px}
+.tl-item{display:flex;gap:20px;align-items:flex-start;margin-bottom:18px;cursor:pointer;position:relative}
+.tl-item:nth-child(odd){flex-direction:row}
+.tl-item:nth-child(even){flex-direction:row-reverse}
+.tl-content-box{background:#fff;border-radius:10px;padding:14px 16px;flex:1;border:1.5px solid transparent;transition:var(--trans);box-shadow:0 2px 8px rgba(26,58,92,.07)}
+.tl-item.active-tl .tl-content-box{border-color:var(--azul-mid);box-shadow:0 4px 16px rgba(37,99,168,.18)}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--azul);border:3px solid #fff;box-shadow:0 0 0 2px var(--azul);flex-shrink:0;margin-top:14px;z-index:2;transition:var(--trans)}
+.tl-item.active-tl .tl-dot{background:var(--acento);box-shadow:0 0 0 2px var(--acento)}
+.tl-date{font-size:11.5px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.tl-event{font-size:14px;font-weight:600;color:var(--azul);margin-bottom:4px}
+.tl-detail{font-size:12.5px;color:var(--gris-medio);line-height:1.5;display:none}
+.tl-item.active-tl .tl-detail{display:block}
+.tl-fine{font-size:12px;font-weight:700;color:var(--rojo)}
+
+/* QUIZ */
+.slide-quiz{background:var(--gris-claro);padding:28px 36px;min-height:100%;display:flex;flex-direction:column}
+.quiz-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.quiz-badge{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-progress-text{font-size:13px;color:var(--gris-medio)}
+.quiz-question{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:22px;line-height:1.4;max-width:720px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;max-width:720px}
+.quiz-opt{
+  background:#fff;border:2px solid #dde3ee;border-radius:10px;
+  padding:14px 18px;cursor:pointer;text-align:left;
+  font-family:'Inter',sans-serif;font-size:14.5px;color:var(--texto);
+  transition:var(--trans);display:flex;align-items:center;gap:12px;
+}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.quiz-opt .opt-letter{width:28px;height:28px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-letter{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-letter{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-feedback{margin-top:18px;padding:14px 18px;border-radius:10px;font-size:14px;line-height:1.6;display:none;max-width:720px}
+.quiz-feedback.show{display:block}
+.quiz-feedback.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.quiz-feedback.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must-answer{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:10px;display:none;max-width:720px}
+.quiz-must-answer.show{display:block}
+
+/* RESULT */
+.slide-result{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 32px;min-height:100%;
+  background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%);
+}
+.result-icon{font-size:64px;margin-bottom:16px;line-height:1}
+.result-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,38px);color:#fff;margin-bottom:8px}
+.result-score{font-family:'DM Serif Display',serif;font-size:clamp(48px,8vw,80px);line-height:1;margin:8px 0}
+.result-sub{font-size:15px;color:rgba(255,255,255,.65);margin-bottom:24px;max-width:500px;line-height:1.7}
+.result-breakdown{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.rb-item{text-align:center}
+.rb-num{font-family:'DM Serif Display',serif;font-size:32px;color:#fff}
+.rb-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.result-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:16px 24px;max-width:560px;font-size:14px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:20px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:12px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 14</div>
+  </div>
+
+  <div id="stage">
+
+    <!-- ══ SLIDE 1: COVER ══ -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 1 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <h1 class="cover-title">Introducción a la IA<br>y la Gobernanza Responsable</h1>
+      <p class="cover-subtitle">El primer estándar internacional certificable para sistemas de gestión de Inteligencia Artificial. Por qué existe, qué regula y cómo posicionarte como profesional en el ecosistema que está redefiniendo la compliance global.</p>
+      <div class="cover-meta">
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          45 minutos
+        </span>
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          14 slides · 3 preguntas
+        </span>
+        <span class="meta-item">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Nivel introductorio
+        </span>
+      </div>
+      <div class="cover-objectives">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Comprender qué es ISO/IEC 42001:2023 y cuál es su alcance</li>
+          <li>Identificar la relación entre esta norma, el EU AI Act y el PL 2338/2023 de Brasil</li>
+          <li>Distinguir los riesgos únicos de la IA frente a los riesgos de información clásicos</li>
+          <li>Conocer los primeros casos reales de certificación (AWS, Microsoft, IBM, KPMG)</li>
+          <li>Posicionarte profesionalmente en el nuevo ecosistema de gobernanza de IA</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2: STAT ══ -->
+    <div class="slide slide-stat" data-index="1">
+      <div class="stat-eyebrow">El momento que cambia todo</div>
+      <div class="stat-number">2</div>
+      <div class="stat-unit">de agosto de 2026</div>
+      <p class="stat-description">Fecha en que entra en vigor el grueso de obligaciones del <strong style="color:#fff">EU AI Act</strong> (Reglamento UE 2024/1689), el primer marco legal vinculante de IA del mundo. Las organizaciones que no demuestren gobernanza responsable de sus sistemas de IA se enfrentarán a multas de hasta 35 millones de euros o el 7&nbsp;% de su facturación global anual.</p>
+      <p class="stat-source">Fuente: Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, Art. 99</p>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="sc-num">350+</div>
+          <div class="sc-label">Organizaciones certificadas ISO 42001 a nivel mundial (abril 2026)</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num">35M€</div>
+          <div class="sc-label">Multa máxima por prácticas de IA prohibidas bajo el EU AI Act</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-num">+150%</div>
+          <div class="sc-label">Crecimiento interanual en demanda de profesionales AI Governance (LinkedIn 2026)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3: CONCEPT ══ -->
+    <div class="slide slide-concept" data-index="2">
+      <div class="concept-icon">🤖</div>
+      <div class="concept-tag">Definición esencial</div>
+      <h2 class="concept-title">¿Qué es ISO/IEC 42001:2023?</h2>
+      <p class="concept-body">ISO/IEC 42001 es el <strong style="color:#fff">primer estándar internacional certificable</strong> para el establecimiento, implementación, mantenimiento y mejora continua de un <strong style="color:#fff">Sistema de Gestión de Inteligencia Artificial (SGIA / AIMS)</strong>. Publicada el 18 de diciembre de 2023 por ISO/IEC JTC 1/SC 42, establece los requisitos que cualquier organización —que desarrolle, provea o use sistemas de IA— debe cumplir para gestionar la IA de forma responsable.</p>
+      <div class="concept-pills">
+        <span class="pill">Certificable por terceros</span>
+        <span class="pill">Todos los tamaños y sectores</span>
+        <span class="pill">Ciclo PDCA</span>
+        <span class="pill">Estructura Armonizada (HLS)</span>
+        <span class="pill">38 controles en Anexo A</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4: CONTENT TABLE (norma en el ecosistema) ══ -->
+    <div class="slide slide-content" data-index="3">
+      <div class="content-header">
+        <div class="ch-eyebrow">Contexto normativo</div>
+        <h2 class="ch-title">ISO/IEC 42001 en el ecosistema de gobernanza de IA</h2>
+      </div>
+      <div class="content-body">
+        <table class="content-table">
+          <thead>
+            <tr>
+              <th>Marco / Norma</th>
+              <th>Tipo</th>
+              <th>Enfoque principal</th>
+              <th>Relación con 42001</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ISO/IEC 42001:2023</strong></td>
+              <td><span class="tag-verde">Certificable</span></td>
+              <td>Sistema de gestión AIMS completo</td>
+              <td>Estándar central de este curso</td>
+            </tr>
+            <tr>
+              <td><strong>EU AI Act</strong> (Reg. 2024/1689)</td>
+              <td><span class="tag-acento">Ley vinculante</span></td>
+              <td>Prohibiciones y obligaciones por nivel de riesgo</td>
+              <td>42001 ayuda a operativizar sus requisitos</td>
+            </tr>
+            <tr>
+              <td><strong>NIST AI RMF</strong> (2023)</td>
+              <td><span class="tag-azul">Marco voluntario</span></td>
+              <td>Govern / Map / Measure / Manage</td>
+              <td>Crosswalk oficial con 42001 publicado por NIST</td>
+            </tr>
+            <tr>
+              <td><strong>ISO/IEC 27001:2022</strong></td>
+              <td><span class="tag-verde">Certificable</span></td>
+              <td>Seguridad de la información (SGSI)</td>
+              <td>~50% del andamiaje reutilizable; Anexo D integra ambos</td>
+            </tr>
+            <tr>
+              <td><strong>GDPR / LGPD</strong></td>
+              <td><span class="tag-acento">Ley vinculante</span></td>
+              <td>Protección de datos y decisiones automatizadas</td>
+              <td>42001 cubre la intersección IA + datos personales</td>
+            </tr>
+            <tr>
+              <td><strong>ISO/IEC 22989</strong></td>
+              <td><span class="tag-azul">Referencia normativa</span></td>
+              <td>Conceptos y terminología de IA</td>
+              <td>Fuente de definiciones de la cláusula 3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 5: CONCEPT (por qué ahora) ══ -->
+    <div class="slide slide-concept" data-index="4">
+      <div class="concept-icon">⚡</div>
+      <div class="concept-tag">La urgencia del mercado</div>
+      <h2 class="concept-title">Por qué ISO/IEC 42001 es prioritaria hoy</h2>
+      <p class="concept-body">Cuatro fuerzas convergentes crean una ventana de oportunidad única para los profesionales de gobernanza de IA: la presión regulatoria del EU AI Act, la creciente exigencia en cadenas de suministro (Fortune 500 que ya piden ISO 42001 en sus RFPs), el auge de incidentes de IA de alto perfil, y la escasez radical de auditores e implementadores certificados.</p>
+      <div class="concept-pills">
+        <span class="pill">EU AI Act · Ago 2026</span>
+        <span class="pill">PL 2338/2023 Brasil</span>
+        <span class="pill">Procurement corporativo</span>
+        <span class="pill">Seguros y due diligence</span>
+        <span class="pill">Escasez de talento</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 6: REVEAL (riesgos únicos de IA) ══ -->
+    <div class="slide slide-reveal" data-index="5">
+      <div class="reveal-header">
+        <div class="rh-eyebrow">Interactivo · Haz clic en cada tarjeta</div>
+        <h2 class="rh-title">Riesgos únicos de la IA vs. riesgos de información clásicos</h2>
+        <p class="rh-sub">Los controles del Anexo A de ISO 42001 abordan riesgos que no existen en ISO 27001. Descúbrelos.</p>
+      </div>
+      <div class="flip-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">⚖️</div><div class="ff-title">Sesgo algorítmico</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Un modelo entrenado con datos históricos sesgados puede discriminar sistemáticamente a grupos de personas en contratación, crédito o sanidad. Control A.6.2 requiere documentar medidas de detección y mitigación.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🌀</div><div class="ff-title">Model drift</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">La precisión de un modelo puede degradarse con el tiempo porque el mundo cambia pero el modelo no se actualiza. La cláusula 9.1 exige monitoreo continuo del rendimiento del sistema de IA.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🔍</div><div class="ff-title">Opacidad (caja negra)</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">A diferencia de un proceso manual, muchos modelos de IA no pueden explicar sus decisiones. El control A.6.2 y el GDPR Art. 22 exigen un nivel mínimo de explicabilidad cuando las decisiones afectan a personas.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🎭</div><div class="ff-title">Alucinaciones</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Los modelos de lenguaje pueden generar información falsa con apariencia de certeza. La cláusula 8 requiere controles de validación y supervisión humana (human-in-the-loop) para sistemas de alto riesgo.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🤝</div><div class="ff-title">Responsabilidad difusa</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Cuando un sistema de IA falla, ¿quién responde: el desarrollador, el proveedor o el usuario? ISO 42001 cláusula 4.1 y Anexo A.10 exigen definir y documentar la cadena de responsabilidades.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">💥</div><div class="ff-title">Impacto social a escala</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Un sistema de IA desplegado masivamente puede afectar a millones de personas de forma simultánea. El AI Impact Assessment (AIIA, cláusula 6.1.4) evalúa explícitamente el impacto sobre individuos, grupos y la sociedad.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-all-hint">Haz clic en cada tarjeta para revelar el contenido completo</div>
+    </div>
+
+    <!-- ══ SLIDE 7: TIMELINE (EU AI Act) ══ -->
+    <div class="slide slide-timeline" data-index="6">
+      <div class="tl-header">
+        <h2 class="tl-title">Cronograma del EU AI Act — Tus deadlines como profesional</h2>
+        <p class="tl-sub">Haz clic en cada hito para ver el detalle. La presión regulatoria es real y los plazos no esperan.</p>
+      </div>
+      <div class="tl-container">
+        <div class="tl-line"></div>
+        <div class="tl-item active-tl" onclick="toggleTL(this)">
+          <div class="tl-content-box">
+            <div class="tl-date">1 agosto 2024</div>
+            <div class="tl-event">Entrada en vigor del EU AI Act</div>
+            <div class="tl-detail">El Reglamento (UE) 2024/1689 entró en vigor 20 días después de su publicación en el DOUE. Comienza el período de adaptación progresivo.</div>
+          </div>
+          <div class="tl-dot"></div>
+          <div style="flex:1"></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div style="flex:1"></div>
+          <div class="tl-dot"></div>
+          <div class="tl-content-box">
+            <div class="tl-date">2 febrero 2025</div>
+            <div class="tl-event">Prohibiciones + AI Literacy</div>
+            <div class="tl-detail">Prohíben prácticas de IA de riesgo inaceptable (manipulación subliminal, sistemas de scoring social, reconocimiento facial en tiempo real en espacios públicos con excepciones). Obligación de garantizar "competencia en IA" a todos los empleados.</div>
+          </div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div class="tl-content-box">
+            <div class="tl-date">2 agosto 2025</div>
+            <div class="tl-event">GPAI + Régimen sancionador</div>
+            <div class="tl-detail">Obligaciones para modelos de IA de uso general (GPAI/GPAI con riesgo sistémico). Entra en vigor el régimen de multas: hasta 35M€ o 7% de facturación por prácticas prohibidas.</div>
+          </div>
+          <div class="tl-dot"></div>
+          <div style="flex:1"></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div style="flex:1"></div>
+          <div class="tl-dot"></div>
+          <div class="tl-content-box">
+            <div class="tl-date">2 agosto 2026</div>
+            <div class="tl-event"><span class="tl-fine">⚠ DEADLINE CRÍTICO</span></div>
+            <div class="tl-detail">Obligaciones plenas: transparencia (Art. 50), sistemas de alto riesgo Anexo III (RRHH, crédito, infraestructuras críticas). La mayoría de organizaciones con IA ya deben tener su gobernanza documentada y auditada.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 8: QUIZ 1 ══ -->
+    <div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="1">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 1 / 3</span>
+        <span class="quiz-progress-text">Módulo 1 · Evaluación</span>
+      </div>
+      <p class="quiz-question">¿Cuál es la principal diferencia entre ISO/IEC 42001 e ISO/IEC 27001 en cuanto a lo que protegen?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,7)"><span class="opt-letter">A</span>ISO 27001 es certificable e ISO 42001 no</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,7)"><span class="opt-letter">B</span>ISO 27001 protege la información (confidencialidad, integridad, disponibilidad); ISO 42001 protege la lógica del modelo: sesgo, transparencia, supervisión humana e impacto social</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,7)"><span class="opt-letter">C</span>ISO 42001 reemplaza a ISO 27001 en organizaciones que usan IA</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,7)"><span class="opt-letter">D</span>Ambas normas tienen exactamente el mismo Anexo A con 93 controles</button>
+      </div>
+      <div id="feedback-7" class="quiz-feedback"></div>
+      <div id="must-7" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 9: CONCEPT (casos reales) ══ -->
+    <div class="slide slide-concept" data-index="8">
+      <div class="concept-icon">🏆</div>
+      <div class="concept-tag">Casos reales de certificación</div>
+      <h2 class="concept-title">Quién ya está certificado en ISO 42001</h2>
+      <p class="concept-body">La adopción se está acelerando exponencialmente. AWS fue el primer gran proveedor cloud (noviembre 2024, certificado por Schellman), seguido de cerca por Microsoft, IBM Granite (primer modelo open-source certificado), KPMG (primer Big Four, diciembre 2024), SAP, ServiceNow, Snowflake, Anthropic y Cornerstone. El certificador más activo es <strong style="color:#fff">Schellman Compliance (acreditado ANAB)</strong>. La primera auditoría de vigilancia de AWS se realizó sin hallazgos en noviembre 2025.</p>
+      <div class="concept-pills">
+        <span class="pill">AWS · Nov 2024</span>
+        <span class="pill">Microsoft · 2024</span>
+        <span class="pill">IBM Granite · 2024</span>
+        <span class="pill">KPMG · Dic 2024</span>
+        <span class="pill">SAP · Joule</span>
+        <span class="pill">Anthropic</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 10: CONTENT TABLE (tu rol profesional) ══ -->
+    <div class="slide slide-content" data-index="9">
+      <div class="content-header">
+        <div class="ch-eyebrow">Mapa de roles profesionales</div>
+        <h2 class="ch-title">Tres perfiles, un mismo estándar: ¿cuál es el tuyo?</h2>
+      </div>
+      <div class="content-body">
+        <table class="content-table">
+          <thead>
+            <tr>
+              <th>Perfil</th>
+              <th>Qué hace con ISO 42001</th>
+              <th>Itinerario en este curso</th>
+              <th>Salida profesional</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>🔍 Auditor / Consultor ISO</strong></td>
+              <td>Audita y certifica AIMS en organizaciones; conduce gap analysis y prepara informes de no conformidad</td>
+              <td><span class="tag-verde">Módulos 4–10 + 15 (auditoría)</span></td>
+              <td>Lead Auditor (PECB/Exemplar); Consultor independiente</td>
+            </tr>
+            <tr>
+              <td><strong>🛡️ DPO / CISO / Compliance</strong></td>
+              <td>Integra AIMS con SGSI (27001) y GDPR/LGPD; gestiona el SoA y el registro de riesgos de IA</td>
+              <td><span class="tag-azul">Módulos 4–14 + 16 (crosswalk)</span></td>
+              <td>AI Risk Officer; AI Compliance Officer; DPO+ con perfil IA</td>
+            </tr>
+            <tr>
+              <td><strong>📊 Directivo / Manager</strong></td>
+              <td>Toma decisiones sobre adopción de IA con criterios de gobernanza; comunica riesgos al consejo</td>
+              <td><span class="tag-acento">Módulos 1–5 + 17 (casos) + 18 (carrera)</span></td>
+              <td>AI Ethics Steward; miembro de AI Governance Board</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 11: QUIZ 2 ══ -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="2">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 2 / 3</span>
+        <span class="quiz-progress-text">Módulo 1 · Evaluación</span>
+      </div>
+      <p class="quiz-question">Según el EU AI Act, ¿cuál es la multa máxima por el uso de prácticas de IA prohibidas (riesgo inaceptable)?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-letter">A</span>Hasta 1 millón de euros o el 1% de la facturación anual</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-letter">B</span>Hasta 15 millones de euros o el 3% de la facturación anual</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-letter">C</span>Hasta 35 millones de euros o el 7% de la facturación mundial anual, lo que sea mayor</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-letter">D</span>Las sanciones se aplican solo a empresas con más de 500 empleados</button>
+      </div>
+      <div id="feedback-10" class="quiz-feedback"></div>
+      <div id="must-10" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 12: CONCEPT (estructura de la norma) ══ -->
+    <div class="slide slide-concept" data-index="11">
+      <div class="concept-icon">🏗️</div>
+      <div class="concept-tag">Arquitectura de la norma</div>
+      <h2 class="concept-title">La Estructura Armonizada: por qué ISO 42001 te resultará familiar</h2>
+      <p class="concept-body">ISO/IEC 42001 sigue la <strong style="color:#fff">Estructura Armonizada (HLS / Annex SL)</strong>, el mismo esqueleto de cláusulas 4–10 que comparten ISO 27001 e ISO 9001. Esto significa que si ya conoces una norma del sistema de gestión, el 60–70% del andamiaje de gestión es reutilizable. Lo que es único de 42001 está en los conceptos de la cláusula 6 (AI risk assessment, AI impact assessment) y en los <strong style="color:#fff">38 controles del Anexo A</strong>.</p>
+      <div class="concept-pills">
+        <span class="pill">Cláusulas 4–10 idénticas a 27001</span>
+        <span class="pill">Anexo A: 38 controles IA</span>
+        <span class="pill">Anexo D: integración multi-norma</span>
+        <span class="pill">PDCA (Plan-Do-Check-Act)</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 13: QUIZ 3 ══ -->
+    <div class="slide slide-quiz" data-index="12" data-quiz="true" data-correct="3">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 3 / 3</span>
+        <span class="quiz-progress-text">Módulo 1 · Evaluación</span>
+      </div>
+      <p class="quiz-question">¿Cuántos controles tiene el Anexo A de ISO/IEC 42001:2023?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,12)"><span class="opt-letter">A</span>93 controles, igual que ISO 27001:2022</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,12)"><span class="opt-letter">B</span>14 controles organizados por cláusula</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,12)"><span class="opt-letter">C</span>114 controles en 14 dominios</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,12)"><span class="opt-letter">D</span>38 controles organizados en 9 objetivos de control (A.2 a A.10)</button>
+      </div>
+      <div id="feedback-12" class="quiz-feedback"></div>
+      <div id="must-12" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 14: RESULT ══ -->
+    <div class="slide slide-result" data-index="13" id="result-slide">
+      <div class="result-icon" id="result-icon">🎯</div>
+      <h2 class="result-title" id="result-title">Resultado del Módulo 1</h2>
+      <div class="result-score" id="result-score" style="color:var(--amarillo)">—</div>
+      <p class="result-sub" id="result-sub">Calculando tu puntuación...</p>
+      <div class="result-breakdown">
+        <div class="rb-item"><div class="rb-num" id="rb-correct">—</div><div class="rb-label">Correctas</div></div>
+        <div class="rb-item"><div class="rb-num" id="rb-wrong">—</div><div class="rb-label">Incorrectas</div></div>
+        <div class="rb-item"><div class="rb-num">3</div><div class="rb-label">Total</div></div>
+      </div>
+      <div class="result-msg" id="result-msg">Completando evaluación...</div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar módulo y reintentar</button>
+    </div>
+
+  </div><!-- /stage -->
+
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div><!-- /shell -->
+
+<script>
+/* ── SCORM 1.2 API ── */
+function findAPI(w){
+  var tries=0;
+  while((!w.API)&&(tries<7)&&(w.parent)&&(w.parent!=w)){w=w.parent;tries++;}
+  return w.API||null;
+}
+var scormAPI=findAPI(window);
+function lmsCall(fn,...args){if(scormAPI){try{return scormAPI[fn](...args)}catch(e){}}return null;}
+lmsCall('LMSInitialize','');
+lmsCall('LMSSetValue','cmi.core.lesson_status','incomplete');
+lmsCall('LMSSetValue','cmi.core.lesson_location','0');
+
+/* ── STATE ── */
+const TOTAL=14;
+const QUIZ_SLIDES=[7,10,12]; // indices 0-based
+const CORRECT_IDX={7:1,10:2,12:3};
+const FEEDBACK={
+  7:{
+    ok:"✅ Correcto. ISO 27001 protege el «contenedor» de la información (CIA: confidencialidad, integridad, disponibilidad). ISO 42001 protege la «lógica del modelo»: sesgo, transparencia, explicabilidad, supervisión humana e impacto social. Son complementarias, no alternativas.",
+    fail:"❌ Incorrecto. La clave está en QUÉ protege cada norma: ISO 27001 protege la información clásica (CIA), mientras que ISO 42001 aborda riesgos exclusivos de los sistemas de IA como el sesgo, la opacidad y el impacto social, que no existían como amenaza cuando se diseñó ISO 27001."
+  },
+  10:{
+    ok:"✅ Correcto. El Art. 99 del Reglamento (UE) 2024/1689 establece multas de hasta 35 millones de euros o el 7% de la facturación mundial anual del ejercicio anterior, la cifra que sea mayor, para infracciones de las prácticas de IA prohibidas (Art. 5).",
+    fail:"❌ Incorrecto. Las multas más severas, por prácticas prohibidas (Art. 5), ascienden hasta 35 millones de euros o el 7% de la facturación mundial anual. La opción de 15M€/3% corresponde al incumplimiento de requisitos de sistemas de alto riesgo (Art. 99.4)."
+  },
+  12:{
+    ok:"✅ Correcto. El Anexo A de ISO/IEC 42001:2023 contiene exactamente 38 controles organizados en 9 objetivos de control que van de A.2 a A.10. Es significativamente más compacto que el Anexo A de ISO 27001:2022 (93 controles), pero incluye conceptos completamente nuevos como el ciclo de vida del sistema de IA.",
+    fail:"❌ Incorrecto. ISO/IEC 42001:2023 tiene 38 controles en el Anexo A, organizados en 9 objetivos (A.2–A.10). No confundir con ISO 27001:2022 (93 controles) ni con la versión anterior ISO 27001:2013 (114 controles en 14 dominios)."
+  }
+};
+
+let current=0;
+let quizAnswered={7:false,10:false,12:false};
+let quizScores={7:false,10:false,12:false};
+
+/* ── DOTS ── */
+const dotsEl=document.getElementById('slide-dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+function updateDots(){
+  document.querySelectorAll('.dot').forEach((d,i)=>{
+    d.className='dot'+(i===current?' active':(i<current?' done':''));
+  });
+}
+
+/* ── PROGRESS ── */
+function updateProgress(){
+  const pct=((current+1)/TOTAL)*100;
+  document.getElementById('progress-bar').style.width=pct+'%';
+  document.getElementById('slide-counter').textContent=(current+1)+' / '+TOTAL;
+  lmsCall('LMSSetValue','cmi.core.lesson_location',String(current));
+}
+
+/* ── NAVIGATE ── */
+function navigate(dir){
+  const target=current+dir;
+  if(target<0||target>=TOTAL)return;
+  // Block next on unanswered quiz
+  if(dir>0 && QUIZ_SLIDES.includes(current) && !quizAnswered[current]){
+    document.getElementById('must-'+current).classList.add('show');
+    return;
+  }
+  goTo(target);
+}
+
+function goTo(idx){
+  if(idx<0||idx>=TOTAL)return;
+  const slides=document.querySelectorAll('.slide');
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit-left');
+  setTimeout(()=>{slides[current].classList.remove('exit-left');},460);
+  current=idx;
+  slides[current].classList.add('active');
+  // Nav state
+  document.getElementById('btn-prev').disabled=(current===0);
+  const nextBtn=document.getElementById('btn-next');
+  if(current===TOTAL-1){nextBtn.disabled=true;}
+  else if(QUIZ_SLIDES.includes(current)&&!quizAnswered[current]){nextBtn.disabled=true;}
+  else{nextBtn.disabled=false;}
+  updateDots();
+  updateProgress();
+  // Result slide
+  if(current===TOTAL-1)showResult();
+}
+
+/* ── QUIZ ── */
+function answerQuiz(btn,chosen,slideIdx){
+  if(quizAnswered[slideIdx])return;
+  quizAnswered[slideIdx]=true;
+  const correct=CORRECT_IDX[slideIdx];
+  const opts=btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach((o,i)=>{
+    o.disabled=true;
+    o.classList.add('disabled');
+    if(i===correct)o.classList.add('correct');
+    if(i===chosen&&chosen!==correct)o.classList.add('wrong');
+  });
+  const isOk=(chosen===correct);
+  quizScores[slideIdx]=isOk;
+  const fb=document.getElementById('feedback-'+slideIdx);
+  fb.textContent=isOk?FEEDBACK[slideIdx].ok:FEEDBACK[slideIdx].fail;
+  fb.className='quiz-feedback show '+(isOk?'fb-ok':'fb-fail');
+  document.getElementById('must-'+slideIdx).classList.remove('show');
+  // Unlock next
+  document.getElementById('btn-next').disabled=false;
+}
+
+/* ── RESULT ── */
+function showResult(){
+  const scores=Object.values(quizScores);
+  const correctCount=scores.filter(Boolean).length;
+  const total=3;
+  const pct=Math.round((correctCount/total)*100);
+  const passed=pct>=70;
+  document.getElementById('result-icon').textContent=passed?'🏆':'📚';
+  document.getElementById('result-title').textContent=passed?'¡Módulo 1 superado!':'Módulo 1 — Repasa el contenido';
+  document.getElementById('result-score').textContent=pct+'%';
+  document.getElementById('result-score').style.color=passed?'#2ecc71':'var(--amarillo)';
+  document.getElementById('rb-correct').textContent=correctCount;
+  document.getElementById('rb-wrong').textContent=total-correctCount;
+  if(passed){
+    document.getElementById('result-sub').textContent='Has superado la evaluación del módulo con '+correctCount+' de '+total+' respuestas correctas.';
+    document.getElementById('result-msg').innerHTML='<strong>Próximo paso:</strong> En el Módulo 2 explorarás el contexto organizacional (cláusula 4): cómo determinar el alcance de tu AIMS y mapear las partes interesadas clave. Los conceptos que acabas de aprender son la base imprescindible para ese trabajo.';
+  } else {
+    document.getElementById('result-sub').textContent='Has obtenido '+correctCount+' de '+total+' respuestas correctas. Necesitas un 70% para avanzar.';
+    document.getElementById('result-msg').innerHTML='<strong>Recomendación:</strong> Revisa las slides 3, 7 y 12 con especial atención a las diferencias entre ISO 27001 e ISO 42001, el calendario del EU AI Act y la estructura del Anexo A. Puedes navegar libremente hacia atrás.';
+    document.getElementById('btn-retry').style.display='inline-block';
+  }
+  // SCORM report
+  lmsCall('LMSSetValue','cmi.core.score.raw',String(pct));
+  lmsCall('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');
+  lmsCall('LMSFinish','');
+}
+
+/* ── RETRY ── */
+function retryQuiz(){
+  // Allow back-navigation freely — user can review slides
+  goTo(0);
+}
+
+/* ── TIMELINE TOGGLE ── */
+function toggleTL(el){
+  el.classList.toggle('active-tl');
+}
+
+/* ── INIT ── */
+updateProgress();
+</script>
+</body>
+</html>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M07 – Evaluación del Desempeño (Cláusula 9)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+/* COVER */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,44px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:20px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:12px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 18px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+/* CONCEPT */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:52px;margin-bottom:16px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:14px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:20px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+/* CONTENT TABLE */
+.slide-content{background:var(--gris-claro);padding:30px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-30px -30px 22px;padding:18px 26px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.6vw,24px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13.5px}
+.ct th{background:var(--azul);color:#fff;padding:10px 11px;text-align:left;font-weight:600;font-size:12px}
+.ct th:first-child{border-radius:8px 0 0 0}.ct th:last-child{border-radius:0 8px 0 0}
+.ct td{padding:9px 11px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+/* ACCORDION */
+.slide-accordion{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:18px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.acc-su{font-size:13px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:7px;flex:1}
+.acc-item{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:14px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:11px;color:var(--gris-medio);transition:transform .3s;margin-left:6px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:400px}
+.acc-content{padding:0 16px 14px 57px;font-size:13px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:5px}
+.acc-content li{padding:2px 0 2px 14px;position:relative;color:#3a4a5c}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:15px;line-height:1.2}
+/* FLIP CARDS */
+.slide-reveal{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:18px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.rv-su{font-size:13px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:160px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 14px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:30px;margin-bottom:9px}
+.flip-front .ff-title{font-size:13.5px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:5px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:12px;font-size:11.5px;color:var(--gris-medio)}
+/* TIMELINE */
+.slide-timeline{background:var(--gris-claro);padding:24px 30px;min-height:100%;display:flex;flex-direction:column}
+.tl-hd{text-align:center;margin-bottom:18px}
+.tl-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.tl-su{font-size:13px;color:var(--gris-medio)}
+.tl-wrap{position:relative;max-width:800px;margin:0 auto;width:100%}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--azul),var(--acento));transform:translateX(-50%);border-radius:2px}
+.tl-item{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;cursor:pointer;position:relative}
+.tl-item:nth-child(odd){flex-direction:row}
+.tl-item:nth-child(even){flex-direction:row-reverse}
+.tl-box{background:#fff;border-radius:10px;padding:12px 14px;flex:1;border:1.5px solid transparent;transition:var(--trans);box-shadow:0 2px 8px rgba(26,58,92,.07)}
+.tl-item.tl-active .tl-box{border-color:var(--azul-mid);box-shadow:0 4px 16px rgba(37,99,168,.15)}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--azul);border:3px solid #fff;box-shadow:0 0 0 2px var(--azul);flex-shrink:0;margin-top:12px;z-index:2;transition:var(--trans)}
+.tl-item.tl-active .tl-dot{background:var(--acento);box-shadow:0 0 0 2px var(--acento)}
+.tl-date{font-size:11px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.tl-ev{font-size:13.5px;font-weight:600;color:var(--azul);margin-bottom:3px}
+.tl-det{font-size:12px;color:var(--gris-medio);line-height:1.5;display:none}
+.tl-item.tl-active .tl-det{display:block}
+/* CASE */
+.slide-case{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:16px 20px;margin-bottom:14px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,20px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:6px 14px;border-radius:20px;border:1.5px solid #dde3ee;background:#fff;font-size:12.5px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.c-tx{font-size:13.5px;color:var(--texto);line-height:1.75;margin-bottom:10px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--texto);line-height:1.6;margin:8px 0}
+/* STAT */
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:12px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,96px);color:#fff;line-height:1;margin-bottom:6px}
+.stat-unit{font-size:18px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:16px}
+.stat-desc{font-size:15.5px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:22px}
+.stat-src{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;text-align:left;flex:1;min-width:150px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:26px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+/* QUIZ */
+.slide-quiz{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,23px);color:var(--azul);margin-bottom:18px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:12px 15px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:11px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:26px;height:26px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:15px;padding:12px 15px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:8px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+/* RESULT */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:58px;margin-bottom:14px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:7px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);line-height:1;margin:7px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:18px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:28px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 20px;max-width:560px;font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:16px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:10px 26px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+
+
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 14</div>
+  </div>
+  <div id="stage">
+
+    <!-- S1 COVER -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 7 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 9 — Evaluación del Desempeño</div>
+      <h1 class="cover-title">Medir para Mejorar:<br>Monitoreo, Auditoría Interna y Revisión por la Dirección</h1>
+      <p class="cover-subtitle">La cláusula 9 es el ciclo CHECK del PDCA. Sin medición sistemática del desempeño del AIMS, la organización no puede saber si sus controles funcionan, si sus riesgos están siendo gestionados y si sus objetivos de IA se están alcanzando.</p>
+      <div class="cover-meta">
+        <span class="meta-item">50 min</span>
+        <span class="meta-item">14 slides · 4 preguntas</span>
+      </div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Establecer un programa de métricas de desempeño del AIMS (cláusula 9.1)</li>
+          <li>Diseñar y ejecutar un programa de auditoría interna del AIMS (cláusula 9.2)</li>
+          <li>Preparar y presidir la revisión por la dirección del AIMS (cláusula 9.3)</li>
+          <li>Distinguir qué se mide en el AIMS que no se mide en un SGSI clásico</li>
+          <li>Entender cómo la cláusula 9 prepara directamente la auditoría de certificación externa</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S2 CONCEPT -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">📊</div>
+      <div class="concept-tag">Cláusula 9 · Visión general</div>
+      <h2 class="concept-title">La cláusula 9: el ciclo CHECK que hace el AIMS verificable</h2>
+      <p class="concept-body">La cláusula 9 tiene tres subclausulas. <strong style="color:#fff">9.1</strong> exige monitorear, medir, analizar y evaluar el AIMS con evidencias cuantitativas. <strong style="color:#fff">9.2</strong> exige auditorías internas planificadas para verificar el cumplimiento y la eficacia. <strong style="color:#fff">9.3</strong> exige la revisión formal por la alta dirección para asegurar la idoneidad, adecuación y eficacia continua del AIMS. Las tres subclausulas son auditadas en profundidad en la auditoría de certificación.</p>
+      <div class="concept-pills">
+        <span class="pill">9.1 Monitoreo y medición</span>
+        <span class="pill">9.2 Auditoría interna</span>
+        <span class="pill">9.3 Revisión por la dirección</span>
+      </div>
+    </div>
+
+    <!-- S3 CONTENT TABLE — métricas AIMS -->
+    <div class="slide slide-content" data-index="2">
+      <div class="content-header">
+        <div class="ch-ey">Cláusula 9.1 · KPIs del AIMS</div>
+        <h2 class="ch-ti">Métricas de desempeño del AIMS específicas de IA</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Dimensión</th><th>Métrica ejemplo</th><th>Frecuencia</th><th>Umbral de acción</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Rendimiento del modelo</strong></td><td>Precisión, recall, F1 por segmento demográfico</td><td>Mensual (producción)</td><td>Caída &gt;5% en cualquier segmento dispara revisión</td></tr>
+            <tr><td><strong>Fairness / Equidad</strong></td><td>Demographic parity ratio, equal opportunity difference</td><td>Trimestral</td><td>Ratio &lt;0.8 o &gt;1.25 dispara AIIA actualizado</td></tr>
+            <tr><td><strong>Cobertura del SoA</strong></td><td>% controles Anexo A con evidencia de implementación actualizada</td><td>Semestral</td><td>&lt;90% dispara plan de acción</td></tr>
+            <tr><td><strong>Incidentes de IA</strong></td><td>Nº incidentes por categoría (sesgo, drift, mal uso, error técnico)</td><td>Mensual</td><td>Tendencia creciente dispara revisión del Risk Assessment</td></tr>
+            <tr><td><strong>Competencias</strong></td><td>% personal en alcance con AI Literacy completada</td><td>Semestral</td><td>&lt;95% del personal dispara plan de formación</td></tr>
+            <tr><td><strong>Cumplimiento regulatorio</strong></td><td>% requisitos EU AI Act mapeados y con evidencia</td><td>Trimestral</td><td>Cualquier requisito sin cobertura dispara acción inmediata</td></tr>
+            <tr><td><strong>Objetivos de IA</strong></td><td>Avance en los objetivos establecidos (§ 6.2) — % completado</td><td>Trimestral</td><td>Retraso &gt;30 días sobre hito dispara revisión de recursos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S4 QUIZ 1 -->
+    <div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 7 · Evaluación</span></div>
+      <p class="quiz-q">La cláusula 9.1 exige que la organización "determine qué necesita monitorear y medir". ¿Cuál de las siguientes es una métrica de desempeño del AIMS que NO existe en un SGSI de ISO 27001 y sí es específica de ISO 42001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,3)"><span class="opt-l">A</span>El número de incidentes de seguridad detectados en el mes</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,3)"><span class="opt-l">B</span>El tiempo medio de respuesta a brechas de seguridad</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,3)"><span class="opt-l">C</span>El demographic parity ratio del sistema de scoring: el cociente entre la tasa de aprobación del grupo de referencia y la del grupo protegido</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,3)"><span class="opt-l">D</span>El porcentaje de empleados que han completado la formación obligatoria</button>
+      </div>
+      <div id="fb-3" class="quiz-fb"></div>
+      <div id="must-3" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S5 ACCORDION — programa de auditoría interna -->
+    <div class="slide slide-accordion" data-index="4">
+      <div class="acc-hd">
+        <div class="acc-ey">Cláusula 9.2 · Auditoría interna</div>
+        <h2 class="acc-ti">El programa de auditoría interna del AIMS: diseño y ejecución</h2>
+        <p class="acc-su">La cláusula 9.2 establece cuatro requisitos para el programa de auditoría interna. Haz clic para ver cómo se implementa cada uno</p>
+      </div>
+      <div class="acc-list">
+        <div class="acc-item open">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">1</div><span class="acc-label">Planificar el programa de auditoría</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            El programa debe considerar: importancia de los procesos, sistemas de IA de mayor riesgo, resultados de auditorías anteriores y cambios que afecten al AIMS.
+            <ul><li>Plan anual con fechas, alcance de cada auditoría y criterios</li>
+            <li>Los sistemas de IA de alto riesgo deben auditarse con mayor frecuencia</li>
+            <li>Revisión del programa si hay incidentes graves o cambios significativos</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">2</div><span class="acc-label">Seleccionar auditores independientes</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Los auditores no pueden auditar su propio trabajo (principio de independencia, ISO 19011).
+            <ul><li>El RAIMS no puede auditar el AIMS que gestiona</li>
+            <li>Opciones: auditor interno de otro departamento, auditor externo, intercambio con otra organización</li>
+            <li>Los auditores deben tener competencia en ISO 42001 (no solo en ISO 27001 o 9001)</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">3</div><span class="acc-label">Informar los resultados a la dirección</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Los resultados de cada auditoría interna deben comunicarse a la dirección relevante.
+            <ul><li>Informe de auditoría: hallazgos (NC mayores, NC menores, observaciones), evidencias, conclusiones</li>
+            <li>La dirección debe conocer las NC antes de la revisión por la dirección (§ 9.3)</li>
+            <li>Las NC del AIMS con implicaciones regulatorias deben escalar al comité de gobernanza de IA</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">4</div><span class="acc-label">Conservar información documentada</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            El auditor externo revisará el historial de auditorías internas para evaluar la madurez del AIMS.
+            <ul><li>Plan de auditoría + Informe de auditoría de cada ciclo</li>
+            <li>Registros de acciones correctivas derivadas de las auditorías internas</li>
+            <li>Retención: mínimo 3 años (o un ciclo completo de certificación)</li></ul>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6 QUIZ 2 -->
+    <div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 7 · Evaluación</span></div>
+      <p class="quiz-q">Un auditor externo de certificación ISO 42001 solicita los informes de auditoría interna de los últimos 12 meses. La organización presenta un único informe de auditoría realizado 11 meses antes, en el que se identificaron 3 no conformidades menores. El auditor pregunta por las acciones correctivas tomadas. La organización no puede presentar evidencia de haberlas implementado. ¿Cuál es el hallazgo del auditor externo?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,5)"><span class="opt-l">A</span>Conforme: la organización realizó la auditoría interna en el plazo previsto y eso es suficiente</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,5)"><span class="opt-l">B</span>No conformidad doble: bajo la cláusula 9.2 (las NC de la auditoría interna no se gestionaron) y bajo la cláusula 10.1 (la organización no tomó acciones correctivas ante las NC identificadas)</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,5)"><span class="opt-l">C</span>Observación: 11 meses sin gestionar NC menores es aceptable en el primer ciclo de certificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,5)"><span class="opt-l">D</span>NC menor: solo afecta a la cláusula 10.1 y no al programa de auditoría interna</button>
+      </div>
+      <div id="fb-5" class="quiz-fb"></div>
+      <div id="must-5" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S7 CONTENT TABLE — inputs revisión por dirección -->
+    <div class="slide slide-content" data-index="6">
+      <div class="content-header">
+        <div class="ch-ey">Cláusula 9.3 · Revisión por la dirección</div>
+        <h2 class="ch-ti">Inputs obligatorios y outputs esperados de la Revisión por la Dirección del AIMS</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Tipo</th><th>Elemento</th><th>Fuente</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="7" style="font-weight:700;color:var(--azul-mid);vertical-align:middle">INPUTS<br><small style="font-weight:400;font-size:11px">(§ 9.3.2)</small></td>
+              <td>Estado de las acciones de revisiones anteriores</td><td><span class="tv tv-b">Revisión previa</span></td></tr>
+            <tr><td>Cambios en cuestiones externas/internas relevantes para el AIMS</td><td><span class="tv tv-b">§ 4.1</span></td></tr>
+            <tr><td>Información sobre el desempeño del AIMS: métricas 9.1, NC, incidentes</td><td><span class="tv tv-b">§ 9.1 + 10.1</span></td></tr>
+            <tr><td>Resultados de auditorías internas</td><td><span class="tv tv-b">§ 9.2</span></td></tr>
+            <tr><td>Estado de los objetivos de IA: avance vs. plan</td><td><span class="tv tv-b">§ 6.2</span></td></tr>
+            <tr><td>Retroalimentación de partes interesadas (reguladores, clientes, afectados)</td><td><span class="tv tv-b">§ 4.2</span></td></tr>
+            <tr><td>Oportunidades de mejora continua</td><td><span class="tv tv-b">§ 10.2</span></td></tr>
+            <tr><td rowspan="4" style="font-weight:700;color:var(--verde);vertical-align:middle">OUTPUTS<br><small style="font-weight:400;font-size:11px">(§ 9.3.3)</small></td>
+              <td>Decisiones sobre oportunidades de mejora del AIMS</td><td><span class="tv tv-g">Acta de revisión</span></td></tr>
+            <tr><td>Decisiones sobre cambios necesarios en el AIMS (alcance, política, objetivos)</td><td><span class="tv tv-g">Acta de revisión</span></td></tr>
+            <tr><td>Necesidades de recursos adicionales para el AIMS</td><td><span class="tv tv-g">Plan presupuestario</span></td></tr>
+            <tr><td>Acciones con responsable y plazo asignados</td><td><span class="tv tv-g">Plan de acción</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S8 QUIZ 3 -->
+    <div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 7 · Evaluación</span></div>
+      <p class="quiz-q">En la revisión por la dirección del AIMS (cláusula 9.3), ¿cuál de los siguientes elementos es un INPUT obligatorio que la norma exige explícitamente y que NO aparece en los inputs de la revisión por la dirección de ISO 27001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,7)"><span class="opt-l">A</span>El estado de los objetivos de IA responsable y el avance de las medidas de mitigación del AIIA, incluyendo métricas de fairness en producción</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,7)"><span class="opt-l">B</span>El número de brechas de seguridad detectadas en el período</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,7)"><span class="opt-l">C</span>El estado de las acciones de la revisión anterior</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,7)"><span class="opt-l">D</span>Los resultados de las auditorías internas</button>
+      </div>
+      <div id="fb-7" class="quiz-fb"></div>
+      <div id="must-7" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S9 CASE — preparando la auditoría de certificación -->
+    <div class="slide slide-case" data-index="8">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso práctico · Cláusula 9</div>
+        <h2 class="case-ttl">ConsultAI: Preparando la auditoría de certificación ISO 42001 — Cómo usar la cláusula 9 como ensayo</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'pre')">Pre-auditoría</button>
+        <button class="case-tab" onclick="switchCase(this,'int')">Auditoría interna</button>
+        <button class="case-tab" onclick="switchCase(this,'dir')">Revisión dirección</button>
+      </div>
+      <div class="case-pnl active" id="cp-pre">
+        <div class="c-st">Contexto y preparación</div>
+        <p class="c-tx">ConsultAI tiene certificación ISO 27001 desde 2023 y decide obtener ISO 42001 para sus tres sistemas de IA: un asistente de análisis de contratos (LLM), un sistema de matching de perfiles de consultores, y un clasificador de proyectos. Tienen 6 meses hasta la auditoría de etapa 1.</p>
+        <div class="c-hl">💡 <strong>Estrategia:</strong> Usar la cláusula 9 como ensayo general. La auditoría interna del mes 5 simula la auditoría de certificación: misma metodología, mismos criterios (cláusulas 4-10 + Anexo A), misma profundidad en las entrevistas.</div>
+      </div>
+      <div class="case-pnl" id="cp-int">
+        <div class="c-st">Programa de auditoría interna (mes 5)</div>
+        <div class="c-hl"><strong>Auditor:</strong> ISO 27001 Lead Auditor de empresa externa (con formación específica en ISO 42001). Independiente del RAIMS y del equipo técnico.</div>
+        <div class="c-hl"><strong>Alcance:</strong> Los tres sistemas de IA + cláusulas 4-10 completas + 38 controles del Anexo A. Duración: 3 días. Entrevistas a: CEO, RAIMS, AI Risk Officer, DPO, Team Lead IA, operadores de cada sistema.</div>
+        <div class="c-hl"><strong>Resultado:</strong> 1 NC mayor (A.6.8: monitoreo sin umbrales de acción definidos para el sistema de matching), 4 NC menores, 3 observaciones. 6 semanas para cerrar las NC antes de la auditoría de certificación.</div>
+      </div>
+      <div class="case-pnl" id="cp-dir">
+        <div class="c-st">Revisión por la dirección (mes 6)</div>
+        <div class="c-hl"><strong>Agenda:</strong> (1) Resultados de la auditoría interna y estado de acciones correctivas, (2) métricas de desempeño del AIMS, (3) avance de objetivos de IA, (4) retroalimentación del cliente piloto del asistente de contratos, (5) decisiones y recursos para el próximo ciclo.</div>
+        <div class="c-hl">✅ <strong>Output clave:</strong> La dirección aprobó un presupuesto adicional para implementar el dashboard de monitoreo en tiempo real (cerrando la NC mayor) y tomó la decisión de incluir el cuarto sistema de IA (clasificador de proyectos) en el AIMS desde la próxima revisión del alcance.</div>
+      </div>
+    </div>
+
+    <!-- S10 TIMELINE — ciclo certificación -->
+    <div class="slide slide-timeline" data-index="9">
+      <div class="tl-hd">
+        <h2 class="tl-ti">El ciclo de certificación ISO 42001 — De la implementación a la renovación</h2>
+        <p class="tl-su">Haz clic en cada hito para ver qué papel juega la cláusula 9 en cada etapa</p>
+      </div>
+      <div class="tl-wrap">
+        <div class="tl-line"></div>
+        <div class="tl-item tl-active" onclick="toggleTL(this)">
+          <div class="tl-box"><div class="tl-date">Meses 1-6</div><div class="tl-ev">Implementación del AIMS</div><div class="tl-det">Cláusulas 4-8 implementadas. La cláusula 9.1 se activa desde el primer mes: monitorear el desempeño desde el inicio genera el historial de métricas que el auditor necesitará ver.</div></div>
+          <div class="tl-dot"></div><div style="flex:1"></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div style="flex:1"></div><div class="tl-dot"></div>
+          <div class="tl-box"><div class="tl-date">Mes 5-6</div><div class="tl-ev">Auditoría interna + Revisión por la dirección</div><div class="tl-det">Ensayo general de la certificación. Las NC identificadas aquí deben cerrarse antes de la auditoría de etapa 1. La revisión por la dirección genera el acta que el auditor externo leerá.</div></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div class="tl-box"><div class="tl-date">Mes 7</div><div class="tl-ev">Auditoría de etapa 1 (documentación)</div><div class="tl-det">El auditor externo revisa toda la documentación del AIMS: alcance, política, registros, SoA, Risk Assessment, AIIA, objetivos. Verifica que el AIMS está listo para la auditoría de etapa 2.</div></div>
+          <div class="tl-dot"></div><div style="flex:1"></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div style="flex:1"></div><div class="tl-dot"></div>
+          <div class="tl-box"><div class="tl-date">Mes 8</div><div class="tl-ev">Auditoría de etapa 2 (certificación)</div><div class="tl-det">El auditor verifica la implementación efectiva de todos los controles mediante entrevistas, observación y revisión de evidencias. Si no hay NC mayores abiertas: certificado ISO 42001 emitido.</div></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div class="tl-box"><div class="tl-date">Meses 9-20</div><div class="tl-ev">Auditorías de vigilancia anuales</div><div class="tl-det">Cada 12 meses, el organismo certificador realiza auditorías de vigilancia (scope reducido). La cláusula 9 asegura que el AIMS sigue siendo conforme y eficaz entre certificaciones.</div></div>
+          <div class="tl-dot"></div><div style="flex:1"></div>
+        </div>
+        <div class="tl-item" onclick="toggleTL(this)">
+          <div style="flex:1"></div><div class="tl-dot"></div>
+          <div class="tl-box"><div class="tl-date">Mes 36</div><div class="tl-ev">Auditoría de renovación (3 años)</div><div class="tl-det">El ciclo completo de 3 años. La auditoría de renovación revisa el AIMS completo. La cláusula 9 debe mostrar evidencia de mejora continua a lo largo del ciclo, no solo cumplimiento puntual.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S11 QUIZ 4 -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 7 · Evaluación</span></div>
+      <p class="quiz-q">¿Con qué frecuencia mínima debe realizarse la revisión por la dirección del AIMS según ISO/IEC 42001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-l">A</span>Cada 6 meses sin excepción</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-l">B</span>Cada 3 años, coincidiendo con el ciclo de renovación de la certificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-l">C</span>No hay frecuencia establecida; depende del criterio de la organización</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-l">D</span>A intervalos planificados, con una frecuencia mínima que asegure que el AIMS sigue siendo idóneo, adecuado y eficaz — en la práctica, mínimo anual para superar la auditoría de vigilancia</button>
+      </div>
+      <div id="fb-10" class="quiz-fb"></div>
+      <div id="must-10" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S12 CONTENT TABLE — checklist 9 -->
+    <div class="slide slide-content" data-index="11">
+      <div class="content-header">
+        <div class="ch-ey">Checklist del Auditor · Cláusula 9</div>
+        <h2 class="ch-ti">Evidencias que el auditor externo verificará en la cláusula 9</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Evidencia</th><th>Cláusula</th><th>Verificación</th><th>NC si falta</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Cuadro de métricas del AIMS con histórico</strong></td><td><span class="tv tv-b">9.1</span></td><td>KPIs definidos, con datos de al menos 3 meses, umbrales de acción y registro de acciones tomadas</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Métricas de fairness en producción</strong></td><td><span class="tv tv-b">9.1</span></td><td>Específico de ISO 42001: demographic parity, equal opportunity u otras métricas de equidad con histórico</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Informes de auditoría interna</strong></td><td><span class="tv tv-b">9.2</span></td><td>Al menos 1 por ciclo de certificación. Hallazgos, evidencias, acciones correctivas y seguimiento</td><td><span class="tv tv-a">NC mayor</span></td></tr>
+            <tr><td><strong>Actas de revisión por la dirección</strong></td><td><span class="tv tv-b">9.3</span></td><td>Mínimo 1 por año. Todos los inputs de § 9.3.2 presentes. Outputs con responsable y plazo</td><td><span class="tv tv-a">NC mayor</span></td></tr>
+            <tr><td><strong>Evidencia de seguimiento de NC de AI interno</strong></td><td><span class="tv tv-b">9.2 + 10.1</span></td><td>Las NC de auditorías internas tienen acciones correctivas cerradas con evidencia</td><td><span class="tv tv-a">NC mayor</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S13 CONCEPT -->
+    <div class="slide slide-concept" data-index="12">
+      <div class="concept-icon">🎓</div>
+      <div class="concept-tag">Examen PECB · Dominio 5</div>
+      <h2 class="concept-title">La cláusula 9 en el examen Lead Auditor PECB</h2>
+      <p class="concept-body">El Dominio 5 del examen PECB ISO 42001 Lead Auditor ("Conducting the AIMS Audit") tiene un peso del <strong style="color:#fff">23,75%</strong> — el mayor de todos los dominios. Incluye preguntas sobre cómo verificar la cláusula 9: qué evidencias son suficientes, cuándo un hallazgo en la cláusula 9.2 genera NC en la 10.1, y cómo usar los resultados de la revisión por la dirección para evaluar el liderazgo real de la cláusula 5. Las preguntas de mayor dificultad del examen conectan múltiples cláusulas en un escenario real.</p>
+      <div class="concept-pills">
+        <span class="pill">Dominio 5: 23,75%</span>
+        <span class="pill">9.2 → 10.1 conexión</span>
+        <span class="pill">9.3 → 5.1 evidencia</span>
+        <span class="pill">Métricas fairness</span>
+      </div>
+    </div>
+
+    <!-- S14 RESULT -->
+    <div class="slide slide-result" data-index="13">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 7</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+
+  </div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updateProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updateDots();_updateProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+function toggleTL(el){el.classList.toggle('tl-active');}
+
+
+var C=0,TOTAL=14;
+var QS=[3,5,7,10],QA={3:false,5:false,7:false,10:false};
+var QC={3:2,5:1,7:0,10:3};
+var QSC={3:false,5:false,7:false,10:false};
+var FB={
+  3:{ok:"✅ Correcto. El demographic parity ratio es una métrica específica de fairness en sistemas de IA que mide si el sistema trata de forma equitativa a diferentes grupos demográficos. No existe equivalente en ISO 27001 porque la seguridad de la información no mide discriminación en decisiones. Es una de las métricas clave de la cláusula 9.1 de ISO 42001.",
+     fail:"❌ Incorrecto. El número de incidentes, el tiempo de respuesta y el porcentaje de formación completada son métricas comunes a ISO 27001 y otros sistemas de gestión. La métrica específica de ISO 42001 es el demographic parity ratio (u otras métricas de fairness), que mide si el sistema de IA trata de forma equitativa a diferentes grupos demográficos."},
+  5:{ok:"✅ Correcto. La situación genera dos no conformidades simultáneas: bajo § 9.2 porque la organización no gestionó los resultados de su propia auditoría interna (las NC no tienen acciones correctivas), y bajo § 10.1 porque la cláusula 10.1 exige actuar ante no conformidades detectadas. Los auditores externos verifican específicamente si las NC de auditorías internas han sido cerradas.",
+     fail:"❌ Incorrecto. Las no conformidades detectadas en una auditoría interna deben tratarse bajo la cláusula 10.1 (acciones correctivas). Si no hay evidencia de acciones correctivas 11 meses después, el auditor externo emitirá NC tanto en § 9.2 (el programa de auditoría no es eficaz si los resultados no se gestionan) como en § 10.1 (ausencia de acciones correctivas)."},
+  7:{ok:"✅ Correcto. El avance de los objetivos de IA responsable y las métricas de fairness en producción son elementos de input específicos de ISO 42001 que no existen en ISO 27001. La revisión por la dirección del AIMS debe incluir evidencia de que los sistemas de IA están siendo gestionados de forma responsable, incluyendo el cumplimiento del AIIA.",
+     fail:"❌ Incorrecto. El estado de acciones anteriores, los incidentes y los resultados de auditorías internas son inputs comunes a ISO 27001 y ISO 42001. El elemento diferenciador específico de ISO 42001 en la revisión por la dirección es el avance de los objetivos de IA responsable y las métricas de fairness, que no tienen equivalente en la revisión por la dirección del SGSI."},
+  10:{ok:"✅ Correcto. La cláusula 9.3 no establece una frecuencia numérica fija, sino que la revisión se realice 'a intervalos planificados'. Sin embargo, el estándar de la industria y la práctica de los organismos certificadores exige mínimo una revisión anual para superar las auditorías de vigilancia anuales del ciclo de certificación de 3 años.",
+     fail:"❌ Incorrecto. La cláusula 9.3 no impone frecuencia específica ('a intervalos planificados'), pero no significa que no haya criterio de facto. La práctica de certificación exige al menos una revisión anual por dos razones: (1) las auditorías de vigilancia anuales del ciclo de 3 años esperan ver evidencia de revisión por la dirección, y (2) la mejora continua exige revisar con suficiente frecuencia para detectar y corregir desviaciones."}
+};
+var NEXT_MSG='<strong>Próximo paso:</strong> El Módulo 8 cubre la Cláusula 10 — Mejora: acciones correctivas, no conformidades y mejora continua. Con las cláusulas 4-10 completadas, tendrás la visión completa del AIMS certificable. Después abordaremos el Anexo A en profundidad y el proceso de auditoría.';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa las métricas específicas de IA (slide 3), el programa de auditoría interna (slide 5), y la conexión entre § 9.2 y § 10.1 (slides 6 y 11). Son el eje de las preguntas del Dominio 5 del examen PECB.';
+
+_initDots(TOTAL);_updateProg();
+</script>
+</body>
+</html>

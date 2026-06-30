@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M06 – Operación (Cláusula 8)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+/* COVER */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,44px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:20px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:12px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 18px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+/* CONCEPT */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:52px;margin-bottom:16px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:14px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:20px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+/* CONTENT TABLE */
+.slide-content{background:var(--gris-claro);padding:30px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-30px -30px 22px;padding:18px 26px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.6vw,24px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13.5px}
+.ct th{background:var(--azul);color:#fff;padding:10px 11px;text-align:left;font-weight:600;font-size:12px}
+.ct th:first-child{border-radius:8px 0 0 0}.ct th:last-child{border-radius:0 8px 0 0}
+.ct td{padding:9px 11px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+/* ACCORDION */
+.slide-accordion{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:18px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.acc-su{font-size:13px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:7px;flex:1}
+.acc-item{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:14px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:11px;color:var(--gris-medio);transition:transform .3s;margin-left:6px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:400px}
+.acc-content{padding:0 16px 14px 57px;font-size:13px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:5px}
+.acc-content li{padding:2px 0 2px 14px;position:relative;color:#3a4a5c}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:15px;line-height:1.2}
+/* FLIP CARDS */
+.slide-reveal{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:18px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.rv-su{font-size:13px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:160px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 14px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:30px;margin-bottom:9px}
+.flip-front .ff-title{font-size:13.5px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:5px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:12px;font-size:11.5px;color:var(--gris-medio)}
+/* TIMELINE */
+.slide-timeline{background:var(--gris-claro);padding:24px 30px;min-height:100%;display:flex;flex-direction:column}
+.tl-hd{text-align:center;margin-bottom:18px}
+.tl-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.tl-su{font-size:13px;color:var(--gris-medio)}
+.tl-wrap{position:relative;max-width:800px;margin:0 auto;width:100%}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--azul),var(--acento));transform:translateX(-50%);border-radius:2px}
+.tl-item{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;cursor:pointer;position:relative}
+.tl-item:nth-child(odd){flex-direction:row}
+.tl-item:nth-child(even){flex-direction:row-reverse}
+.tl-box{background:#fff;border-radius:10px;padding:12px 14px;flex:1;border:1.5px solid transparent;transition:var(--trans);box-shadow:0 2px 8px rgba(26,58,92,.07)}
+.tl-item.tl-active .tl-box{border-color:var(--azul-mid);box-shadow:0 4px 16px rgba(37,99,168,.15)}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--azul);border:3px solid #fff;box-shadow:0 0 0 2px var(--azul);flex-shrink:0;margin-top:12px;z-index:2;transition:var(--trans)}
+.tl-item.tl-active .tl-dot{background:var(--acento);box-shadow:0 0 0 2px var(--acento)}
+.tl-date{font-size:11px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.tl-ev{font-size:13.5px;font-weight:600;color:var(--azul);margin-bottom:3px}
+.tl-det{font-size:12px;color:var(--gris-medio);line-height:1.5;display:none}
+.tl-item.tl-active .tl-det{display:block}
+/* CASE */
+.slide-case{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:16px 20px;margin-bottom:14px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,20px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:6px 14px;border-radius:20px;border:1.5px solid #dde3ee;background:#fff;font-size:12.5px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.c-tx{font-size:13.5px;color:var(--texto);line-height:1.75;margin-bottom:10px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--texto);line-height:1.6;margin:8px 0}
+/* STAT */
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:12px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,96px);color:#fff;line-height:1;margin-bottom:6px}
+.stat-unit{font-size:18px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:16px}
+.stat-desc{font-size:15.5px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:22px}
+.stat-src{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;text-align:left;flex:1;min-width:150px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:26px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+/* QUIZ */
+.slide-quiz{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,23px);color:var(--azul);margin-bottom:18px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:12px 15px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:11px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:26px;height:26px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:15px;padding:12px 15px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:8px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+/* RESULT */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:58px;margin-bottom:14px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:7px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);line-height:1;margin:7px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:18px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:28px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 20px;max-width:560px;font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:16px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:10px 26px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+
+
+/* LIFECYCLE STEPPER */
+.slide-lifecycle{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.lc-hd{text-align:center;margin-bottom:14px;flex-shrink:0}
+.lc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.lc-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.lc-su{font-size:13px;color:var(--gris-medio)}
+.lc-body{display:flex;gap:14px;flex:1;min-height:0}
+.lc-steps{display:flex;flex-direction:column;gap:4px;width:200px;flex-shrink:0;overflow-y:auto}
+.lc-step{padding:10px 14px;border-radius:9px;border:1.5px solid #dde3ee;background:#fff;cursor:pointer;transition:var(--trans)}
+.lc-step:hover{border-color:var(--azul-mid);background:#f0f5fb}
+.lc-step.lc-active{border-color:var(--acento);background:#fff8f5}
+.lc-step-num{font-size:10.5px;font-weight:700;color:var(--acento);margin-bottom:2px;letter-spacing:.06em}
+.lc-step-name{font-size:13px;font-weight:600;color:var(--azul);line-height:1.3}
+.lc-detail{flex:1;background:var(--azul);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column}
+.lc-det-phase{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.lc-det-title{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:#fff;margin-bottom:10px}
+.lc-det-body{font-size:13.5px;color:rgba(255,255,255,.82);line-height:1.65;flex:1}
+.lc-det-controls{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+.lc-det-ctrl-title{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.lc-ctrl-chip{display:inline-block;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:12px;font-weight:600;padding:3px 10px;border-radius:8px;margin:2px 3px}
+/* ANNEXA EXPLORER */
+.slide-annexa{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.ax-hd{text-align:center;margin-bottom:14px;flex-shrink:0}
+.ax-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.ax-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.ax-su{font-size:13px;color:var(--gris-medio)}
+.ax-body{display:flex;gap:14px;flex:1;min-height:0}
+.ax-left{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.ax-group{background:#fff;border-radius:9px;border:1px solid #dde3ee;overflow:hidden}
+.ax-group-hdr{padding:9px 12px;font-size:12px;font-weight:700;color:var(--azul);cursor:pointer;display:flex;align-items:center;gap:7px;user-select:none}
+.ax-group-hdr:hover{background:rgba(37,99,168,.05)}
+.ax-group-badge{background:var(--azul);color:#fff;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:8px;margin-left:auto}
+.ax-ctrl-list{display:none;padding:4px 8px}
+.ax-group.ax-open .ax-ctrl-list{display:block}
+.ax-ctrl{font-size:12.5px;padding:5px 8px;border-radius:7px;cursor:pointer;color:var(--texto);transition:var(--trans)}
+.ax-ctrl:hover{background:rgba(37,99,168,.08)}
+.ax-ctrl.ax-selected{background:var(--azul-mid);color:#fff;font-weight:500}
+.ax-ctrl-id{font-size:10.5px;font-weight:700;margin-right:4px;opacity:.7}
+.ax-right{flex:1;background:var(--azul);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column}
+.ax-ctrl-header{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.ax-ctrl-title{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.3vw,21px);color:#fff;margin-bottom:10px}
+.ax-ctrl-body{font-size:13px;color:rgba(255,255,255,.82);line-height:1.65;flex:1}
+.ax-empty{display:flex;align-items:center;justify-content:center;flex:1;text-align:center;font-size:13.5px;color:rgba(255,255,255,.45)}
+
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 15</div>
+  </div>
+  <div id="stage">
+
+    <!-- S1 COVER -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 6 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 8 — Operación</div>
+      <h1 class="cover-title">El Motor del AIMS:<br>Ciclo de Vida de la IA y los 38 Controles en Acción</h1>
+      <p class="cover-subtitle">La cláusula 8 es donde el sistema de gestión deja de ser documentos y se convierte en procesos operativos reales. Aquí se gestiona el ciclo de vida del sistema de IA —desde el diseño hasta el retiro— y se implementan los controles del Anexo A.</p>
+      <div class="cover-meta">
+        <span class="meta-item">60 min</span>
+        <span class="meta-item">15 slides · 4 preguntas</span>
+      </div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Dominar las 9 etapas del ciclo de vida del sistema de IA (Anexo A.6)</li>
+          <li>Identificar los controles operacionales clave de cada objetivo del Anexo A</li>
+          <li>Entender la diferencia entre "implementar un control" y "declararlo en el SoA"</li>
+          <li>Aplicar el proceso de gestión de incidentes de IA (A.8.4)</li>
+          <li>Distinguir los controles que generan NC mayor si no se implementan</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S2 CONCEPT -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">⚙️</div>
+      <div class="concept-tag">Cláusula 8 · Visión general</div>
+      <h2 class="concept-title">Cláusula 8: tres obligaciones operativas clave</h2>
+      <p class="concept-body">La cláusula 8 tiene tres subclausulas: <strong style="color:#fff">8.1</strong> (planificación y control operacional — implementar los procesos definidos en la cláusula 6), <strong style="color:#fff">8.2</strong> (implementar el AI Risk Assessment — ejecutar el proceso que diseñaste) y <strong style="color:#fff">8.3</strong> (implementar el plan de tratamiento de riesgos y verificar que los controles del Anexo A funcionan). Es la cláusula que convierte el plan en acción verificable, y donde más evidencias operativas recogerá el auditor.</p>
+      <div class="concept-pills">
+        <span class="pill">8.1 Control operacional</span>
+        <span class="pill">8.2 Ejecutar AI Risk Assessment</span>
+        <span class="pill">8.3 Implementar tratamiento</span>
+        <span class="pill">Anexo A en producción</span>
+      </div>
+    </div>
+
+    <!-- S3 LIFECYCLE -->
+    <div class="slide slide-lifecycle" data-index="2">
+      <div class="lc-hd">
+        <div class="lc-ey">Anexo A.6 · Ciclo de vida interactivo</div>
+        <h2 class="lc-ti">Las 9 etapas del ciclo de vida del sistema de IA — Selecciona cada fase</h2>
+        <p class="lc-su">El Anexo A.6 es el bloque de mayor esfuerzo de implementación. Haz clic en cada etapa para ver los controles y evidencias.</p>
+      </div>
+      <div class="lc-body">
+        <div class="lc-steps" id="lc-steps"></div>
+        <div class="lc-detail" id="lc-detail">
+          <div class="lc-det-phase">← Selecciona una etapa</div>
+          <div class="lc-det-title" id="lc-title">Ciclo de vida del sistema de IA</div>
+          <div class="lc-det-body" id="lc-body">Haz clic en cualquier etapa de la izquierda para ver los controles del Anexo A aplicables, las evidencias que requerirá el auditor y los errores más frecuentes en implementación.</div>
+          <div class="lc-det-controls" id="lc-controls" style="display:none">
+            <div class="lc-det-ctrl-title">Controles aplicables</div>
+            <div id="lc-chips"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 ANNEXA EXPLORER -->
+    <div class="slide slide-annexa" data-index="3">
+      <div class="ax-hd">
+        <div class="ax-ey">Anexo A completo · Explorador interactivo</div>
+        <h2 class="ax-ti">Los 38 controles del Anexo A — Selecciona cualquier control para ver su detalle</h2>
+        <p class="ax-su">Usa este explorador como referencia durante el curso y la implementación real</p>
+      </div>
+      <div class="ax-body">
+        <div class="ax-left" id="ax-left"></div>
+        <div class="ax-right" id="ax-right">
+          <div class="ax-empty">← Selecciona un grupo y un control del Anexo A para ver su descripción, evidencias requeridas y ejemplo de implementación</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 QUIZ 1 -->
+    <div class="slide slide-quiz" data-index="4" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 6 · Evaluación</span></div>
+      <p class="quiz-q">Un modelo de IA ha sido reentrenado con un nuevo conjunto de datos. Según el Anexo A.6 de ISO 42001, ¿qué proceso debe iniciarse obligatoriamente antes de volver a desplegar el modelo en producción?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,4)"><span class="opt-l">A</span>Actualizar la versión en el listado maestro de documentos (7.5)</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,4)"><span class="opt-l">B</span>Ejecutar un nuevo ciclo de pruebas y validación (A.6.5) y revisar el AI Risk Assessment (8.2) para el nuevo conjunto de datos, ya que el reentrenamiento puede introducir nuevos sesgos o comportamientos</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,4)"><span class="opt-l">C</span>Notificar al regulador antes de desplegar el modelo reentrenado</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,4)"><span class="opt-l">D</span>Actualizar el Statement of Applicability con la nueva versión del modelo</button>
+      </div>
+      <div id="fb-4" class="quiz-fb"></div>
+      <div id="must-4" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S6 CONTENT TABLE — controles críticos -->
+    <div class="slide slide-content" data-index="5">
+      <div class="content-header">
+        <div class="ch-ey">Anexo A · Operación</div>
+        <h2 class="ch-ti">Los 10 controles del Anexo A más verificados en auditoría</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Control</th><th>Nombre</th><th>Por qué lo verifica el auditor</th><th>Evidencia clave</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tv tv-b">A.6.2</span></td><td>Proceso de diseño y desarrollo</td><td>Es donde se documentan los requisitos de equidad, explicabilidad y supervisión humana desde el diseño</td><td>Especificación técnica del modelo con sección de requisitos éticos</td></tr>
+            <tr><td><span class="tv tv-b">A.6.5</span></td><td>Verificación y pruebas</td><td>Demuestra que el modelo fue probado antes del despliegue incluyendo pruebas de sesgo y robustez</td><td>Informe de pruebas con métricas de fairness y umbrales de aprobación</td></tr>
+            <tr><td><span class="tv tv-b">A.6.8</span></td><td>Monitoreo del sistema de IA</td><td>Demuestra que el model drift se detecta antes de que cause daño</td><td>Dashboard de métricas con alertas configuradas; informes de revisión mensual</td></tr>
+            <tr><td><span class="tv tv-b">A.7.3</span></td><td>Calidad de los datos</td><td>La mayoría de sesgos tienen origen en los datos; este control verifica el proceso de validación</td><td>Procedimiento de validación de datos + registros de cada ciclo de datos</td></tr>
+            <tr><td><span class="tv tv-b">A.8.2</span></td><td>Documentación para PI</td><td>Transparencia hacia partes interesadas: ¿qué puede y qué no puede hacer el sistema?</td><td>Model card pública o interna con capacidades, limitaciones y datos de entrenamiento</td></tr>
+            <tr><td><span class="tv tv-b">A.8.4</span></td><td>Comunicación de incidentes</td><td>Cuando un sistema de IA falla, ¿hay un proceso para notificar a los afectados y autoridades?</td><td>Procedimiento de gestión de incidentes IA con SLA y plantilla de notificación</td></tr>
+            <tr><td><span class="tv tv-b">A.9.4</span></td><td>Supervisión humana</td><td>Para sistemas de alto riesgo, el EU AI Act exige que los humanos puedan intervenir</td><td>Procedimiento de override humano + registros de intervenciones realizadas</td></tr>
+            <tr><td><span class="tv tv-b">A.10.2</span></td><td>Acuerdos con terceros</td><td>¿Están las responsabilidades de IA documentadas en los contratos con proveedores?</td><td>Cláusulas de gobernanza de IA en contratos con proveedores de modelos/APIs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S7 QUIZ 2 -->
+    <div class="slide slide-quiz" data-index="6" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 6 · Evaluación</span></div>
+      <p class="quiz-q">El control A.9.4 (Supervisión humana) del Anexo A de ISO 42001 exige que, para sistemas de alto riesgo, haya mecanismos de supervisión humana efectivos. ¿Qué situación generaría una no conformidad en la implementación de este control?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,6)"><span class="opt-l">A</span>El sistema de IA genera una alerta cuando su nivel de confianza es inferior al 80%</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,6)"><span class="opt-l">B</span>Un analista humano revisa el 15% de las decisiones del sistema de forma aleatoria</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,6)"><span class="opt-l">C</span>Los operadores del sistema no tienen procedimiento documentado ni capacidad técnica para interrumpir o anular las decisiones del sistema cuando detectan un comportamiento anómalo</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,6)"><span class="opt-l">D</span>El sistema opera en modo autónomo durante el horario nocturno (00:00-06:00) sin supervisión en tiempo real</button>
+      </div>
+      <div id="fb-6" class="quiz-fb"></div>
+      <div id="must-6" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S8 CASE — incidente IA -->
+    <div class="slide slide-case" data-index="7">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso práctico · A.8.4 Gestión de incidentes</div>
+        <h2 class="case-ttl">InsureAI: Gestión de un incidente de sesgo en producción en un sistema de valoración de siniestros</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'inc')">Incidente</button>
+        <button class="case-tab" onclick="switchCase(this,'resp')">Respuesta AIMS</button>
+        <button class="case-tab" onclick="switchCase(this,'audit')">Auditoría posterior</button>
+      </div>
+      <div class="case-pnl active" id="cp-inc">
+        <div class="c-st">Descripción del incidente</div>
+        <p class="c-tx">InsureAI usa un sistema de IA para valorar siniestros de automóvil. En febrero 2026, un cliente presenta una reclamación formal alegando que su siniestro fue valorado un 35% por debajo de siniestros equivalentes de otras zonas geográficas. El análisis inicial confirma que el modelo asigna valoraciones sistemáticamente menores a siniestros de ciertas provincias.</p>
+        <div class="c-hl">⚠ <strong>Clasificación del incidente:</strong> Sesgo geográfico en producción afectando a un grupo de clientes de forma discriminatoria. Clasificado como incidente de IA de Nivel 2 (impacto significativo en un grupo de individuos). Requiere notificación a la dirección en 24h y al regulador según SLA establecido.</div>
+      </div>
+      <div class="case-pnl" id="cp-resp">
+        <div class="c-st">Respuesta del AIMS (control A.8.4)</div>
+        <div class="c-hl"><strong>Hora 0-4:</strong> Activación del protocolo de incidentes. El sistema se pone en modo de revisión humana obligatoria para todos los siniestros de las provincias afectadas. Notificación al AI Risk Officer y al RAIMS.</div>
+        <div class="c-hl"><strong>Hora 4-24:</strong> Análisis de causa raíz: los datos de entrenamiento de 2018-2021 tenían un subconjunto de siniestros en esas provincias con tarifas históricamente más bajas (regulación provincial ya derogada). El modelo aprendió la correlación geográfica errónea.</div>
+        <div class="c-hl"><strong>Semana 1-4:</strong> Reentrenamiento del modelo sin las variables geográficas como proxy. Pruebas de fairness con métricas de demographic parity. Revisión de los 847 siniestros afectados con compensación a los clientes perjudicados. Actualización del AIIA.</div>
+      </div>
+      <div class="case-pnl" id="cp-audit">
+        <div class="c-st">Verificación del auditor en la siguiente auditoría</div>
+        <div class="c-hl">✅ <strong>Conforme — A.8.4:</strong> El proceso de detección, notificación y respuesta al incidente siguió el procedimiento documentado. El auditor verificó los registros del incidente, los tiempos de respuesta vs. SLA y la comunicación a los clientes afectados.</div>
+        <div class="c-hl">✅ <strong>Conforme — A.6.5:</strong> El modelo reentrenado pasó por el proceso completo de pruebas incluyendo fairness testing antes del redespliegue. Informe de pruebas disponible con fecha de aprobación.</div>
+        <div class="c-hl">⚠ <strong>Observación — A.7.3:</strong> El procedimiento de validación de datos no incluía explícitamente la verificación de sesgos por variables proxy (como la geografía). Se añadió como check obligatorio en el proceso de preparación de datos.</div>
+      </div>
+    </div>
+
+    <!-- S9 CONCEPT — model drift -->
+    <div class="slide slide-concept" data-index="8">
+      <div class="concept-icon">🌀</div>
+      <div class="concept-tag">Control A.6.8 · Monitoreo</div>
+      <h2 class="concept-title">Model drift: el riesgo operacional más subestimado de la IA</h2>
+      <p class="concept-body">El <strong style="color:#fff">model drift</strong> ocurre cuando el rendimiento del modelo se degrada porque el mundo cambia pero el modelo no se actualiza. Hay dos tipos: <strong style="color:#fff">data drift</strong> (la distribución de los inputs cambia) y <strong style="color:#fff">concept drift</strong> (la relación entre inputs y outputs cambia). El control A.6.8 exige un proceso documentado de monitoreo continuo con alertas configuradas y umbrales de acción definidos. Sin este control, un modelo de alto riesgo puede estar tomando decisiones degradadas durante meses antes de que se detecte.</p>
+      <div class="concept-pills">
+        <span class="pill">Data drift</span><span class="pill">Concept drift</span>
+        <span class="pill">Umbrales de alerta</span><span class="pill">Frecuencia de revisión</span>
+        <span class="pill">Registro de reentrenamiento</span>
+      </div>
+    </div>
+
+    <!-- S10 QUIZ 3 -->
+    <div class="slide slide-quiz" data-index="9" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 6 · Evaluación</span></div>
+      <p class="quiz-q">La cláusula 8.3 de ISO 42001 exige implementar el plan de tratamiento de riesgos y verificar que los controles del Anexo A son eficaces. ¿Cuál de las siguientes es la diferencia fundamental entre "declarar un control en el SoA" e "implementar un control"?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,9)"><span class="opt-l">A</span>No hay diferencia; incluir un control en el SoA implica automáticamente que está implementado</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,9)"><span class="opt-l">B</span>Implementar significa que el control está descrito en un procedimiento, aunque no se haya ejecutado todavía</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,9)"><span class="opt-l">C</span>Declararlo en el SoA es suficiente para la certificación; la implementación es un proceso posterior</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,9)"><span class="opt-l">D</span>Declararlo en el SoA es la intención; implementarlo requiere evidencia operativa de que el control funciona en la práctica (procedimientos, registros de ejecución, resultados medibles)</button>
+      </div>
+      <div id="fb-9" class="quiz-fb"></div>
+      <div id="must-9" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S11 CONTENT TABLE — checklist 8 -->
+    <div class="slide slide-content" data-index="10">
+      <div class="content-header">
+        <div class="ch-ey">Checklist del Auditor · Cláusula 8</div>
+        <h2 class="ch-ti">Evidencias operativas clave — Lo que el auditor pedirá in situ</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Evidencia operativa</th><th>Control</th><th>Qué verifica el auditor</th><th>NC si no existe</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Informe de pruebas pre-despliegue</strong></td><td><span class="tv tv-b">A.6.5</span></td><td>Pruebas de rendimiento, sesgo, robustez y seguridad. Aprobación formal antes del go-live</td><td><span class="tv tv-a">Mayor</span></td></tr>
+            <tr><td><strong>Dashboard de monitoreo de modelos</strong></td><td><span class="tv tv-b">A.6.8</span></td><td>Métricas activas, alertas configuradas, historial de desviaciones y acciones tomadas</td><td><span class="tv tv-a">Mayor</span></td></tr>
+            <tr><td><strong>Registros de incidentes de IA</strong></td><td><span class="tv tv-b">A.8.4</span></td><td>Historial de incidentes, tiempo de respuesta, notificaciones realizadas, cierre con causa raíz</td><td><span class="tv tv-a">Menor</span></td></tr>
+            <tr><td><strong>Model cards por sistema de IA</strong></td><td><span class="tv tv-b">A.8.2</span></td><td>Descripción del modelo, datos de entrenamiento, métricas de rendimiento, limitaciones conocidas, versión</td><td><span class="tv tv-a">Menor</span></td></tr>
+            <tr><td><strong>Registros de reentrenamiento</strong></td><td><span class="tv tv-b">A.6.8</span></td><td>Cuándo, con qué datos, quién aprobó, métricas antes/después, pruebas de fairness post-reentrenamiento</td><td><span class="tv tv-a">Menor</span></td></tr>
+            <tr><td><strong>Contratos con cláusulas de IA</strong></td><td><span class="tv tv-b">A.10.2</span></td><td>Asignación de responsabilidades de gobernanza de IA con proveedores; SLA para incidentes</td><td><span class="tv tv-g">Observación</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S12 QUIZ 4 -->
+    <div class="slide slide-quiz" data-index="11" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 6 · Evaluación</span></div>
+      <p class="quiz-q">Una organización ha implementado el control A.7.3 (calidad de datos) con un procedimiento de validación documentado. Sin embargo, el auditor observa que el procedimiento fue ejecutado por última vez hace 18 meses y desde entonces se han incorporado tres nuevas fuentes de datos al pipeline de entrenamiento sin validación. ¿Cuál es el hallazgo?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,11)"><span class="opt-l">A</span>No conformidad: el control existe pero no se aplica de forma consistente. La ausencia de validación en nuevas fuentes de datos evidencia que el control no es eficaz en la práctica</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,11)"><span class="opt-l">B</span>Conforme: el control está documentado y fue implementado en su momento, lo cual es suficiente</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,11)"><span class="opt-l">C</span>Observación: 18 meses es un período razonable sin ejecutar el control para una organización pequeña</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,11)"><span class="opt-l">D</span>No aplica: la validación de nuevas fuentes de datos es responsabilidad del proveedor de datos</button>
+      </div>
+      <div id="fb-11" class="quiz-fb"></div>
+      <div id="must-11" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S13 CONCEPT -->
+    <div class="slide slide-concept" data-index="12">
+      <div class="concept-icon">🔗</div>
+      <div class="concept-tag">Cláusula 8 · Conexión clave</div>
+      <h2 class="concept-title">La cláusula 8 como el "motor de retroalimentación" del AIMS</h2>
+      <p class="concept-body">La cláusula 8 no es el final del ciclo: es donde el ciclo PDCA se cierra y comienza de nuevo. Los incidentes detectados en operación (A.8.4) alimentan el Registro de Riesgos (6.1.2). El model drift detectado en el monitoreo (A.6.8) dispara una nueva iteración del AI Risk Assessment (8.2). Los resultados de las pruebas post-reentrenamiento (A.6.5) actualizan el AIIA (6.1.4). Esta interconexión es lo que convierte el AIMS en un sistema vivo, no en un conjunto de documentos estáticos.</p>
+      <div class="concept-pills">
+        <span class="pill">Incidente → Registro riesgos</span>
+        <span class="pill">Drift → Risk Assessment</span>
+        <span class="pill">Pruebas → AIIA actualizado</span>
+        <span class="pill">PDCA continuo</span>
+      </div>
+    </div>
+
+    <!-- S14 CONTENT TABLE — diferencias oper 27001 vs 42001 -->
+    <div class="slide slide-content" data-index="13">
+      <div class="content-header">
+        <div class="ch-ey">Para auditores 27001 · Cláusula 8</div>
+        <h2 class="ch-ti">Qué cambia en operación al añadir ISO 42001 a un SGSI existente</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Área operativa</th><th>ISO 27001 (SGSI)</th><th>ISO 42001 adicional (AIMS)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Gestión de incidentes</strong></td><td>Brechas de seguridad, pérdida de datos, acceso no autorizado</td><td>+ Incidentes de sesgo, model drift, decisiones erróneas de IA, comportamiento inesperado del modelo</td></tr>
+            <tr><td><strong>Gestión de cambios</strong></td><td>Cambios en sistemas de información, actualizaciones de software</td><td>+ Reentrenamientos del modelo, cambios en datos de entrenamiento, actualizaciones de arquitectura del modelo</td></tr>
+            <tr><td><strong>Pruebas</strong></td><td>Pruebas de penetración, análisis de vulnerabilidades</td><td>+ Fairness testing, pruebas de robustez adversarial, evaluación de explicabilidad del modelo</td></tr>
+            <tr><td><strong>Monitoreo</strong></td><td>SIEM, logs de acceso, alertas de seguridad</td><td>+ Dashboard de rendimiento del modelo, métricas de fairness en producción, detección de data drift</td></tr>
+            <tr><td><strong>Proveedores</strong></td><td>Evaluación de seguridad de terceros (ISO 27001 A.5.19)</td><td>+ Cláusulas de gobernanza de IA en contratos, due diligence ético del proveedor (A.10.3)</td></tr>
+            <tr><td><strong>Documentación</strong></td><td>Registros de activos, inventario de software</td><td>+ Model cards, registros de reentrenamiento, historial de versiones del modelo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S15 RESULT -->
+    <div class="slide slide-result" data-index="14">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 6</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+
+  </div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updateProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updateDots();_updateProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+function toggleTL(el){el.classList.toggle('tl-active');}
+
+
+var C=0,TOTAL=15;
+var QS=[4,6,9,11],QA={4:false,6:false,9:false,11:false};
+var QC={4:1,6:2,9:3,11:0};
+var QSC={4:false,6:false,9:false,11:false};
+var FB={
+  4:{ok:"✅ Correcto. El Anexo A.6 gestiona el ciclo de vida del sistema de IA. Un reentrenamiento con nuevos datos es un cambio significativo que puede introducir nuevos sesgos o comportamientos inesperados. Por eso el proceso de pruebas (A.6.5) debe repetirse, y el AI Risk Assessment (§ 8.2) debe revisarse para el nuevo conjunto de datos antes de redesplegar en producción.",
+     fail:"❌ Incorrecto. Según el Anexo A.6, un reentrenamiento del modelo es un evento de ciclo de vida que activa obligatoriamente un nuevo ciclo de pruebas (A.6.5) y la revisión del AI Risk Assessment (§ 8.2). Los nuevos datos pueden introducir nuevos sesgos o comportamientos no presentes en el modelo anterior. El SoA y el listado de documentos se actualizan como consecuencia, no como acción principal."},
+  6:{ok:"✅ Correcto. El control A.9.4 no solo exige que haya revisión humana, sino que los operadores tengan la capacidad real de interrumpir o anular las decisiones del sistema. Si los operadores no tienen ni el procedimiento ni la capacidad técnica de intervención, el control no está implementado de forma efectiva, independientemente de que esté declarado en el SoA.",
+     fail:"❌ Incorrecto. El control A.9.4 exige que la supervisión humana sea efectiva, lo que incluye la capacidad de interrumpir o anular las decisiones del sistema. La clave de la no conformidad está en la ausencia de procedimiento documentado Y de capacidad técnica de intervención. Un sistema que no puede ser detenido o corregido por los operadores no cumple este control."},
+  9:{ok:"✅ Correcto. Declarar un control en el SoA significa que la organización ha decidido que es aplicable. Implementarlo significa que existe evidencia operativa de que funciona: procedimientos ejecutados, registros de actividades, resultados medibles. Un auditor puede rechazar una certificación si el SoA declara controles que no tienen ninguna evidencia de implementación real.",
+     fail:"❌ Incorrecto. El SoA es una declaración de aplicabilidad, no un certificado de implementación. La implementación efectiva de un control requiere evidencia operativa: el procedimiento debe haberse ejecutado, debe haber registros de esa ejecución, y los resultados deben ser medibles. Esta distinción es fundamental tanto en la práctica como en el examen PECB."},
+  11:{ok:"✅ Correcto. La presencia del procedimiento no es suficiente si no se aplica de forma consistente. El auditor evalúa la eficacia del control, no solo su existencia. La incorporación de nuevas fuentes de datos sin validación evidencia que el control no funciona en la práctica, lo que genera una no conformidad bajo la cláusula 8.3 (verificar la eficacia del tratamiento de riesgos).",
+     fail:"❌ Incorrecto. Un control documentado pero no ejecutado no es un control conforme. La cláusula 8.3 exige verificar que el plan de tratamiento de riesgos se implementa y que los controles son eficaces. Si el procedimiento de validación de datos no se aplica ante nuevas fuentes, el control A.7.3 no está operativo, lo que genera una no conformidad."}
+};
+var NEXT_MSG='<strong>Próximo paso:</strong> El Módulo 7 cubre la Cláusula 9 — Evaluación del desempeño: monitoreo, métricas del AIMS, auditoría interna y revisión por la dirección. Es el ciclo CHECK del PDCA y el que prepara directamente la auditoría de certificación.';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa el ciclo de vida del sistema de IA (slide 3), los controles críticos A.6.5, A.6.8 y A.9.4 (slides 6 y 9), y la distinción entre declarar vs. implementar controles (slide 10).';
+
+/* LIFECYCLE DATA */
+var lcData=[
+  {name:'1. Definición de objetivos',phase:'A.6.1',title:'Objetivos y requisitos del sistema de IA',body:'Define qué debe hacer el sistema de IA, bajo qué restricciones y con qué criterios de éxito. Incluye los requisitos de equidad, explicabilidad y supervisión humana desde el primer momento.',chips:['A.6.1 Requisitos del sistema','A.5.2-5 Evaluación de impacto','6.2 Objetivos de IA']},
+  {name:'2. Diseño y desarrollo',phase:'A.6.2',title:'Proceso de diseño y desarrollo',body:'Documenta las decisiones de arquitectura, los algoritmos seleccionados, las fuentes de datos previstas y las salvaguardas incorporadas desde el diseño (privacy by design, fairness by design).',chips:['A.6.2 Diseño','A.7.2-6 Datos','A.4.4 Herramientas']},
+  {name:'3. Adquisición de datos',phase:'A.6.3 + A.7',title:'Estrategia de datos y gobierno',body:'Determina cómo se obtendrán los datos de entrenamiento, validación y test. Verifica su procedencia, licencias, representatividad y ausencia de sesgos sistemáticos antes de usarlos.',chips:['A.6.3 Adquisición','A.7.3 Calidad datos','A.7.4 Procedencia','A.7.5 Privacidad']},
+  {name:'4. Preparación de datos',phase:'A.6.4 + A.7.2',title:'Procesamiento y preparación de datos',body:'Limpieza, normalización, balanceo de clases, detección de valores atípicos y eliminación de proxies discriminatorios. Documentar todas las transformaciones aplicadas.',chips:['A.6.4 Preparación','A.7.2 Procesamiento','A.7.3 Calidad']},
+  {name:'5. Entrenamiento del modelo',phase:'A.6.2 + A.4',title:'Entrenamiento y experimentación',body:'Proceso de entrenamiento con registro de hiperparámetros, experimentos, métricas obtenidas y decisiones tomadas. Todo debe ser reproducible y auditable.',chips:['A.4.5 Cómputo','A.4.4 Herramientas','A.6.2 Desarrollo']},
+  {name:'6. Verificación y pruebas',phase:'A.6.5',title:'Pruebas y validación (obligatorio pre-despliegue)',body:'OBLIGATORIO antes de desplegar: pruebas de rendimiento, fairness testing (demographic parity, equalized odds), pruebas de robustez adversarial, pruebas de integración. La aprobación formal de pruebas es evidencia clave para el auditor.',chips:['A.6.5 Verificación','A.6.6 Integración','A.7.3 Calidad datos post-train']},
+  {name:'7. Despliegue',phase:'A.6.7',title:'Gestión del despliegue',body:'Proceso de puesta en producción con aprobación formal, comunicación a las partes interesadas, documentación de la configuración de producción y establecimiento de los mecanismos de supervisión humana.',chips:['A.6.7 Despliegue','A.8.2 Comunicación PI','A.9.4 Supervisión humana']},
+  {name:'8. Monitoreo y operación',phase:'A.6.8',title:'Monitoreo continuo y detección de drift',body:'Una vez en producción, el sistema debe monitorizarse continuamente: rendimiento, fairness en producción, data drift, concept drift. Alertas configuradas con umbrales de acción definidos. Registros de revisiones periódicas.',chips:['A.6.8 Monitoreo','A.8.4 Incidentes','9.1 Evaluación desempeño']},
+  {name:'9. Retiro / Decommissioning',phase:'A.6.9',title:'Retiro ordenado del sistema de IA',body:'Cuando el sistema ya no se usa, debe retirarse de forma controlada: notificación a partes interesadas, archivo de la documentación, eliminación segura de datos y modelos, actualización del inventario de sistemas de IA.',chips:['A.6.9 Retiro','A.8.2 Comunicación','A.7.5 Privacidad datos']}
+];
+function lcClick(idx){
+  document.querySelectorAll('.lc-step').forEach((s,i)=>s.classList.toggle('lc-active',i===idx));
+  const d=lcData[idx];
+  document.getElementById('lc-detail').querySelector('.lc-det-phase').textContent=d.phase;
+  document.getElementById('lc-title').textContent=d.title;
+  document.getElementById('lc-body').textContent=d.body;
+  const ctrl=document.getElementById('lc-controls');
+  ctrl.style.display='block';
+  document.getElementById('lc-chips').innerHTML=d.chips.map(c=>`<span class="lc-ctrl-chip">${c}</span>`).join('');
+}
+(function initLC(){
+  const el=document.getElementById('lc-steps');
+  lcData.forEach((d,i)=>{
+    const s=document.createElement('div');
+    s.className='lc-step';
+    s.innerHTML=`<div class="lc-step-num">${d.phase}</div><div class="lc-step-name">${d.name}</div>`;
+    s.onclick=()=>lcClick(i);
+    el.appendChild(s);
+  });
+})();
+
+/* ANNEX A EXPLORER */
+var annexA=[
+  {id:'A.2',name:'Políticas de IA',controls:[
+    {id:'A.2.2',name:'Política de IA',desc:'Establece el marco de gobernanza de IA de la organización. Debe ser aprobada por la alta dirección, comunicada al personal y revisada periódicamente.'},
+    {id:'A.2.3',name:'Coherencia con otras políticas',desc:'La política de IA debe ser coherente y estar integrada con otras políticas organizacionales (seguridad de la información, privacidad, RRHH).'},
+    {id:'A.2.4',name:'Revisión de la política',desc:'Proceso formal de revisión periódica de la política de IA, mínimo anual o ante cambios significativos en el contexto o en los sistemas de IA.'}
+  ]},
+  {id:'A.3',name:'Organización interna',controls:[
+    {id:'A.3.2',name:'Roles y responsabilidades',desc:'Define claramente quién es responsable de qué en el AIMS. Debe documentarse y comunicarse. Los titulares deben conocer sus responsabilidades.'},
+    {id:'A.3.3',name:'Reporte de inquietudes',desc:'Canal confidencial para que empleados reporten preocupaciones sobre el comportamiento de los sistemas de IA sin temor a represalias.'}
+  ]},
+  {id:'A.4',name:'Recursos del sistema IA',controls:[
+    {id:'A.4.2',name:'Documentación de recursos',desc:'Inventario de todos los recursos necesarios para los sistemas de IA en el AIMS: datos, herramientas, cómputo, personas.'},
+    {id:'A.4.3',name:'Recursos de datos',desc:'Gestión de los datos utilizados por los sistemas de IA: procedencia, licencias, calidad, representatividad.'},
+    {id:'A.4.4',name:'Herramientas de desarrollo',desc:'Gestión de las herramientas usadas para desarrollar y mantener los modelos de IA: frameworks, plataformas, entornos.'},
+    {id:'A.4.5',name:'Recursos de cómputo',desc:'Gestión de la infraestructura de cómputo para entrenamiento, inferencia y monitoreo de los sistemas de IA.'},
+    {id:'A.4.6',name:'Recursos humanos',desc:'Asegurar que el personal tiene las competencias necesarias para operar el sistema de IA de forma segura y responsable.'}
+  ]},
+  {id:'A.5',name:'Evaluación de impacto IA',controls:[
+    {id:'A.5.2',name:'Impacto en individuos',desc:'Evaluación del impacto del sistema de IA sobre las personas que reciben sus decisiones o son afectadas por su funcionamiento.'},
+    {id:'A.5.3',name:'Impacto en grupos',desc:'Análisis de si el sistema trata de forma diferente a grupos demográficos, étnicos, de género u otros grupos protegidos.'},
+    {id:'A.5.4',name:'Impacto en la sociedad',desc:'Evaluación del impacto agregado del sistema de IA a escala social: empleo, acceso a servicios, concentración de poder, medio ambiente.'},
+    {id:'A.5.5',name:'Medidas de mitigación',desc:'Controles implementados para reducir el impacto negativo identificado en A.5.2-5.4. Deben ser documentados y verificados periódicamente.'}
+  ]},
+  {id:'A.6',name:'Ciclo de vida del sistema IA',controls:[
+    {id:'A.6.1',name:'Objetivos y requisitos',desc:'Definición clara de qué debe hacer el sistema de IA, con criterios de éxito, restricciones éticas y requisitos de rendimiento medibles.'},
+    {id:'A.6.2',name:'Diseño y desarrollo',desc:'Proceso documentado de diseño que incluye consideraciones de equidad, explicabilidad y supervisión humana desde el inicio.'},
+    {id:'A.6.3',name:'Adquisición de datos',desc:'Estrategia de obtención de datos de entrenamiento con verificación de procedencia, representatividad y ausencia de sesgos sistemáticos.'},
+    {id:'A.6.4',name:'Preparación de datos',desc:'Proceso documentado de limpieza, transformación y validación de datos antes del entrenamiento del modelo.'},
+    {id:'A.6.5',name:'Verificación y pruebas',desc:'Pruebas obligatorias antes del despliegue: rendimiento, fairness testing, robustez, integración. Requiere aprobación formal.'},
+    {id:'A.6.6',name:'Pruebas de integración',desc:'Verificación de que el sistema de IA funciona correctamente dentro del sistema mayor en el que se integra, incluyendo interfaces humano-IA.'},
+    {id:'A.6.7',name:'Gestión del despliegue',desc:'Proceso controlado de puesta en producción con aprobación formal, documentación de configuración y comunicación a partes interesadas.'},
+    {id:'A.6.8',name:'Monitoreo y mantenimiento',desc:'Monitoreo continuo del rendimiento y fairness en producción. Detección de data drift y concept drift. Umbrales de alerta configurados.'},
+    {id:'A.6.9',name:'Retiro del sistema',desc:'Proceso controlado de decommissioning: notificación, archivo documental, eliminación segura de datos y actualización del inventario.'}
+  ]},
+  {id:'A.7',name:'Datos para sistemas IA',controls:[
+    {id:'A.7.2',name:'Procesamiento de datos',desc:'Controles sobre cómo se procesan, transforman y almacenan los datos usados por los sistemas de IA, garantizando su integridad.'},
+    {id:'A.7.3',name:'Calidad de los datos',desc:'Proceso formal de validación de la calidad de los datos: completitud, precisión, representatividad, ausencia de sesgos.'},
+    {id:'A.7.4',name:'Procedencia y licencias',desc:'Documentación de dónde provienen los datos, qué licencias tienen y qué restricciones aplican a su uso en sistemas de IA.'},
+    {id:'A.7.5',name:'Privacidad de los datos',desc:'Controles para asegurar que los datos personales usados en sistemas de IA cumplen con el GDPR/LGPD y los principios de privacidad por diseño.'},
+    {id:'A.7.6',name:'Seguridad de los datos',desc:'Protección de los datasets y modelos contra acceso no autorizado, modificación maliciosa (data poisoning) o robo.'}
+  ]},
+  {id:'A.8',name:'Información a partes interesadas',controls:[
+    {id:'A.8.2',name:'Documentación (model cards)',desc:'Documentación de las capacidades, limitaciones, datos de entrenamiento y métricas de rendimiento del sistema de IA. Incluye model cards.'},
+    {id:'A.8.3',name:'Transparencia',desc:'Comunicación a las partes interesadas sobre el uso de sistemas de IA en decisiones que les afectan, cumpliendo los requisitos de transparencia del EU AI Act.'},
+    {id:'A.8.4',name:'Comunicación de incidentes',desc:'Proceso y SLA para comunicar incidentes de IA a las partes afectadas y a las autoridades pertinentes dentro de los plazos requeridos.'},
+    {id:'A.8.5',name:'Canal para afectados',desc:'Canal específico para que los individuos afectados por decisiones de IA puedan solicitar explicaciones, impugnar decisiones o reportar preocupaciones.'}
+  ]},
+  {id:'A.9',name:'Uso de sistemas IA',controls:[
+    {id:'A.9.2',name:'Uso aceptable',desc:'Política de uso aceptable del sistema de IA: qué usos están permitidos, cuáles están prohibidos y cómo se documenta el uso real.'},
+    {id:'A.9.3',name:'Salvaguardas contra mal uso',desc:'Controles técnicos y procedimentales para prevenir el uso del sistema de IA fuera del contexto para el que fue diseñado.'},
+    {id:'A.9.4',name:'Supervisión humana',desc:'Para sistemas de alto riesgo: mecanismos efectivos para que los operadores puedan monitorear, interrumpir o anular las decisiones del sistema.'}
+  ]},
+  {id:'A.10',name:'Relaciones con terceros',controls:[
+    {id:'A.10.2',name:'Acuerdos de responsabilidad',desc:'Cláusulas contractuales que asignan responsabilidades de gobernanza de IA entre la organización y sus proveedores o clientes de sistemas de IA.'},
+    {id:'A.10.3',name:'Due diligence de proveedores',desc:'Evaluación de los proveedores de sistemas de IA o datos desde la perspectiva de la gobernanza responsable, antes de contratarlos y periódicamente.'},
+    {id:'A.10.4',name:'Notificaciones a clientes',desc:'Obligaciones de notificación hacia los clientes que usan los sistemas de IA de la organización: cambios significativos, incidentes, limitaciones descubiertas.'}
+  ]}
+];
+(function initAnnexA(){
+  const left=document.getElementById('ax-left');
+  annexA.forEach(g=>{
+    const div=document.createElement('div');
+    div.className='ax-group';
+    div.innerHTML=`<div class="ax-group-hdr" onclick="this.parentElement.classList.toggle('ax-open')"><span>${g.id}</span><span style="flex:1;color:var(--texto);font-size:12px;margin-left:4px">${g.name}</span><span class="ax-group-badge">${g.controls.length}</span></div><div class="ax-ctrl-list">${g.controls.map(c=>`<div class="ax-ctrl" onclick="axShow('${c.id}','${c.name}',\`${c.desc}\`)"><span class="ax-ctrl-id">${c.id}</span>${c.name}</div>`).join('')}</div>`;
+    left.appendChild(div);
+  });
+})();
+function axShow(id,name,desc){
+  document.querySelectorAll('.ax-ctrl').forEach(c=>c.classList.remove('ax-selected'));
+  event.target.closest('.ax-ctrl').classList.add('ax-selected');
+  document.getElementById('ax-right').innerHTML=`<div class="ax-ctrl-header">${id}</div><div class="ax-ctrl-title">${name}</div><div class="ax-ctrl-body">${desc}<br><br><strong style="color:var(--amarillo)">Evidencia de implementación:</strong><br>El auditor buscará procedimientos documentados, registros de ejecución y métricas que demuestren que este control está operativo en la práctica, no solo declarado en el SoA.</div>`;
+}
+
+_initDots(TOTAL);_updateProg();
+</script>
+</body>
+</html>

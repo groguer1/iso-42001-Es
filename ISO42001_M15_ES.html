@@ -1,0 +1,243 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 M15 ES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:14px}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:all .3s;white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--acento);transform:scale(1.3)}.dot.done{background:rgba(255,255,255,.55)}
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,40px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:18px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.meta-item{font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 16px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:50px;margin-bottom:14px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:13px;max-width:700px;line-height:1.2}
+.concept-body{font-size:14.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:18px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+.slide-content{background:var(--gris-claro);padding:26px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-26px -26px 18px;padding:15px 22px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.3vw,21px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:12.5px}
+.ct th{background:var(--azul);color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px}
+.ct th:first-child{border-radius:7px 0 0 0}.ct th:last-child{border-radius:0 7px 0 0}
+.ct td{padding:8px 10px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.03)}.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:8px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+.slide-accordion{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:14px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.5vw,21px);color:var(--azul);margin-bottom:3px}
+.acc-su{font-size:12px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.acc-item{background:#fff;border-radius:9px;border:1.5px solid #dde3ee;overflow:hidden;transition:all .3s}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-num{width:25px;height:25px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:13px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:10px;color:var(--gris-medio);transition:transform .3s}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s}
+.acc-item.open .acc-body{max-height:600px}
+.acc-content{padding:0 13px 11px 50px;font-size:12.5px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:4px}
+.acc-content li{padding:2px 0 2px 12px;position:relative}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:14px;line-height:1.2}
+.slide-reveal{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:13px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,21px);color:var(--azul);margin-bottom:3px}
+.rv-su{font-size:12px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:135px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul)}
+.ff-icon{font-size:26px;margin-bottom:7px}.ff-title{font-size:12.5px;font-weight:600;color:#fff;line-height:1.3}
+.ff-hint{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.fb-text{font-size:11.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:9px;font-size:11px;color:var(--gris-medio)}
+.slide-case{background:var(--gris-claro);padding:18px 22px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:13px 17px;margin-bottom:11px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(13px,2vw,18px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:5px 12px;border-radius:17px;border:1.5px solid #dde3ee;background:#fff;font-size:12px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:all .3s}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}.case-pnl.active{display:block}
+.c-st{font-size:11px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.c-tx{font-size:13px;color:var(--texto);line-height:1.75;margin-bottom:8px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;color:var(--texto);line-height:1.6;margin:6px 0}
+.slide-quiz{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:17px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:12.5px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.3vw,21px);color:var(--azul);margin-bottom:15px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:7px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:9px;padding:10px 13px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:13px;color:var(--texto);transition:all .3s;display:flex;align-items:center;gap:9px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:24px;height:24px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:all .3s}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:12px;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12px;color:var(--acento);font-weight:600;margin-top:7px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:54px;margin-bottom:12px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,32px);color:#fff;margin-bottom:6px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,68px);line-height:1;margin:6px 0}
+.res-su{font-size:13.5px;color:rgba(255,255,255,.65);margin-bottom:15px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.rb{text-align:center}.rb-n{font-family:'DM Serif Display',serif;font-size:26px;color:#fff}
+.rb-l{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 17px;max-width:560px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:13px;background:var(--acento);color:#fff;border:none;border-radius:27px;padding:10px 23px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer}</style></head><body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar"><div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer · ES</div><div id="slide-counter">1 / 13</div></div>
+  <div id="stage"><div class="slide slide-cover active" data-index="0">
+<div class="cover-badge">Módulo 15 de 18</div>
+<div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer · ES</div>
+<div class="cover-clause">Módulo 15 — Crosswalk Regulatorio</div>
+<h1 class="cover-title">EU AI Act + NIST AI RMF + ISO 42001:<br>Tres Marcos, Una Estrategia de Cumplimiento</h1>
+<p class="cover-subtitle">La gobernanza de IA global se articula en torno a tres marcos principales: la regulación vinculante de la UE (AI Act), el framework voluntario americano (NIST AI RMF) y la norma internacional de sistema de gestión (ISO 42001). Entender cómo se complementan es imprescindible para el Lead Auditor.</p>
+<div class="cover-meta"><span class="meta-item">⏱ 60 min</span><span class="meta-item">15 slides · 4 preguntas</span></div>
+<div class="cover-obj"><h3>Objetivos de aprendizaje</h3><ul><li>Mapear los requisitos del EU AI Act a los controles de ISO 42001 por categoría de riesgo</li><li>Identificar qué cubre NIST AI RMF que ISO 42001 no exige, y viceversa</li><li>Diseñar una estrategia de cumplimiento dual ISO 42001 + EU AI Act para una empresa española</li><li>Distinguir los plazos de aplicación del EU AI Act y su impacto en el calendario de certificación ISO 42001</li><li>Preparar evidencias que sirvan simultáneamente para ISO 42001 y para la conformidad con el AI Act</li></ul></div></div><div class="slide slide-concept" data-index="1">
+<div class="concept-icon">🌍</div><div class="concept-tag">Panorama · Tres marcos globales</div>
+<h2 class="concept-title">El triángulo de la gobernanza de IA global: regulación, framework y norma</h2><p class="concept-body">Los tres marcos dominantes tienen naturalezas distintas. <strong style='color:#fff'>EU AI Act</strong> — Regulación vinculante (ley de la UE), de cumplimiento obligatorio para sistemas que se comercializan o usan en la UE. Sanciones de hasta 35M€ o 7% del volumen de negocio global. <strong style='color:#fff'>NIST AI RMF 1.0</strong> — Framework voluntario americano, sin obligaciones legales pero ampliamente adoptado como estándar de facto en EEUU y referencia para contratos con el gobierno federal americano. <strong style='color:#fff'>ISO 42001:2023</strong> — Norma internacional de sistema de gestión, certificable por terceros, sin obligación legal pero potente señal de confianza para el mercado B2B. Para empresas españolas, la estrategia óptima es usar ISO 42001 como columna vertebral que soporta EU AI Act.</p>
+<div class="concept-pills"><span class="pill">EU AI Act — ley vinculante UE</span><span class="pill">NIST AI RMF 1.0 — voluntario USA</span><span class="pill">ISO 42001 — norma internacional</span><span class="pill">Cumplimiento dual estratégico</span><span class="pill">Plazos y sanciones</span></div></div><div class="slide slide-content" data-index="2">
+<div class="content-header"><div class="ch-ey">EU AI Act · Calendario de aplicación</div><h2 class="ch-ti">Plazos clave del EU AI Act y su impacto en la estrategia de certificación ISO 42001</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Fecha</th><th>Hito del EU AI Act</th><th>Impacto en ISO 42001</th><th>Prioridad</th></tr></thead><tbody><tr><td><strong>Feb 2025</strong></td><td>Prohibiciones absolutas (Artículo 5): scoring social, manipulación subliminal, reconocimiento emocional en lugares de trabajo</td><td>Si tu SGSIA incluye alguno de estos sistemas: eliminación inmediata. No hay plazo de adaptación</td><td><span class='tv tv-r'>URGENTE</span></td></tr><tr><td><strong>Ago 2025</strong></td><td>Aplicación a modelos de IA de propósito general (GPAI): GPT-4, Gemini, Claude, Llama</td><td>Si usas APIs de GPAI en sistemas internos: documentar el uso, verificar conformidad del proveedor</td><td><span class='tv tv-r'>URGENTE</span></td></tr><tr><td><strong>Ago 2026</strong></td><td>Aplicación completa a sistemas de IA de alto riesgo (Anexo III): RRHH, crédito, infraestructura crítica, educación, seguros</td><td>Tener conformidad con Anexo III antes de esta fecha. ISO 42001 como evidencia de debido cuidado</td><td><span class='tv tv-a'>PRIORITARIO</span></td></tr><tr><td><strong>Ago 2027</strong></td><td>Extensión a sistemas de IA de propósito general en sistemas de alto riesgo</td><td>Revalidación del SGSIA para sistemas que combinan GPAI + uso de alto riesgo</td><td><span class='tv tv-b'>PLANIFICAR</span></td></tr></tbody></table></div></div><div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Una empresa española de RRHH usa un sistema de scoring de CVs de alto riesgo según el Anexo III del EU AI Act. La empresa tiene certificación ISO 42001 desde enero 2025. En agosto de 2026, entra en vigor la aplicación del AI Act a sistemas de alto riesgo. ¿Qué evidencias de ISO 42001 son útiles para demostrar conformidad con el AI Act?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,3)"><span class="opt-l">A</span>Solo el certificado de ISO 42001 es suficiente — la UE reconoce ISO 42001 como estándar armonizado</button><button class="quiz-opt" onclick="answer(this,1,3)"><span class="opt-l">B</span>La AIIA (§ 6.1.4), el proceso de fairness testing documentado (A.6.5), la documentación técnica del sistema (A.8.2 Model Card), el registro de incidentes (A.8.4) y el canal para afectados (A.8.5) son evidencias de ISO 42001 que se alinean con los requisitos de los Artículos 9, 10, 11 y 13 del EU AI Act para sistemas de alto riesgo</button><button class="quiz-opt" onclick="answer(this,2,3)"><span class="opt-l">C</span>Ninguna — ISO 42001 e EU AI Act son marcos completamente independientes sin solapamiento</button><button class="quiz-opt" onclick="answer(this,3,3)"><span class="opt-l">D</span>Solo la política de IA (A.2.2) y el AI Risk Assessment (§ 6.1.2), ya que el AI Act se centra principalmente en la evaluación de riesgos</button></div>
+<div id="fb-3" class="quiz-fb"></div>
+<div id="must-3" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-content" data-index="4">
+<div class="content-header"><div class="ch-ey">Crosswalk · ISO 42001 ↔ EU AI Act (sistemas de alto riesgo)</div><h2 class="ch-ti">Mapeo de los requisitos del EU AI Act Artículos 9-17 a ISO 42001 — Sistemas de alto riesgo (Anexo III)</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Requisito EU AI Act</th><th>Artículo</th><th>Requisito ISO 42001 equivalente</th><th>Gap — qué cubre el AI Act que no cubre ISO 42001</th></tr></thead><tbody><tr><td>Sistema de gestión de riesgos</td><td>Art. 9</td><td>§ 6.1.2 AI Risk Assessment + A.6</td><td>ISO 42001 es más amplio — cubre todo el SGSIA, no solo el sistema de alto riesgo</td></tr><tr><td>Gobernanza de datos y datos de entrenamiento</td><td>Art. 10</td><td>A.7.1-7.5 (datos de IA)</td><td>AI Act especifica requisitos de representatividad de datos más detallados que ISO 42001</td></tr><tr><td>Documentación técnica</td><td>Art. 11</td><td>A.8.2 Model Cards</td><td>AI Act exige documentación registrada ante autoridad nacional de supervisión</td></tr><tr><td>Registro automático de eventos (logging)</td><td>Art. 12</td><td>A.8.4 logs de inferencia</td><td>AI Act especifica plazos mínimos de retención de logs por tipo de sistema</td></tr><tr><td>Transparencia e información a usuarios</td><td>Art. 13</td><td>A.8.3 información a los usuarios</td><td>AI Act obliga a informar de que una decisión fue tomada por IA — más específico</td></tr><tr><td>Supervisión humana</td><td>Art. 14</td><td>A.9.4 supervisión humana</td><td>AI Act especifica niveles de supervisión según riesgo — más prescriptivo que ISO 42001</td></tr><tr><td>Exactitud, robustez y ciberseguridad</td><td>Art. 15</td><td>A.6.5 tests + A.6.8 monitorización</td><td>AI Act exige métricas de exactitud declaradas ante autoridad nacional</td></tr><tr><td>Declaración de conformidad UE</td><td>Art. 47</td><td>No existe equivalente directo</td><td>NUEVO: Las empresas de RRHH deben depositar declaración ante AESIA (España)</td></tr></tbody></table></div></div><div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">¿Cuál de los siguientes requisitos del EU AI Act (para sistemas de IA de alto riesgo) NO tiene un equivalente directo en ISO 42001 y representa un gap que la empresa debe cubrir adicionalmente?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,5)"><span class="opt-l">A</span>La evaluación de riesgos del sistema de IA — cubierta por § 6.1.2 de ISO 42001</button><button class="quiz-opt" onclick="answer(this,1,5)"><span class="opt-l">B</span>La documentación técnica del sistema de IA — cubierta por A.8.2 (Model Cards) de ISO 42001</button><button class="quiz-opt" onclick="answer(this,2,5)"><span class="opt-l">C</span>El registro del sistema de IA en la base de datos EU AI Act gestionada por la Comisión Europea (Artículo 71) y el depósito de la declaración de conformidad ante la autoridad nacional de supervisión (AESIA en España). ISO 42001 no tiene ningún requisito equivalente de registro o declaración ante autoridades</button><button class="quiz-opt" onclick="answer(this,3,5)"><span class="opt-l">D</span>La supervisión humana de las decisiones del sistema — cubierta por A.9.4 de ISO 42001</button></div>
+<div id="fb-5" class="quiz-fb"></div>
+<div id="must-5" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-content" data-index="6">
+<div class="content-header"><div class="ch-ey">Crosswalk · ISO 42001 ↔ NIST AI RMF 1.0</div><h2 class="ch-ti">Mapeo de las 4 funciones del NIST AI RMF a la estructura de ISO 42001</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Función NIST AI RMF</th><th>Subcategorías principales</th><th>ISO 42001 equivalente</th><th>Diferencia clave</th></tr></thead><tbody><tr><td><strong>GOVERN</strong></td><td>Cultura organizacional, políticas de IA, roles y responsabilidades, gestión de riesgos de la cadena de suministro</td><td>§ 4, 5, 6, 7 + A.2, A.3, A.4, A.10</td><td>NIST es más prescriptivo en la estructura del comité de gobernanza; ISO 42001 es más flexible</td></tr><tr><td><strong>MAP</strong></td><td>Clasificación de contexto, identificación de riesgos, análisis de stakeholders afectados</td><td>§ 4.1-4.4, 6.1.2, 6.1.4 AIIA</td><td>NIST MAP incluye análisis explícito de afectados vulnerables similar a AIIA de ISO 42001</td></tr><tr><td><strong>MEASURE</strong></td><td>Evaluación de sesgos, pruebas de robustez, métricas de confianza, explicabilidad</td><td>A.6.5, A.6.8, A.8.2</td><td>NIST MEASURE es más técnico: especifica metodologías de testing más detalladas</td></tr><tr><td><strong>MANAGE</strong></td><td>Planes de respuesta a riesgos, comunicación de riesgos, aprendizaje organizacional</td><td>§ 8, 10 + A.8.4, A.9</td><td>ISO 42001 § 10 (mejora) es más robusto que MANAGE en el ciclo de mejora continua</td></tr></tbody></table></div></div><div class="slide slide-accordion" data-index="7">
+<div class="acc-hd"><div class="acc-ey">Estrategia de cumplimiento dual · España</div><h2 class="acc-ti">Cómo diseñar un plan de cumplimiento ISO 42001 + EU AI Act para empresas españolas</h2><p class="acc-su">El principio: construir sobre ISO 42001 como columna vertebral y añadir los requisitos específicos del AI Act como capa adicional</p></div>
+<div class="acc-list"><div class="acc-item open">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">1</div><span class="acc-label">Paso 1: Inventario y clasificación de sistemas de IA</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Clasificar todos los sistemas de IA según el Anexo III del AI Act:
+<ul><li>¿Alto riesgo según el Anexo III? → Requiere conformidad completa AI Act + ISO 42001</li>
+<li>¿Sistema de IA de propósito general (GPAI)? → Aplican las obligaciones de los Artículos 50-53</li>
+<li>¿Usos prohibidos (Artículo 5)? → Eliminar inmediatamente</li>
+<li>La misma clasificación sirve para el alcance del SGSIA de ISO 42001</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">2</div><span class="acc-label">Paso 2: Construir el SGSIA ISO 42001 con extensiones AI Act</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">El SGSIA de ISO 42001 cubre la mayoría de los requisitos de AI Act. Añadir:
+<ul><li>Documentación adicional exigida por el AI Act: declaración de conformidad UE, registro ante AESIA</li>
+<li>Logging con retención según los plazos del AI Act (Art. 12): 6 meses para sistemas de bajo riesgo, más tiempo para alto riesgo</li>
+<li>Marcado CE cuando sea aplicable (sistemas de alto riesgo que lo requieran)</li>
+<li>Proceso de notificación de incidentes graves a AESIA (Art. 73): en el mismo procedimiento de A.8.4 de ISO 42001</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">3</div><span class="acc-label">Paso 3: Gestionar los gaps específicos del AI Act</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Lo que ISO 42001 no cubre y debe añadirse para AI Act:
+<ul><li>Registro ante la base de datos EU AI Act: designar responsable y calendar de registro para sistemas de alto riesgo</li>
+<li>Nombramiento de representante UE si la empresa es no-europea (no aplica a empresas españolas)</li>
+<li>Proceso de evaluación de la conformidad: autoevaluación vs. organismo notificado (depende del sistema)</li>
+<li>Pruebas en condiciones reales (Art. 60): si aplica, protocolo específico</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">4</div><span class="acc-label">Paso 4: Calendario de cumplimiento integrado</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Integrar el calendario del AI Act con el ciclo de certificación ISO 42001:
+<ul><li>Antes de ago 2025: auditoría interna de SGSIA con verificación de uso de GPAI</li>
+<li>Antes de feb 2026: revisión de dirección que incluya el estado de preparación para AI Act</li>
+<li>Antes de ago 2026: conformidad AI Act para todos los sistemas de alto riesgo + renovación/vigilancia ISO 42001</li>
+<li>Evidencias ISO 42001 presentadas como evidencia de debido cuidado ante AESIA</li></ul></div></div></div></div></div><div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Una empresa española tiene sistemas de IA de alto riesgo (RRHH y crédito) y está planificando su estrategia de cumplimiento. En febrero de 2025, entra en vigor la prohibición absoluta del AI Act (Artículo 5). El AI Risk Officer descubre que el sistema de análisis de rendimiento de empleados usa reconocimiento emocional en cámaras de videollamada para 'medir el compromiso'. ¿Cuál es la acción inmediata que exige el SGSIA ISO 42001?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,8)"><span class="opt-l">A</span>Documentar el sistema en el Risk Register y planificar una revisión en el próximo ciclo anual</button><button class="quiz-opt" onclick="answer(this,1,8)"><span class="opt-l">B</span>Iniciar el proceso de § 6.1.2 para una nueva evaluación de riesgo del sistema</button><button class="quiz-opt" onclick="answer(this,2,8)"><span class="opt-l">C</span>El uso de reconocimiento emocional en lugares de trabajo está prohibido por el Artículo 5(1)(f) del EU AI Act desde febrero 2025. El SGSIA debe activar el proceso de § 10.1 (NC y acción correctiva) y la acción inmediata es suspender o desmantelar el sistema. El Risk Register debe actualizarse y la AIIA eliminar el sistema del alcance del SGSIA</button><button class="quiz-opt" onclick="answer(this,3,8)"><span class="opt-l">D</span>Notificar el sistema a AESIA para solicitar una exención temporal</button></div>
+<div id="fb-8" class="quiz-fb"></div>
+<div id="must-8" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-content" data-index="9">
+<div class="content-header"><div class="ch-ey">Guía rápida · ISO 42001 vs EU AI Act vs NIST AI RMF</div><h2 class="ch-ti">Comparativa en 5 dimensiones clave — Para el examen PECB y para la práctica</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Dimensión</th><th>ISO 42001</th><th>EU AI Act</th><th>NIST AI RMF</th></tr></thead><tbody><tr><td><strong>Naturaleza</strong></td><td>Norma internacional certificable</td><td>Regulación vinculante UE</td><td>Framework voluntario USA</td></tr><tr><td><strong>Obligatoriedad</strong></td><td>Voluntaria (señal de confianza de mercado)</td><td>Obligatoria para sistemas en la UE</td><td>Voluntaria (referencia en contratos federales USA)</td></tr><tr><td><strong>Sanciones</strong></td><td>Sin sanciones legales</td><td>Hasta 35M€ o 7% de volumen global</td><td>Sin sanciones</td></tr><tr><td><strong>Enfoque</strong></td><td>Sistema de gestión organizacional</td><td>Categorías de riesgo por tipo de sistema</td><td>Funciones de gestión de riesgos de IA</td></tr><tr><td><strong>Evidencia principal</strong></td><td>Certificado de terceros + registros del SGSIA</td><td>Declaración de conformidad + evaluación ex ante</td><td>Autoevaluación + documentación voluntaria</td></tr><tr><td><strong>Revisión</strong></td><td>3 años (ciclo de certificación)</td><td>Actualización periódica de Anexos (alta velocidad)</td><td>Actualización por versiones (RMF 2.0 en proceso)</td></tr><tr><td><strong>Ideal para…</strong></td><td>Empresas que buscan diferenciar en B2B</td><td>Empresas con sistemas de IA de alto riesgo en UE</td><td>Empresas con clientes o contratos en EEUU</td></tr></tbody></table></div></div><div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Una empresa española de insurtech certificada en ISO 42001 usa IA para calcular primas de seguro de vida (sistema de alto riesgo según Anexo III EU AI Act). En la auditoría de vigilancia de ISO 42001 de agosto 2026, el auditor pregunta por la conformidad con el AI Act. La empresa: 'ISO 42001 ya cubre todo lo que el AI Act exige.' ¿Cómo evalúa el auditor esta afirmación?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,10)"><span class="opt-l">A</span>Correcto — ISO 42001 e EU AI Act tienen equivalencia prácticamente completa para sistemas de alto riesgo</button><button class="quiz-opt" onclick="answer(this,1,10)"><span class="opt-l">B</span>Parcialmente correcto — ISO 42001 cubre la mayoría pero hay gaps específicos del AI Act que deben abordarse adicionalmente: el registro en la base de datos EU AI Act, el depósito de la declaración de conformidad ante AESIA, los plazos específicos de retención de logs y la potencial obligación de evaluación por organismo notificado. La empresa debe verificar estos gaps además del SGSIA ISO 42001</button><button class="quiz-opt" onclick="answer(this,2,10)"><span class="opt-l">C</span>Incorrecto — ISO 42001 no cubre ningún requisito del EU AI Act</button><button class="quiz-opt" onclick="answer(this,3,10)"><span class="opt-l">D</span>La afirmación es correcta para sistemas de alto riesgo pero no para GPAI</button></div>
+<div id="fb-10" class="quiz-fb"></div>
+<div id="must-10" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-concept" data-index="11">
+<div class="concept-icon">🎓</div><div class="concept-tag">M15 · Síntesis</div>
+<h2 class="concept-title">La estrategia óptima: ISO 42001 como columna vertebral del cumplimiento regulatorio global</h2><p class="concept-body">Para una empresa española con sistemas de IA, la estrategia más eficiente es usar ISO 42001 como la columna vertebral del sistema de gobernanza y añadir capas específicas según la regulación aplicable. ISO 42001 cubre más del 80% de los requisitos del EU AI Act para sistemas de alto riesgo — los gaps principales son el registro ante autoridades y la declaración de conformidad, que son obligaciones formales adicionales. Para empresas con clientes en EEUU, el NIST AI RMF es complementario y se puede mapear sobre el mismo SGSIA. Un único SGSIA bien diseñado puede soportar los tres marcos simultáneamente.</p>
+<div class="concept-pills"><span class="pill">ISO 42001 cubre >80% del EU AI Act para alto riesgo</span><span class="pill">Gaps del AI Act: registro, declaración de conformidad ante AESIA</span><span class="pill">NIST AI RMF como complemento voluntario para mercado USA</span><span class="pill">Un SGSIA · tres marcos regulatorios</span></div></div><div class="slide slide-result" data-index="13">
+<div class="res-icon" id="res-icon">🎯</div>
+<h2 class="res-ti" id="res-ti">Resultado del Módulo</h2>
+<div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+<p class="res-su" id="res-sub"></p>
+<div class="res-bk">
+<div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+<div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+<div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+</div>
+<div class="res-msg" id="res-msg"></div>
+<button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Repasar e intentar de nuevo</button></div></div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function initDots(){const el=document.getElementById('slide-dots');for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function updUI(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);document.getElementById('btn-next').disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);updUI();if(C===TOTAL-1)showResult();}
+function answer(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length,pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Acertaste '+c+'/'+t+' preguntas.':'Acertaste '+c+'/'+t+'. Necesitas el 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+var C=0,TOTAL=14,QS=[3, 5, 8, 10],QA={3:false,5:false,8:false,10:false},QC={3:1,5:2,8:2,10:1},QSC={3:false,5:false,8:false,10:false},FB={3:{ok:'✅ Correcto. La AIIA (§ 6.1.4), el fairness testing (A.6.5), la documentación técnica equivalente a Model Cards (A.8.2), el registro de incidentes (A.8.4) y el canal para afectados (A.8.5) se alinean directamente con los Artículos 9, 10, 11 y 13 del EU AI Act. ISO 42001 no es equivalente completo del AI Act, pero cubre la mayoría de los requisitos sustantivos para sistemas de alto riesgo.',fail:'❌ Incorrecto. El certificado de ISO 42001 por sí solo no es suficiente para el EU AI Act — ISO 42001 no está reconocido como estándar armonizado bajo el AI Act (aunque puede convertirse en referencia en futuras actualizaciones). La empresa debe cumplir los requisitos específicos del AI Act adicionalmente, aunque ISO 42001 facilita enormemente esa conformidad.'},5:{ok:'✅ Correcto. El registro en la base de datos EU AI Act gestionada por la Comisión Europea (Art. 71) y el depósito de la declaración de conformidad UE ante la autoridad nacional de supervisión (AESIA en España, creada por el RD 729/2023) son requisitos formales sin equivalente en ISO 42001. ISO 42001 no exige ningún tipo de registro o declaración ante autoridades regulatorias.',fail:'❌ Incorrecto. La evaluación de riesgos, la documentación técnica y la supervisión humana tienen equivalentes directos en ISO 42001 (§ 6.1.2, A.8.2, A.9.4). El gap real está en los requisitos de registro y declaración formal ante autoridades regulatorias — que ISO 42001 no cubre porque es una norma voluntaria sin obligaciones regulatorias.'},8:{ok:'✅ Correcto. El reconocimiento emocional en lugares de trabajo es una prohibición absoluta del Artículo 5(1)(f) del EU AI Act con aplicación desde febrero 2025 — no hay periodo de adaptación ni exención. El SGSIA de ISO 42001 debe activar § 10.1 (NC y acción correctiva) con acción inmediata de suspensión del sistema. Continuar operando el sistema es una violación del AI Act con sanciones de hasta 35M€.',fail:'❌ Incorrecto. Las prohibiciones absolutas del Artículo 5 del AI Act no tienen periodo de adaptación. Documentar en el Risk Register y planificar una revisión anual no es una respuesta adecuada a una prohibición vigente desde febrero 2025. El SGSIA debe activar el proceso de § 10.1 con acción correctiva inmediata de suspensión del sistema.'},10:{ok:'✅ Correcto. La afirmación es parcialmente cierta pero simplifica en exceso. ISO 42001 cubre la mayoría de los requisitos sustantivos del EU AI Act para sistemas de alto riesgo (evaluación de riesgos, datos, documentación, supervisión humana, transparencia). Pero los gaps son reales: el registro en la base de datos EU AI Act, la declaración de conformidad ante AESIA, los plazos específicos de retención de logs del Art. 12 y la potencial obligación de evaluación por organismo notificado para ciertos sistemas.',fail:'❌ Incorrecto. ISO 42001 e EU AI Act no tienen equivalencia completa. Los gaps principales son requisitos formales que ISO 42001 no tiene por su naturaleza de norma voluntaria: registro ante autoridades, declaración de conformidad, y potencial evaluación por organismo notificado. Afirmar que ISO 42001 cubre todo el AI Act es incorrecto.'}},NEXT_MSG='<strong>Siguiente:</strong> Módulo 16 — Crosswalk con LGPD Brasil y regulación sectorial latinoamericana. Cómo ISO 42001 se articula con el marco regulatorio de IA emergente en Latinoamérica.',RETRY_MSG='<strong>Recomendación:</strong> Revisa el calendario del EU AI Act (slide 2), el crosswalk ISO 42001 ↔ AI Act (slide 4) y la estrategia de cumplimiento dual para España (slide 7).';
+
+initDots();updUI();</script></body></html>

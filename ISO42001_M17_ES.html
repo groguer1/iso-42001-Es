@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 M17 ES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:14px}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:all .3s;white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--acento);transform:scale(1.3)}.dot.done{background:rgba(255,255,255,.55)}
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,40px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:18px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.meta-item{font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 16px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:50px;margin-bottom:14px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:13px;max-width:700px;line-height:1.2}
+.concept-body{font-size:14.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:18px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+.slide-content{background:var(--gris-claro);padding:26px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-26px -26px 18px;padding:15px 22px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.3vw,21px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:12.5px}
+.ct th{background:var(--azul);color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px}
+.ct th:first-child{border-radius:7px 0 0 0}.ct th:last-child{border-radius:0 7px 0 0}
+.ct td{padding:8px 10px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.03)}.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:8px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+.slide-accordion{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:14px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.5vw,21px);color:var(--azul);margin-bottom:3px}
+.acc-su{font-size:12px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.acc-item{background:#fff;border-radius:9px;border:1.5px solid #dde3ee;overflow:hidden;transition:all .3s}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-num{width:25px;height:25px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:13px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:10px;color:var(--gris-medio);transition:transform .3s}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s}
+.acc-item.open .acc-body{max-height:600px}
+.acc-content{padding:0 13px 11px 50px;font-size:12.5px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:4px}
+.acc-content li{padding:2px 0 2px 12px;position:relative}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:14px;line-height:1.2}
+.slide-reveal{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:13px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,21px);color:var(--azul);margin-bottom:3px}
+.rv-su{font-size:12px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:135px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul)}
+.ff-icon{font-size:26px;margin-bottom:7px}.ff-title{font-size:12.5px;font-weight:600;color:#fff;line-height:1.3}
+.ff-hint{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.fb-text{font-size:11.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:9px;font-size:11px;color:var(--gris-medio)}
+.slide-case{background:var(--gris-claro);padding:18px 22px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:13px 17px;margin-bottom:11px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(13px,2vw,18px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:5px 12px;border-radius:17px;border:1.5px solid #dde3ee;background:#fff;font-size:12px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:all .3s}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}.case-pnl.active{display:block}
+.c-st{font-size:11px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.c-tx{font-size:13px;color:var(--texto);line-height:1.75;margin-bottom:8px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:9px 12px;font-size:13px;color:var(--texto);line-height:1.6;margin:6px 0}
+.slide-quiz{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:17px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:12.5px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.3vw,21px);color:var(--azul);margin-bottom:15px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:7px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:9px;padding:10px 13px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:13px;color:var(--texto);transition:all .3s;display:flex;align-items:center;gap:9px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:24px;height:24px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:all .3s}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:12px;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12px;color:var(--acento);font-weight:600;margin-top:7px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:54px;margin-bottom:12px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,32px);color:#fff;margin-bottom:6px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,68px);line-height:1;margin:6px 0}
+.res-su{font-size:13.5px;color:rgba(255,255,255,.65);margin-bottom:15px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.rb{text-align:center}.rb-n{font-family:'DM Serif Display',serif;font-size:26px;color:#fff}
+.rb-l{font-size:11.5px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:12px 17px;max-width:560px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:13px;background:var(--acento);color:#fff;border:none;border-radius:27px;padding:10px 23px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer}</style></head><body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar"><div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer · ES</div><div id="slide-counter">1 / 12</div></div>
+  <div id="stage"><div class="slide slide-cover active" data-index="0">
+<div class="cover-badge">Módulo 17 de 18</div>
+<div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer · ES</div>
+<div class="cover-clause">Módulo 17 — Plantillas de Trabajo</div>
+<h1 class="cover-title">Las Herramientas del Lead Implementer:<br>SoA, AIIA, Risk Register y AI Policy</h1>
+<p class="cover-subtitle">Un Lead Implementer necesita plantillas que funcionen en la práctica, no en el papel. Este módulo presenta las cuatro plantillas fundamentales del SGSIA con ejemplos completados, instrucciones de uso y los errores más frecuentes que invalidan cada documento ante un auditor.</p>
+<div class="cover-meta"><span class="meta-item">⏱ 50 min</span><span class="meta-item">14 slides · 4 preguntas</span></div>
+<div class="cover-obj"><h3>Objetivos de aprendizaje</h3><ul><li>Completar correctamente el Statement of Applicability (SoA) con los 38 controles</li><li>Redactar una AIIA que supere la revisión de un auditor PECB Lead Auditor</li><li>Construir un AI Risk Register con la estructura correcta de probabilidad × impacto</li><li>Redactar una AI Policy (Política de IA) que cumpla los requisitos del § 5.2</li><li>Identificar los errores más comunes en cada plantilla que generan NCs en la auditoría</li></ul></div></div><div class="slide slide-concept" data-index="1">
+<div class="concept-icon">📋</div><div class="concept-tag">Las 4 plantillas · Orden lógico</div>
+<h2 class="concept-title">Las cuatro plantillas fundamentales del SGSIA y su secuencia de elaboración</h2><p class="concept-body">Las cuatro plantillas del SGSIA tienen una secuencia lógica de elaboración. <strong style='color:#fff'>1. AI Policy</strong> — Define el compromiso y el alcance (requisito previo para todo lo demás). <strong style='color:#fff'>2. AI Risk Register</strong> — Identifica los riesgos del SGSIA (insumo para la AIIA y el SoA). <strong style='color:#fff'>3. AIIA</strong> — Evalúa el impacto sobre personas y grupos (soporta el SoA). <strong style='color:#fff'>4. SoA</strong> — Consolida las decisiones de inclusión/exclusión de los 38 controles (el documento central de la auditoría). Un implementer que intenta hacer el SoA antes de la AI Policy y el Risk Register comete el error más frecuente del primer ciclo.</p>
+<div class="concept-pills"><span class="pill">1. AI Policy → 2. Risk Register</span><span class="pill">3. AIIA → 4. SoA</span><span class="pill">Secuencia obligatoria</span><span class="pill">SoA es el documento central</span><span class="pill">Errores de secuencia = NCs</span></div></div><div class="slide slide-accordion" data-index="2">
+<div class="acc-hd"><div class="acc-ey">Plantilla 1 · AI Policy</div><h2 class="acc-ti">Política de IA — Estructura y errores frecuentes</h2><p class="acc-su">La AI Policy es el documento más visible del SGSIA. También es el que más errores contiene cuando un auditor la revisa.</p></div>
+<div class="acc-list"><div class="acc-item open">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">1</div><span class="acc-label">Elementos obligatorios de la AI Policy (§ 5.2)</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Una AI Policy conforme debe incluir:
+<ul><li><strong>Firmada por la alta dirección</strong> (el CEO o equivalente — no el CTO ni el RASGSIA)</li>
+<li><strong>Alcance del SGSIA</strong> claramente definido (qué sistemas de IA están incluidos)</li>
+<li><strong>Compromisos específicos</strong> de la organización con la IA responsable (no principios genéricos)</li>
+<li><strong>Marco de valores</strong> (al menos: equidad, transparencia, supervisión humana, privacidad)</li>
+<li><strong>Referencia a los objetivos de IA</strong> (§ 6.2) — la política apoya los objetivos concretos</li>
+<li><strong>Comunicada a todos los empleados</strong> — evidencia de comunicación interna</li>
+<li><strong>Revisada periódicamente</strong> — mínimo como parte de la revisión de dirección (§ 9.3)</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">2</div><span class="acc-label">Errores más frecuentes en la AI Policy</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Los 5 errores que más frecuentemente generan NC en la AI Policy:
+<ul><li><strong>Firmada por el CTO o CISO:</strong> La AI Policy requiere compromiso visible de la alta dirección (§ 5.1) — no del responsable técnico de IA. NC Menor → cambiar la firma.</li>
+<li><strong>Principios sin compromisos concretos:</strong> 'Nos comprometemos a usar la IA de forma ética' sin mecanismos concretos no cumple § 5.2. El auditor buscará cómo esa ética se traduce en procesos y controles.</li>
+<li><strong>Alcance demasiado vago:</strong> 'Todos nuestros sistemas de IA' sin listar cuáles están incluidos no permite al auditor verificar la conformidad de cada sistema.</li>
+<li><strong>No comunicada internamente:</strong> Una AI Policy que existe en un servidor pero que los empleados no conocen no cumple § 7.3 (conscientización).</li>
+<li><strong>No actualizada tras cambios significativos:</strong> La AI Policy de 2023 que no recoge los sistemas de IA generativa desplegados en 2024 no refleja el estado actual del SGSIA.</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">3</div><span class="acc-label">Ejemplo de AI Policy conforme (fragmento)</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content"><strong>Política de IA Responsable — [Empresa] — Versión 2.1 — Aprobada por CEO [fecha]</strong><br><br>
+'[Empresa] se compromete a desarrollar y usar sistemas de inteligencia artificial que respeten los derechos de las personas, promuevan la equidad y estén bajo supervisión humana efectiva.<br><br>
+<strong>Alcance:</strong> Esta política aplica a todos los sistemas de IA desarrollados o adquiridos por [Empresa] que tomen o influyan en decisiones que afecten a personas físicas, incluyendo: [lista específica de sistemas].<br><br>
+<strong>Compromisos:</strong> (1) Evaluaremos el impacto en personas afectadas antes de desplegar cualquier sistema de IA (AIIA); (2) Mantendremos canales para que los afectados puedan contestar decisiones automatizadas; (3) Garantizaremos que las métricas de equidad de nuestros modelos se revisan trimestralmente...'</div></div></div></div></div><div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Un auditor revisa la AI Policy de una empresa. La política tiene 8 páginas con principios detallados sobre equidad, transparencia y privacidad. Está firmada por el Director de Innovación (que reporta al CTO). La empresa no tiene evidencia de haber comunicado la política a sus 500 empleados. ¿Cuántas NCs identifica el auditor y de qué tipo?</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,3)"><span class="opt-l">A</span>Cero NCs — la política es detallada y está firmada por el responsable de innovación</button><button class="quiz-opt" onclick="answer(this,1,3)"><span class="opt-l">B</span>Una NC Mayor — la política no está firmada por la alta dirección</button><button class="quiz-opt" onclick="answer(this,2,3)"><span class="opt-l">C</span>Dos NCs: NC Menor por firma incorrecta (§ 5.1 exige compromiso visible de la alta dirección — el Director de Innovación no cumple este requisito) y NC Menor por falta de comunicación interna (§ 7.3 exige que los empleados sean conscientes de la política de IA). Ambas son NC Menores porque la política existe y tiene contenido correcto — solo fallan en los requisitos de firma y comunicación</button><button class="quiz-opt" onclick="answer(this,3,3)"><span class="opt-l">D</span>Una NC Mayor por falta de comunicación a empleados</button></div>
+<div id="fb-3" class="quiz-fb"></div>
+<div id="must-3" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-accordion" data-index="4">
+<div class="acc-hd"><div class="acc-ey">Plantilla 2 · AI Risk Register</div><h2 class="acc-ti">Risk Register — Estructura de riesgo para ISO 42001</h2><p class="acc-su">El AI Risk Register de ISO 42001 tiene elementos diferentes al Risk Register de ISO 27001</p></div>
+<div class="acc-list"><div class="acc-item open">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">1</div><span class="acc-label">Estructura del AI Risk Register (§ 6.1.2)</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Cada riesgo del AI Risk Register debe incluir:
+<ul><li><strong>ID único</strong> del riesgo (para trazabilidad)</li>
+<li><strong>Sistema de IA afectado</strong> (a qué sistema aplica el riesgo)</li>
+<li><strong>Descripción del riesgo</strong> (causa + evento + consecuencia)</li>
+<li><strong>Probabilidad</strong> (1-5) × <strong>Impacto</strong> (1-5) = Nivel de riesgo</li>
+<li><strong>Decisión de tratamiento</strong>: Mitigar / Transferir / Aceptar / Eliminar</li>
+<li><strong>Control del Anexo A</strong> seleccionado para mitigar (referencia cruzada al SoA)</li>
+<li><strong>Responsable</strong> del riesgo y del control</li>
+<li><strong>Estado</strong>: Activo / Mitigado / Aceptado / Eliminado</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">2</div><span class="acc-label">Lo que diferencia el Risk Register de IA del de ciberseguridad</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">El AI Risk Register incluye categorías de riesgo que no existen en ISO 27001:
+<ul><li><strong>Riesgo de sesgo discriminatorio:</strong> El modelo puede tomar decisiones discriminatorias para grupos protegidos. Impacto: daño a personas + riesgo legal + reputacional. Control: A.6.5 fairness testing + A.5.3</li>
+<li><strong>Riesgo de drift del modelo:</strong> El rendimiento del modelo se degrada con el tiempo porque el entorno cambia. Control: A.6.8 monitorización continua</li>
+<li><strong>Riesgo de explicabilidad insuficiente:</strong> Los afectados no pueden entender por qué el sistema tomó la decisión. Control: A.8.2 (Model Cards con XAI) + A.8.5 canal de revisión</li>
+<li><strong>Riesgo de supervisión insuficiente:</strong> Los operadores no son capaces de intervenir cuando el sistema toma decisiones erróneas. Control: A.9.4 supervisión humana</li></ul></div></div></div><div class="acc-item">
+<button class="acc-trigger" onclick="toggleAcc(this)">
+<div class="acc-num">3</div><span class="acc-label">Errores frecuentes en el AI Risk Register</span><span class="acc-arrow">▼</span>
+</button><div class="acc-body"><div class="acc-content">Los 4 errores más comunes:
+<ul><li><strong>Solo riesgos para la organización:</strong> El auditor buscará riesgos de daño a personas afectadas — si no hay ninguno, la metodología de identificación de riesgos es incompleta.</li>
+<li><strong>Sin referencia cruzada al Anexo A:</strong> Los controles del Anexo A deben corresponder a los riesgos identificados. Un SoA sin Risk Register vinculado es huérfano.</li>
+<li><strong>Riesgos aceptados sin documentación:</strong> Aceptar un riesgo de sesgo racial sin documentar la justificación y los controles compensatorios residuales genera NC.</li>
+<li><strong>Sin actualización tras incidentes:</strong> El Risk Register debe actualizarse después de cualquier incidente de IA. Un incidente de sesgo no reflejado en el registro es evidencia de proceso no funcional.</li></ul></div></div></div></div></div><div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Un auditor de ISO 42001 revisa el AI Risk Register de una empresa de RH-tech. El registro tiene 23 riesgos, todos relacionados con seguridad de datos, disponibilidad del sistema y cumplimiento de RGPD. No hay ningún riesgo relacionado con sesgo discriminatorio, drift del modelo ni supervisión humana insuficiente. El auditor clasifica:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,5)"><span class="opt-l">A</span>Conforme — el Risk Register cubre todos los riesgos relevantes para la empresa</button><button class="quiz-opt" onclick="answer(this,1,5)"><span class="opt-l">B</span>Observación — sería conveniente incluir riesgos de IA específicos pero no es obligatorio</button><button class="quiz-opt" onclick="answer(this,2,5)"><span class="opt-l">C</span>NC — el § 6.1.2 exige identificar los riesgos asociados específicamente a los sistemas de IA del SGSIA. Un Risk Register para una empresa de RH-tech que usa IA para triaje de candidatos sin incluir riesgos de sesgo discriminatorio (que es el riesgo más relevante y más documentado en sistemas de RRHH), drift del modelo y supervisión insuficiente tiene una metodología de identificación de riesgos incompleta para el SGSIA</button><button class="quiz-opt" onclick="answer(this,3,5)"><span class="opt-l">D</span>NC Mayor — el Risk Register debe ser completamente rehecho</button></div>
+<div id="fb-5" class="quiz-fb"></div>
+<div id="must-5" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-reveal" data-index="6">
+<div class="rv-hd"><div class="rv-ey">Plantilla 3 · AIIA</div><h2 class="rv-ti">Errores críticos en la AIIA — Los que más frecuentemente generan NCs</h2><p class="rv-su">Haz clic en cada error para ver por qué es NC y cómo corregirlo</p></div>
+<div class="flip-grid"><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">❌</div><div class="ff-title">AIIA sin análisis cuantitativo</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">El error más frecuente: una AIIA que describe cualitativamente que 'el sistema puede afectar a diferentes grupos' sin calcular métricas de paridad demográfica. El auditor pedirá los números.</div></div></div></div><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">❌</div><div class="ff-title">AIIA que analiza solo el impacto en la organización</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">Confundir la AIIA (impacto sobre personas) con el Risk Assessment (impacto en la organización). Si los 'afectados' son la empresa, el departamento legal y los accionistas, la AIIA no existe.</div></div></div></div><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">❌</div><div class="ff-title">Canal de revisión humana mencionado pero no operativo</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">La AIIA declara que 'los afectados pueden solicitar revisión humana' pero no hay URL, no hay SLA, no hay proceso. El auditor intentará usar el canal.</div></div></div></div><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">❌</div><div class="ff-title">AIIA no actualizada tras retraining</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">Si el modelo se reentrenó hace 3 meses y la AIIA tiene 14 meses, el auditor asume que la AIIA no refleja el sistema actual. NC automática.</div></div></div></div><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">❌</div><div class="ff-title">Medidas de mitigación sin responsable ni plazo</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">'Realizaremos auditorías de sesgo' sin responsable, frecuencia, ni evidencia de ejecución no es una medida de mitigación — es una intención. No cierra la AIIA.</div></div></div></div><div class="flip-card" onclick="this.classList.toggle('flipped')"><div class="flip-inner">
+<div class="flip-front"><div class="ff-icon">✅</div><div class="ff-title">AIIA correcta: el estándar que supera la auditoría</div><div class="ff-hint">Clic para ver</div></div>
+<div class="flip-back"><div class="fb-text">Afectados identificados (con datos demográficos), métricas cuantitativas de paridad por grupos, canal operativo con URL y SLA, medidas de mitigación con responsable y plazo, fecha de siguiente revisión, firmada por el RASGSIA.</div></div></div></div></div><div class="flip-hint">Haz clic en cada tarjeta para ver el contenido</div></div><div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="2">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">Una empresa finaliza su AIIA para un sistema de aprobación de crédito. El documento tiene: descripción del sistema, lista de afectados (clientes de crédito), análisis de impacto ('puede haber diferencias entre grupos de clientes'), y la medida de mitigación: 'revisaremos el sistema regularmente'. El auditor pide las métricas de fairness. La empresa responde: 'no las hemos calculado todavía — estamos en proceso'. El auditor clasifica:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,7)"><span class="opt-l">A</span>Conforme — la AIIA existe y menciona que puede haber diferencias entre grupos</button><button class="quiz-opt" onclick="answer(this,1,7)"><span class="opt-l">B</span>Observación — las métricas de fairness son recomendables pero no obligatorias en la AIIA</button><button class="quiz-opt" onclick="answer(this,2,7)"><span class="opt-l">C</span>NC — la § 6.1.4 y el control A.5.2 exigen un análisis de impacto cuantitativo sobre los individuos afectados. 'Puede haber diferencias entre grupos' sin métricas no permite verificar si el sistema es discriminatorio ni si las medidas de mitigación son adecuadas. La frase 'revisaremos regularmente' sin responsable, frecuencia ni método no es una medida de mitigación conforme</button><button class="quiz-opt" onclick="answer(this,3,7)"><span class="opt-l">D</span>NC Mayor — el sistema de crédito debe ser suspendido hasta que se presenten las métricas</button></div>
+<div id="fb-7" class="quiz-fb"></div>
+<div id="must-7" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-content" data-index="8">
+<div class="content-header"><div class="ch-ey">Plantilla 4 · SoA — Guía de cumplimentación</div><h2 class="ch-ti">Cómo cumplimentar el Statement of Applicability para los 38 controles del Anexo A</h2></div>
+<div class="content-body"><table class="ct"><thead><tr><th>Campo del SoA</th><th>Opciones</th><th>Criterio de decisión</th><th>Error frecuente</th></tr></thead><tbody><tr><td><strong>Estado</strong></td><td>Incluido / Excluido</td><td>¿El riesgo que este control mitiga existe en la organización?</td><td>Marcar 'Excluido' sin justificación documentada</td></tr><tr><td><strong>Justificación de exclusión</strong></td><td>Texto libre (obligatorio si Excluido)</td><td>¿Por qué el control no aplica? Citar el risk register que confirma que el riesgo no existe</td><td>'No aplica a nuestra empresa' sin argumentos — genera NC Mayor</td></tr><tr><td><strong>Implementado</strong></td><td>Sí / No / Parcial</td><td>¿Existe evidencia objetiva de que el control funciona?</td><td>Marcar 'Sí' cuando existe el procedimiento pero no la evidencia de ejecución</td></tr><tr><td><strong>Referencia de implementación</strong></td><td>Número de documento + versión</td><td>¿Qué documento/proceso/herramienta implementa el control?</td><td>Dejar en blanco — el auditor no puede verificar sin referencia</td></tr><tr><td><strong>Responsable</strong></td><td>Cargo (no nombre propio)</td><td>¿Quién es el propietario del control?</td><td>Poner nombre propio en vez de cargo — caduca cuando cambia la persona</td></tr><tr><td><strong>Estado de revisión</strong></td><td>Fecha última revisión</td><td>¿Cuándo se verificó que el control sigue siendo efectivo?</td><td>Sin fecha de revisión — el auditor no sabe si el control está actualizado</td></tr></tbody></table></div></div><div class="slide slide-quiz" data-index="9" data-quiz="true" data-correct="1">
+<div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">ES · Evaluación</span></div>
+<p class="quiz-q">En el SoA de una empresa, el control A.9.4 (Supervisión humana de los sistemas de IA) está marcado como 'Incluido' e 'Implementado = Sí'. La referencia de implementación es: 'Política de IA v1.2, sección 4.3: Los operadores deben supervisar las decisiones del sistema'. El auditor entrevista a un operador que no conoce ningún procedimiento de intervención manual. El auditor clasifica:</p><div class="quiz-opts"><button class="quiz-opt" onclick="answer(this,0,9)"><span class="opt-l">A</span>Conforme — el SoA dice que está implementado y la política lo menciona</button><button class="quiz-opt" onclick="answer(this,1,9)"><span class="opt-l">B</span>NC — el SoA declara que A.9.4 está implementado, pero la evidencia de campo (el operador no sabe cómo intervenir) demuestra que el control no es efectivo en la práctica. La cláusula 8.3 exige que los controles sean eficaces, no solo declarados. La mención en la política sin formación ni proceso operativo real no cumple A.9.4</button><button class="quiz-opt" onclick="answer(this,2,9)"><span class="opt-l">C</span>Observación — el operador podría formarse en el futuro</button><button class="quiz-opt" onclick="answer(this,3,9)"><span class="opt-l">D</span>NC Menor — la política existe, solo falta formación al operador</button></div>
+<div id="fb-9" class="quiz-fb"></div>
+<div id="must-9" class="quiz-must">⚠ Selecciona una respuesta antes de continuar</div></div><div class="slide slide-concept" data-index="10">
+<div class="concept-icon">🎓</div><div class="concept-tag">M17 · Síntesis</div>
+<h2 class="concept-title">Las 4 plantillas: el test de calidad del Lead Implementer</h2><p class="concept-body">Un Lead Implementer de calidad produce cuatro documentos que superan el escrutinio del auditor: una AI Policy firmada por el CEO con compromisos concretos, un Risk Register que incluye riesgos de sesgo y drift (no solo ciberseguridad), una AIIA con métricas cuantitativas de paridad y canal operativo, y un SoA con justificaciones documentadas para cada exclusión. El test más rápido para evaluar la madurez del SGSIA: pedir al RASGSIA que explique por qué excluyeron el control A.5.3 del SoA y qué evidencia de impacto en grupos tienen. Si no puede responder en 2 minutos, el SGSIA tiene problemas.</p>
+<div class="concept-pills"><span class="pill">AI Policy firmada por CEO</span><span class="pill">Risk Register con riesgos de IA</span><span class="pill">AIIA con métricas cuantitativas</span><span class="pill">SoA con justificaciones robustas</span><span class="pill">Test de madurez: A.5.3</span></div></div><div class="slide slide-result" data-index="11">
+<div class="res-icon" id="res-icon">🎯</div>
+<h2 class="res-ti" id="res-ti">Resultado del Módulo</h2>
+<div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+<p class="res-su" id="res-sub"></p>
+<div class="res-bk">
+<div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+<div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+<div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+</div>
+<div class="res-msg" id="res-msg"></div>
+<button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Repasar e intentar de nuevo</button></div></div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function initDots(){const el=document.getElementById('slide-dots');for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function updUI(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);document.getElementById('btn-next').disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);updUI();if(C===TOTAL-1)showResult();}
+function answer(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length,pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Acertaste '+c+'/'+t+' preguntas.':'Acertaste '+c+'/'+t+'. Necesitas el 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+var C=0,TOTAL=12,QS=[3, 5, 7, 9],QA={3:false,5:false,7:false,9:false},QC={3:2,5:2,7:2,9:1},QSC={3:false,5:false,7:false,9:false},FB={3:{ok:'✅ Correcto. La AI Policy tiene dos NCs, ambas Menores porque la política existe y tiene contenido correcto: (1) La firma del Director de Innovación no cumple el requisito de compromiso de la alta dirección (§ 5.1) — debe ser el CEO o equivalente. (2) La falta de comunicación interna evidenciada viola § 7.3 que exige que los empleados sean conscientes de la política de IA. Ambas son NC Menores porque la política existe con contenido adecuado.',fail:'❌ Incorrecto. El Director de Innovación no es la alta dirección a efectos de § 5.1 de ISO 42001 — este requisito exige el compromiso visible del máximo nivel directivo. Además, la falta de comunicación a empleados viola § 7.3. Son dos NCs, ambas Menores.'},5:{ok:'✅ Correcto. El § 6.1.2 exige identificar los riesgos asociados a los sistemas de IA del SGSIA. Los riesgos de sesgo discriminatorio, drift del modelo y supervisión insuficiente son los riesgos más específicos y críticos de los sistemas de IA — y especialmente relevantes para una empresa de RH-tech cuya IA triaja candidatos. Un Risk Register que solo replica los riesgos de ciberseguridad de ISO 27001 tiene una metodología de identificación de riesgos incompleta para el SGSIA.',fail:'❌ Incorrecto. Los riesgos de sesgo discriminatorio en sistemas de selección de RRHH son los más documentados y litigados de toda la industria de IA. Un Risk Register para una empresa de RH-tech que no los incluye tiene una metodología de identificación de riesgos fundamentalmente incompleta. NC — no observación.'},7:{ok:"✅ Correcto. La § 6.1.4 exige una evaluación de impacto que permita determinar si el sistema trata de forma diferente a distintos grupos y qué medidas se toman. 'Puede haber diferencias' sin métricas es una constatación de posibilidad, no un análisis de impacto. 'Revisaremos regularmente' sin propietario, frecuencia ni metodología no es una medida de mitigación sino una intención. La AIIA no cumple los requisitos mínimos.",fail:'❌ Incorrecto. La § 6.1.4 y A.5.2 exigen análisis cuantitativo del impacto sobre individuos y grupos. Una descripción cualitativa sin métricas no permite al auditor verificar que el sistema no discrimina ni que las medidas de mitigación son adecuadas al nivel de riesgo. NC, no observación.'},9:{ok:"✅ Correcto. La cláusula 8.3 exige que los controles del Anexo A sean implementados y efectivos en la práctica — no solo declarados en el SoA. Una mención en la política sin proceso operativo, sin formación al operador y sin evidencia de que el operador puede realmente intervenir no demuestra implementación efectiva de A.9.4. El SoA dice 'Sí' pero la evidencia de campo dice 'No' — NC.",fail:"❌ Incorrecto. El SoA no crea la evidencia de conformidad — la crea la implementación real. Si el SoA declara 'Implementado = Sí' pero el operador no conoce el proceso de intervención, el control no está implementado efectivamente. La política que menciona la supervisión sin proceso operativo ni formación no cumple A.9.4."}},NEXT_MSG='<strong>Siguiente:</strong> Módulo 18 — Simulacro de examen PECB y plan de carrera: 30 preguntas de examen con explicaciones detalladas y la hoja de ruta para la certificación Lead Auditor.',RETRY_MSG='<strong>Recomendación:</strong> Descarga las plantillas de este módulo, completa el ejercicio de la sección anterior y valídalas con el test de madurez del slide 10.';
+
+initDots();updUI();</script></body></html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M08 – Mejora (Cláusula 10)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+/* COVER */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,44px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:20px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:12px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 18px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+/* CONCEPT */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:52px;margin-bottom:16px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:14px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:20px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+/* CONTENT TABLE */
+.slide-content{background:var(--gris-claro);padding:30px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-30px -30px 22px;padding:18px 26px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.6vw,24px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13.5px}
+.ct th{background:var(--azul);color:#fff;padding:10px 11px;text-align:left;font-weight:600;font-size:12px}
+.ct th:first-child{border-radius:8px 0 0 0}.ct th:last-child{border-radius:0 8px 0 0}
+.ct td{padding:9px 11px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+/* ACCORDION */
+.slide-accordion{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:18px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.acc-su{font-size:13px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:7px;flex:1}
+.acc-item{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:14px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:11px;color:var(--gris-medio);transition:transform .3s;margin-left:6px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:400px}
+.acc-content{padding:0 16px 14px 57px;font-size:13px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:5px}
+.acc-content li{padding:2px 0 2px 14px;position:relative;color:#3a4a5c}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:15px;line-height:1.2}
+/* FLIP CARDS */
+.slide-reveal{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:18px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.rv-su{font-size:13px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:160px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 14px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:30px;margin-bottom:9px}
+.flip-front .ff-title{font-size:13.5px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:5px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:12px;font-size:11.5px;color:var(--gris-medio)}
+/* TIMELINE */
+.slide-timeline{background:var(--gris-claro);padding:24px 30px;min-height:100%;display:flex;flex-direction:column}
+.tl-hd{text-align:center;margin-bottom:18px}
+.tl-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.tl-su{font-size:13px;color:var(--gris-medio)}
+.tl-wrap{position:relative;max-width:800px;margin:0 auto;width:100%}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--azul),var(--acento));transform:translateX(-50%);border-radius:2px}
+.tl-item{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;cursor:pointer;position:relative}
+.tl-item:nth-child(odd){flex-direction:row}
+.tl-item:nth-child(even){flex-direction:row-reverse}
+.tl-box{background:#fff;border-radius:10px;padding:12px 14px;flex:1;border:1.5px solid transparent;transition:var(--trans);box-shadow:0 2px 8px rgba(26,58,92,.07)}
+.tl-item.tl-active .tl-box{border-color:var(--azul-mid);box-shadow:0 4px 16px rgba(37,99,168,.15)}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--azul);border:3px solid #fff;box-shadow:0 0 0 2px var(--azul);flex-shrink:0;margin-top:12px;z-index:2;transition:var(--trans)}
+.tl-item.tl-active .tl-dot{background:var(--acento);box-shadow:0 0 0 2px var(--acento)}
+.tl-date{font-size:11px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.tl-ev{font-size:13.5px;font-weight:600;color:var(--azul);margin-bottom:3px}
+.tl-det{font-size:12px;color:var(--gris-medio);line-height:1.5;display:none}
+.tl-item.tl-active .tl-det{display:block}
+/* CASE */
+.slide-case{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:16px 20px;margin-bottom:14px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,20px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:6px 14px;border-radius:20px;border:1.5px solid #dde3ee;background:#fff;font-size:12.5px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.c-tx{font-size:13.5px;color:var(--texto);line-height:1.75;margin-bottom:10px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--texto);line-height:1.6;margin:8px 0}
+/* STAT */
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:12px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,96px);color:#fff;line-height:1;margin-bottom:6px}
+.stat-unit{font-size:18px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:16px}
+.stat-desc{font-size:15.5px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:22px}
+.stat-src{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;text-align:left;flex:1;min-width:150px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:26px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+/* QUIZ */
+.slide-quiz{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,23px);color:var(--azul);margin-bottom:18px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:12px 15px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:11px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:26px;height:26px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:15px;padding:12px 15px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:8px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+/* RESULT */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:58px;margin-bottom:14px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:7px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);line-height:1;margin:7px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:18px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:28px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 20px;max-width:560px;font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:16px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:10px 26px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+
+
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 13</div>
+  </div>
+  <div id="stage">
+
+    <!-- S1 COVER -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 8 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 10 — Mejora</div>
+      <h1 class="cover-title">El Ciclo que Nunca Para:<br>No Conformidades, Acciones Correctivas y Mejora Continua</h1>
+      <p class="cover-subtitle">La cláusula 10 cierra el ciclo PDCA del AIMS. No es el final del proceso —es el punto de reinicio. Las no conformidades y los incidentes de IA no son fracasos: son el mecanismo mediante el cual el AIMS aprende y mejora.</p>
+      <div class="cover-meta">
+        <span class="meta-item">45 min</span>
+        <span class="meta-item">13 slides · 4 preguntas</span>
+      </div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Distinguir corrección, corrección inmediata y acción correctiva en el contexto del AIMS</li>
+          <li>Ejecutar el proceso de acción correctiva de extremo a extremo (cláusula 10.1)</li>
+          <li>Identificar las fuentes de no conformidades más frecuentes en auditorías de ISO 42001</li>
+          <li>Diseñar un programa de mejora continua del AIMS alineado con los objetivos de IA</li>
+          <li>Conectar la cláusula 10 con las clausulas 6, 8 y 9 en el ciclo de retroalimentación del AIMS</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S2 CONCEPT — qué es NC en AIMS -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">🔄</div>
+      <div class="concept-tag">Cláusula 10 · Concepto clave</div>
+      <h2 class="concept-title">No conformidad en el AIMS: más que un incumplimiento</h2>
+      <p class="concept-body">En ISO 42001, una no conformidad puede venir de tres fuentes distintas: (1) <strong style="color:#fff">Auditoría interna o externa</strong> — incumplimiento de un requisito de la norma, (2) <strong style="color:#fff">Incidente de IA</strong> — un sistema de IA produce un comportamiento no deseado con impacto real, (3) <strong style="color:#fff">Retroalimentación de partes interesadas</strong> — un cliente, regulador o individuo afectado reporta un problema. Las tres fuentes activan el proceso de la cláusula 10.1. La mejora continua (10.2) va más allá: busca mejoras proactivas aunque no haya NC.</p>
+      <div class="concept-pills">
+        <span class="pill">10.1 NC + Acción correctiva</span>
+        <span class="pill">10.2 Mejora continua</span>
+        <span class="pill">Causa raíz obligatoria</span>
+        <span class="pill">Verificación de eficacia</span>
+      </div>
+    </div>
+
+    <!-- S3 ACCORDION — proceso acción correctiva -->
+    <div class="slide slide-accordion" data-index="2">
+      <div class="acc-hd">
+        <div class="acc-ey">Cláusula 10.1 · Proceso</div>
+        <h2 class="acc-ti">El proceso de acción correctiva del AIMS — 6 pasos obligatorios</h2>
+        <p class="acc-su">La cláusula 10.1 exige que la organización reaccione ante no conformidades de una forma específica y documentada</p>
+      </div>
+      <div class="acc-list">
+        <div class="acc-item open">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">1</div><span class="acc-label">Reaccionar ante la NC y tomar corrección inmediata</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Detener el daño o limitar el impacto. Para incidentes de IA: desactivar o poner en modo supervisión humana el sistema afectado. Notificar a los afectados según el SLA de A.8.4.
+            <ul><li>Distinción clave: la "corrección" arregla el síntoma; la "acción correctiva" elimina la causa raíz</li>
+            <li>Plazo: inmediato para incidentes de alto impacto; según criterio de riesgo para NC de auditoría</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">2</div><span class="acc-label">Evaluar la necesidad de acción correctiva</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            ¿Puede repetirse? ¿Ocurre en otro lugar? ¿Cuál es la causa raíz? No todas las NC requieren acción correctiva formal si son puntuales y de bajo riesgo.
+            <ul><li>Herramienta: análisis de causa raíz (5-Why, Ishikawa, fault tree)</li>
+            <li>Si la causa raíz es sistémica → acción correctiva obligatoria</li>
+            <li>Si es un caso aislado sin riesgo de repetición → corrección documentada puede ser suficiente</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">3</div><span class="acc-label">Implementar la acción correctiva</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Eliminar la causa raíz. Para sesgos de IA: puede implicar reentrenamiento con datos corregidos, modificación del proceso de validación de datos, o cambio en los criterios de diseño del modelo.
+            <ul><li>La acción debe ser proporcional a la gravedad de la NC</li>
+            <li>Asignar responsable y plazo desde el primer momento</li>
+            <li>Actualizar documentos afectados (Risk Register, AIIA, procedimientos)</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">4</div><span class="acc-label">Revisar la eficacia de la acción correctiva</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Verificar que la acción tomada realmente eliminó la causa raíz y que la NC no se repite.
+            <ul><li>Evidencia de verificación: nueva auditoría, métricas post-corrección, informe de seguimiento</li>
+            <li>Período de verificación: proporcional al riesgo (1-3 meses para NC menores, 6+ meses para NC mayores)</li>
+            <li>NC no cerrada = evidencia de mejora continua incompleta en la siguiente auditoría</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">5</div><span class="acc-label">Actualizar riesgos si es necesario</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Si la NC revela un riesgo no identificado previamente en el AI Risk Assessment, actualizar el Registro de Riesgos y el AIIA.
+            <ul><li>Específico de IA: un incidente de sesgo puede revelar grupos de impacto no considerados en el AIIA</li>
+            <li>Actualizar el SoA si el incidente evidencia que un control declarado no era suficiente</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">6</div><span class="acc-label">Conservar información documentada</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Todo el proceso debe estar documentado: la naturaleza de la NC, las acciones tomadas, los resultados de la revisión de eficacia.
+            <ul><li>Formulario de acción correctiva o registro en el sistema GRC</li>
+            <li>El auditor externo revisará el historial de NC y acciones correctivas del ciclo</li>
+            <li>Retención: mínimo el ciclo de certificación completo (3 años)</li></ul>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 QUIZ 1 -->
+    <div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 8 · Evaluación</span></div>
+      <p class="quiz-q">Un sistema de IA de clasificación de créditos produce una decisión errónea que es detectada por un analista humano y corregida manualmente antes de comunicarla al cliente. El analista registra la corrección en el sistema de ticketing. ¿Es esto suficiente bajo la cláusula 10.1 de ISO 42001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,3)"><span class="opt-l">A</span>Sí: la corrección manual es suficiente porque no llegó al cliente</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,3)"><span class="opt-l">B</span>Sí: el registro en el sistema de ticketing cumple el requisito de información documentada</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,3)"><span class="opt-l">C</span>No: la cláusula 10.1 exige evaluar la causa raíz del error. Si el modelo está produciendo decisiones erróneas sistemáticamente, la corrección puntual no elimina el problema. Debe iniciarse el proceso de análisis de causa raíz y, si procede, acción correctiva</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,3)"><span class="opt-l">D</span>No: cualquier error del sistema de IA debe notificarse al regulador bajo el EU AI Act independientemente de si se corrigió</button>
+      </div>
+      <div id="fb-3" class="quiz-fb"></div>
+      <div id="must-3" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S5 CONTENT TABLE — NC más frecuentes ISO 42001 -->
+    <div class="slide slide-content" data-index="4">
+      <div class="content-header">
+        <div class="ch-ey">Cláusula 10 · Referencia práctica</div>
+        <h2 class="ch-ti">Las no conformidades más frecuentes en auditorías de ISO 42001</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>No conformidad frecuente</th><th>Cláusula / Control</th><th>Causa raíz típica</th><th>Acción correctiva habitual</th></tr></thead>
+          <tbody>
+            <tr><td><strong>AIIA incompleto: no incluye individuos afectados</strong></td><td><span class="tv tv-b">6.1.4</span></td><td>Se confunde AIIA con Risk Assessment interno; no se mira hacia fuera</td><td>Revisión del AIIA incorporando análisis de impacto en grupos afectados y medidas de mitigación</td></tr>
+            <tr><td><strong>SoA con controles no implementados</strong></td><td><span class="tv tv-b">6.1.3</span></td><td>El SoA se crea como check-list sin verificar implementación real de cada control</td><td>Revisión control por control con evidencias; exclusión justificada de no aplicables</td></tr>
+            <tr><td><strong>Monitoreo sin umbrales de acción (A.6.8)</strong></td><td><span class="tv tv-b">A.6.8</span></td><td>Se instala el dashboard pero no se definen cuándo las métricas disparan acción</td><td>Definición de umbrales de alerta y procedimiento de respuesta documentado</td></tr>
+            <tr><td><strong>Alta dirección no puede explicar la política de IA</strong></td><td><span class="tv tv-b">5.1 + 5.2</span></td><td>La política existe pero no fue comunicada efectivamente a la dirección</td><td>Sesión de briefing directivo; incluir la política en el onboarding de nuevos directivos</td></tr>
+            <tr><td><strong>NC de auditoría interna sin acción correctiva</strong></td><td><span class="tv tv-b">9.2 + 10.1</span></td><td>Las NC se registran pero no hay proceso para gestionarlas hasta su cierre</td><td>Implementar registro de acciones correctivas con responsable, plazo y seguimiento en revisión por dirección</td></tr>
+            <tr><td><strong>Sin canal para afectados por decisiones IA</strong></td><td><span class="tv tv-b">A.8.5</span></td><td>El control A.8.5 se declara en el SoA pero no existe el canal en la práctica</td><td>Crear el canal (formulario web, email dedicado) y publicarlo; procedimiento de respuesta con SLA</td></tr>
+            <tr><td><strong>Proveedores de IA sin cláusulas de gobernanza</strong></td><td><span class="tv tv-b">A.10.2</span></td><td>Los contratos fueron firmados antes de implementar el AIMS; no se actualizaron</td><td>Renegociar o añadir addendum con cláusulas de gobernanza de IA; due diligence en nuevos contratos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S6 QUIZ 2 -->
+    <div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 8 · Evaluación</span></div>
+      <p class="quiz-q">La cláusula 10.1.f) exige revisar la eficacia de las acciones correctivas tomadas. En el contexto de un incidente de sesgo en un sistema de IA, ¿qué evidencia demostraría que la acción correctiva fue eficaz?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,5)"><span class="opt-l">A</span>El modelo fue reentrenado y desplegado de nuevo en producción</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,5)"><span class="opt-l">B</span>Métricas de fairness del modelo reentrenado que muestran que el sesgo identificado se redujo por debajo del umbral de aceptación definido, medidas durante al menos 3 meses de operación en producción</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,5)"><span class="opt-l">C</span>Un informe del equipo técnico declarando que el problema fue corregido</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,5)"><span class="opt-l">D</span>La ausencia de nuevas reclamaciones de clientes en el mes siguiente al reentrenamiento</button>
+      </div>
+      <div id="fb-5" class="quiz-fb"></div>
+      <div id="must-5" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S7 CONCEPT — mejora continua proactiva -->
+    <div class="slide slide-concept" data-index="6">
+      <div class="concept-icon">📈</div>
+      <div class="concept-tag">Cláusula 10.2 · Mejora continua</div>
+      <h2 class="concept-title">Mejora continua del AIMS: más allá de gestionar no conformidades</h2>
+      <p class="concept-body">La cláusula 10.2 va más allá de las NC: exige que la organización busque proactivamente la mejora de la <strong style="color:#fff">idoneidad, adecuación y eficacia</strong> del AIMS. En el contexto de IA, esto significa anticiparse a los cambios regulatorios (como las futuras normas armonizadas del EU AI Act), incorporar avances en técnicas de fairness, y revisar el AIMS ante el despliegue de nuevos tipos de sistemas de IA. Las mejoras proactivas documentadas son una señal de madurez que los auditores valoran positivamente en auditorías de renovación.</p>
+      <div class="concept-pills">
+        <span class="pill">Idoneidad del AIMS</span>
+        <span class="pill">Adecuación al contexto</span>
+        <span class="pill">Eficacia de los controles</span>
+        <span class="pill">Mejora proactiva documentada</span>
+      </div>
+    </div>
+
+    <!-- S8 REVEAL — fuentes de mejora continua -->
+    <div class="slide slide-reveal" data-index="7">
+      <div class="rv-hd">
+        <div class="rv-ey">Cláusula 10.2 · Interactivo</div>
+        <h2 class="rv-ti">Fuentes de mejora continua del AIMS</h2>
+        <p class="rv-su">Haz clic en cada tarjeta para ver cómo cada fuente genera oportunidades de mejora proactiva</p>
+      </div>
+      <div class="flip-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🔍</div><div class="ff-title">Auditorías internas</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Las observaciones (no solo las NC) son oportunidades de mejora. Un proceso que "cumple" pero es ineficiente es candidato a mejora continua aunque no genere NC.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">📊</div><div class="ff-title">Métricas del AIMS</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Tendencias en las métricas (fairness, drift, incidentes) que muestran deterioro gradual son señales de mejora antes de que se conviertan en NC. El umbral de acción preventiva es más bajo que el de NC.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">📰</div><div class="ff-title">Cambios regulatorios</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Las normas armonizadas del EU AI Act (en desarrollo por CEN-CENELEC JTC 21), el Digital Omnibus y la evolución del PL 2338/2023 en Brasil son fuentes de mejoras anticipatorias del AIMS.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">💬</div><div class="ff-title">Retroalimentación de PI</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Las reclamaciones de afectados, las preguntas frecuentes al canal A.8.5, o el feedback de clientes sobre transparencia de la IA son señales de áreas donde el AIMS puede mejorar antes de que se conviertan en incidentes.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🌐</div><div class="ff-title">Incidentes de IA del sector</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Los incidentes de IA publicados en el AI Incident Database u otros repositorios permiten aprender de los errores de otras organizaciones sin sufrirlos. Revisión trimestral recomendada.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🔬</div><div class="ff-title">Avances técnicos en IA</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text">Nuevas técnicas de explicabilidad (SHAP mejorado, contrastive explanations), mejores métricas de fairness o herramientas de detección de drift más precisas pueden mejorar los controles existentes.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-hint">Haz clic en cada tarjeta para ver el detalle</div>
+    </div>
+
+    <!-- S9 QUIZ 3 -->
+    <div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 8 · Evaluación</span></div>
+      <p class="quiz-q">En el proceso de acción correctiva (cláusula 10.1), ¿cuál es la diferencia entre "corrección" y "acción correctiva"?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,8)"><span class="opt-l">A</span>No hay diferencia real; los dos términos son sinónimos en ISO 42001</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,8)"><span class="opt-l">B</span>La corrección es más urgente; la acción correctiva puede esperar hasta la próxima auditoría</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,8)"><span class="opt-l">C</span>La acción correctiva se aplica solo a NC mayores; la corrección a NC menores</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,8)"><span class="opt-l">D</span>La corrección elimina el síntoma (arregla el caso concreto); la acción correctiva elimina la causa raíz (evita que el problema se repita). La norma puede exigir ambas, pero solo la acción correctiva previene recurrencia</button>
+      </div>
+      <div id="fb-8" class="quiz-fb"></div>
+      <div id="must-8" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S10 CASE — ciclo completo -->
+    <div class="slide slide-case" data-index="9">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso integrador · Cláusula 10 + cierre del ciclo PDCA</div>
+        <h2 class="case-ttl">MedTech IA: Un año completo del ciclo PDCA en un AIMS certificado — De la NC a la mejora proactiva</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'nc')">NC y corrección</button>
+        <button class="case-tab" onclick="switchCase(this,'causa')">Causa raíz</button>
+        <button class="case-tab" onclick="switchCase(this,'mejora')">Mejora proactiva</button>
+      </div>
+      <div class="case-pnl active" id="cp-nc">
+        <div class="c-st">Incidente y NC detectada (Enero)</div>
+        <p class="c-tx">MedTech IA opera un sistema de IA para priorización de pacientes en listas de espera. En enero, la revisión mensual de métricas detecta que el ratio de priorización de pacientes mayores de 70 años ha caído un 18% respecto al trimestre anterior sin cambios en el modelo.</p>
+        <div class="c-hl">⚠ <strong>NC identificada (A.6.8):</strong> El dashboard de monitoreo no tenía configurada una alerta para este segmento demográfico. La degradación llevaba 6 semanas sin detectarse. Corrección inmediata: revisión manual de los 340 pacientes afectados en el período; repriorización de los que correspondía.</div>
+      </div>
+      <div class="case-pnl" id="cp-causa">
+        <div class="c-st">Análisis de causa raíz (Febrero)</div>
+        <div class="c-hl"><strong>Causa raíz (análisis 5-Why):</strong> Los datos de los últimos 3 meses tenían subrepresentación de pacientes mayores de 70 años porque el hospital de referencia cambió el protocolo de carga de datos en octubre. Nadie en el equipo del AIMS fue notificado de este cambio de proveedor de datos.</div>
+        <div class="c-hl"><strong>NC sistémica identificada (A.10.4):</strong> No existía un proceso de notificación desde el hospital hacia el equipo del AIMS ante cambios en el flujo de datos. NC registrada bajo A.10.4 (notificaciones a clientes) en sentido inverso.</div>
+        <p class="c-tx"><strong>Acción correctiva:</strong> Protocolo de notificación de cambios en fuentes de datos + alertas automáticas por segmento demográfico + validación trimestral de la representatividad del pipeline de datos. Actualización del AIIA con el nuevo grupo de riesgo identificado.</p>
+      </div>
+      <div class="case-pnl" id="cp-mejora">
+        <div class="c-st">Mejora proactiva derivada (Marzo-Diciembre)</div>
+        <div class="c-hl">✅ <strong>Mejora proactiva 1:</strong> El incidente reveló que el proceso de monitoreo no tenía segmentación demográfica. Se implementó un dashboard de fairness con 8 segmentos monitorizados en tiempo real. Mejora documentada en § 10.2 como oportunidad identificada y ejecutada.</div>
+        <div class="c-hl">✅ <strong>Mejora proactiva 2:</strong> La organización revisó sus contratos con todos los proveedores de datos médicos e incorporó cláusulas de notificación de cambios en el pipeline con SLA de 48 horas. Actualización del SoA: A.10.4 reforzado.</div>
+        <div class="c-hl">🏆 <strong>Resultado en auditoría de vigilancia:</strong> El auditor destacó el caso como ejemplo de madurez del AIMS: la NC se convirtió en una mejora proactiva que fortaleció dos controles del Anexo A. Cero NC en la auditoría de vigilancia.</div>
+      </div>
+    </div>
+
+    <!-- S11 QUIZ 4 -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 8 · Evaluación</span></div>
+      <p class="quiz-q">¿Cuál es la diferencia entre "mejora continua" (cláusula 10.2) y "acción correctiva" (cláusula 10.1) en ISO 42001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-l">A</span>La acción correctiva reacciona ante no conformidades existentes; la mejora continua busca proactivamente aumentar la idoneidad, adecuación y eficacia del AIMS aunque no haya NC identificadas</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-l">B</span>No hay diferencia práctica: ambos procesos eliminan causas raíz de problemas</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-l">C</span>La mejora continua es obligatoria solo en el tercer año del ciclo de certificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-l">D</span>La acción correctiva es para NC mayores; la mejora continua para NC menores</button>
+      </div>
+      <div id="fb-10" class="quiz-fb"></div>
+      <div id="must-10" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S12 CONTENT TABLE — cierre del PDCA -->
+    <div class="slide slide-content" data-index="11">
+      <div class="content-header">
+        <div class="ch-ey">Visión integradora · Cláusulas 4-10</div>
+        <h2 class="ch-ti">El ciclo PDCA completo del AIMS — Cómo se conectan todas las cláusulas</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Fase PDCA</th><th>Cláusulas</th><th>Qué produce</th><th>Alimenta a</th></tr></thead>
+          <tbody>
+            <tr><td><strong style="color:var(--azul-mid)">PLAN 📋</strong></td><td><span class="tv tv-b">4, 5, 6</span></td><td>Contexto, política, risk assessment, AIIA, SoA, objetivos de IA</td><td>→ DO (implementación)</td></tr>
+            <tr><td><strong style="color:var(--verde)">DO ⚙️</strong></td><td><span class="tv tv-b">7, 8</span></td><td>Recursos, competencias, controles del Anexo A operativos, gestión del ciclo de vida de la IA</td><td>→ CHECK (evidencias)</td></tr>
+            <tr><td><strong style="color:var(--acento)">CHECK 📊</strong></td><td><span class="tv tv-b">9</span></td><td>Métricas de desempeño, informes de auditoría interna, actas de revisión por la dirección</td><td>→ ACT (mejora)</td></tr>
+            <tr><td><strong style="color:var(--morado)">ACT 🔄</strong></td><td><span class="tv tv-b">10</span></td><td>Acciones correctivas cerradas, mejoras proactivas, actualizaciones del Risk Register y AIIA</td><td>→ PLAN (nuevo ciclo)</td></tr>
+            <tr><td colspan="4" style="background:rgba(37,99,168,.05);text-align:center;color:var(--azul-mid);font-weight:600;padding:12px">El AIMS es un sistema vivo: cada vuelta del ciclo PDCA fortalece los controles, actualiza los riesgos y acerca la organización a la IA responsable</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S13 RESULT -->
+    <div class="slide slide-result" data-index="12">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 8</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+
+  </div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updateProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updateDots();_updateProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+function toggleTL(el){el.classList.toggle('tl-active');}
+
+
+var C=0,TOTAL=13;
+var QS=[3,5,8,10],QA={3:false,5:false,8:false,10:false};
+var QC={3:2,5:1,8:3,10:0};
+var QSC={3:false,5:false,8:false,10:false};
+var FB={
+  3:{ok:"✅ Correcto. La cláusula 10.1 distingue entre corrección (arreglar el caso concreto) y acción correctiva (eliminar la causa raíz). Una decisión errónea corregida manualmente es solo la primera parte. La organización debe evaluar: ¿por qué el modelo produjo ese error? ¿Es sistemático? ¿Cuántas otras decisiones pueden estar afectadas? Sin ese análisis, el problema seguirá ocurriendo.",
+     fail:"❌ Incorrecto. La corrección manual resuelve el caso concreto, pero la cláusula 10.1 exige evaluar la necesidad de acción correctiva: ¿hay una causa raíz que puede generar más errores? Si el modelo está produciendo decisiones erróneas de forma sistemática, la corrección puntual no es suficiente. Y la notificación al regulador solo es obligatoria bajo el EU AI Act para incidentes de alto riesgo con impacto real, no para toda corrección técnica."},
+  5:{ok:"✅ Correcto. La verificación de eficacia de una acción correctiva ante un incidente de sesgo requiere evidencia cuantitativa en producción: las métricas de fairness deben mostrar que el sesgo se redujo por debajo del umbral aceptable, y esta mejora debe mantenerse durante un período de tiempo representativo (3 meses es el estándar habitual). Sin datos de producción post-corrección, el auditor no puede verificar la eficacia.",
+     fail:"❌ Incorrecto. La eficacia de una acción correctiva ante sesgo no puede verificarse con el reentrenamiento per se, con una declaración interna, ni con la ausencia de reclamaciones a corto plazo. Se requiere evidencia cuantitativa: métricas de fairness en producción que demuestren que el sesgo se redujo de forma sostenida. Las reclamaciones de clientes son un indicador tardío y poco fiable."},
+  8:{ok:"✅ Correcto. Esta distinción es fundamental en todos los sistemas de gestión ISO. La corrección arregla el síntoma específico (el caso que generó la NC). La acción correctiva elimina la causa raíz para que el problema no vuelva a ocurrir. La norma puede requerir ambas: la corrección inmediata para limitar el daño, y la acción correctiva para la prevención de recurrencia.",
+     fail:"❌ Incorrecto. La distinción entre corrección y acción correctiva no depende de la urgencia ni de la gravedad de la NC. La corrección arregla el efecto inmediato; la acción correctiva elimina la causa raíz. Para cualquier NC, independientemente de si es mayor o menor, la organización debe evaluar si procede una acción correctiva (si hay riesgo de recurrencia por una causa sistémica)."},
+  10:{ok:"✅ Correcto. La acción correctiva (10.1) es reactiva: responde a NC ya identificadas. La mejora continua (10.2) es proactiva: busca mejorar el AIMS aunque todo esté conforme. En el contexto de IA, esto incluye incorporar nuevas técnicas de fairness, anticiparse a cambios regulatorios, o mejorar controles que funcionan pero pueden optimizarse. Las dos cláusulas son complementarias y obligatorias.",
+     fail:"❌ Incorrecto. Las cláusulas 10.1 y 10.2 tienen propósitos distintos. La 10.1 es reactiva (responde a NC). La 10.2 es proactiva (busca mejoras aunque no haya NC). Ambas son obligatorias en ISO 42001 y se aplican independientemente del nivel de madurez del AIMS. La mejora continua no está ligada al año del ciclo de certificación."}
+};
+var NEXT_MSG='<strong>¡Has completado las cláusulas 4-10!</strong> Tienes la visión completa del AIMS. Los módulos siguientes abordarán: el Anexo A en profundidad (M09), el proceso de auditoría Lead Auditor (M10-M12), los casos reales de empresas certificadas (M13-M14), y los marcos complementarios: EU AI Act, NIST AI RMF y LGPD Brasil (M15-M16).';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa la distinción corrección vs. acción correctiva (slide 3 y 9), las NC más frecuentes de ISO 42001 (slide 5), y el caso MedTech que muestra el ciclo completo (slide 10). Son los temas más examinados de la cláusula 10.';
+
+_initDots(TOTAL);_updateProg();
+</script>
+</body>
+</html>

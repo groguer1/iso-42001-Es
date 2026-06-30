@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001|M12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,42px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:18px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.meta-item{font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 16px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:50px;margin-bottom:14px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:7px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:13px;max-width:700px;line-height:1.2}
+.concept-body{font-size:14.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:18px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+.slide-content{background:var(--gris-claro);padding:28px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-28px -28px 20px;padding:17px 24px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.5vw,23px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13px}
+.ct th{background:var(--azul);color:#fff;padding:9px 10px;text-align:left;font-weight:600;font-size:11.5px}
+.ct th:first-child{border-radius:7px 0 0 0}.ct th:last-child{border-radius:0 7px 0 0}
+.ct td{padding:8px 10px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.5;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.03)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+.slide-accordion{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:16px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.6vw,22px);color:var(--azul);margin-bottom:3px}
+.acc-su{font-size:12.5px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.acc-item{background:#fff;border-radius:9px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:26px;height:26px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:13.5px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:10px;color:var(--gris-medio);transition:transform .3s;margin-left:4px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:500px}
+.acc-content{padding:0 14px 12px 52px;font-size:12.5px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:4px}
+.acc-content li{padding:2px 0 2px 12px;position:relative}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:14px;line-height:1.2}
+.slide-case{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:14px 18px;margin-bottom:12px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,19px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:11px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:5px 13px;border-radius:18px;border:1.5px solid #dde3ee;background:#fff;font-size:12px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:11.5px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.c-tx{font-size:13px;color:var(--texto);line-height:1.75;margin-bottom:8px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:10px 13px;font-size:13px;color:var(--texto);line-height:1.6;margin:7px 0}
+.slide-reveal{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:15px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.6vw,22px);color:var(--azul);margin-bottom:3px}
+.rv-su{font-size:12.5px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:150px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 12px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:28px;margin-bottom:8px}
+.flip-front .ff-title{font-size:13px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:10px;font-size:11px;color:var(--gris-medio)}
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:11px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,94px);color:#fff;line-height:1;margin-bottom:5px}
+.stat-unit{font-size:17px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:15px}
+.stat-desc{font-size:15px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:20px}
+.stat-cards{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px 16px;text-align:left;flex:1;min-width:145px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:24px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;line-height:1.4}
+.slide-quiz{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:18px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,22px);color:var(--azul);margin-bottom:16px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:11px 14px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:10px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:25px;height:25px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:13px;padding:11px 14px;border-radius:9px;font-size:13px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12px;color:var(--acento);font-weight:600;margin-top:7px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:56px;margin-bottom:13px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,33px);color:#fff;margin-bottom:6px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,70px);line-height:1;margin:6px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:16px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:27px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:13px 18px;max-width:560px;font-size:13px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:14px;background:var(--acento);color:#fff;border:none;border-radius:28px;padding:10px 24px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+/* ANNEX DEEP EXPLORER */
+.slide-annexdeep{background:var(--gris-claro);padding:20px 24px;min-height:100%;display:flex;flex-direction:column}
+.ad-hd{text-align:center;margin-bottom:12px;flex-shrink:0}
+.ad-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ad-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.4vw,21px);color:var(--azul);margin-bottom:3px}
+.ad-su{font-size:12px;color:var(--gris-medio)}
+.ad-body{display:flex;gap:12px;flex:1;min-height:0}
+.ad-nav{display:flex;flex-direction:column;gap:4px;width:170px;flex-shrink:0;overflow-y:auto}
+.ad-grp-btn{padding:8px 11px;border-radius:8px;border:1.5px solid #dde3ee;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--azul);text-align:left;transition:var(--trans)}
+.ad-grp-btn:hover{border-color:var(--azul-mid)}
+.ad-grp-btn.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+.ad-grp-badge{background:var(--acento);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:7px;float:right;margin-top:1px}
+.ad-main{flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+.ad-ctrl-card{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;padding:13px 15px;transition:var(--trans)}
+.ad-ctrl-card:hover{border-color:var(--azul-mid)}
+.ad-ctrl-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.ad-ctrl-id{background:var(--azul);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;flex-shrink:0}
+.ad-ctrl-name{font-size:13.5px;font-weight:700;color:var(--azul);flex:1;line-height:1.3}
+.ad-ctrl-critical{background:var(--rojo);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:7px}
+.ad-ctrl-body{font-size:12.5px;color:var(--texto);line-height:1.65}
+.ad-ctrl-evidence{margin-top:7px;background:var(--gris-claro);border-radius:7px;padding:7px 10px;font-size:11.5px;color:var(--azul-mid);line-height:1.5}
+.ad-ctrl-evidence strong{display:block;margin-bottom:2px;color:var(--azul);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+/* AUDIT PROCESS */
+.slide-auditflow{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.af-hd{text-align:center;margin-bottom:14px;flex-shrink:0}
+.af-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.af-ti{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,22px);color:var(--azul);margin-bottom:3px}
+.af-su{font-size:12.5px;color:var(--gris-medio)}
+.af-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1}
+.af-phase{background:#fff;border-radius:11px;border:1.5px solid #dde3ee;padding:14px 15px;display:flex;flex-direction:column;cursor:pointer;transition:var(--trans)}
+.af-phase:hover{border-color:var(--azul-mid);transform:translateY(-2px)}
+.af-phase.af-active{border-color:var(--acento);box-shadow:0 4px 14px rgba(232,88,32,.15)}
+.af-phase-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin-bottom:9px;flex-shrink:0}
+.af-phase-title{font-size:13px;font-weight:700;color:var(--azul);margin-bottom:5px;line-height:1.3}
+.af-phase-sub{font-size:11.5px;color:var(--gris-medio);line-height:1.5;flex:1}
+.af-detail{background:var(--azul);border-radius:11px;padding:16px 18px;margin-top:12px;display:none;flex-shrink:0}
+.af-detail.show{display:block}
+.af-det-title{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;margin-bottom:8px}
+.af-det-body{font-size:13px;color:rgba(255,255,255,.82);line-height:1.65}
+.af-det-items{list-style:none;margin-top:8px}
+.af-det-items li{padding:3px 0 3px 14px;position:relative;font-size:12.5px;color:rgba(255,255,255,.78)}
+.af-det-items li::before{content:"→";position:absolute;left:0;color:var(--amarillo);font-weight:700;font-size:11px}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 14</div>
+  </div>
+  <div id="stage">
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 12 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Proceso de Auditoría — Fase 3: Hallazgos, Informe y Cierre</div>
+      <h1 class="cover-title">Del Hallazgo al Certificado:<br>Clasificar NC, Redactar el Informe y Cerrar la Auditoría</h1>
+      <p class="cover-subtitle">La última fase de la auditoría es donde el Lead Auditor convierte las evidencias recolectadas en hallazgos formales, los documenta en el informe y gestiona el proceso hasta la emisión del certificado o el cierre de no conformidades.</p>
+      <div class="cover-meta"><span class="meta-item">50 min</span><span class="meta-item">14 slides · 4 preguntas</span></div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Clasificar correctamente los hallazgos: NC mayor, NC menor, observación y buena práctica</li>
+          <li>Redactar no conformidades con la estructura correcta (evidencia → referencia → hallazgo)</li>
+          <li>Estructurar el informe de auditoría ISO 42001 con todos los elementos requeridos</li>
+          <li>Gestionar el proceso de cierre de no conformidades hasta la emisión del certificado</li>
+          <li>Gestionar el programa de auditoría de las vigilancias del ciclo de 3 años</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">⚖️</div>
+      <div class="concept-tag">Clasificación de hallazgos · ISO 19011</div>
+      <h2 class="concept-title">Los 4 tipos de hallazgo en una auditoría ISO 42001</h2>
+      <p class="concept-body">ISO 19011 define cuatro tipos de hallazgo. <strong style="color:#fff">NC mayor:</strong> incumplimiento grave de un requisito que afecta la eficacia del AIMS o representa un riesgo de IA significativo no gestionado. Impide la certificación. <strong style="color:#fff">NC menor:</strong> incumplimiento puntual de un requisito sin impacto sistémico. No impide la certificación pero requiere plan de acción. <strong style="color:#fff">Observación:</strong> área de mejora donde no hay NC actual pero hay riesgo de NC futura si no se actúa. <strong style="color:#fff">Buena práctica:</strong> algo que la organización hace excepcionalmente bien que merece reconocimiento y puede usarse como referencia.</p>
+      <div class="concept-pills">
+        <span class="pill">NC Mayor → bloquea certificación</span>
+        <span class="pill">NC Menor → plan de acción</span>
+        <span class="pill">Observación → alerta preventiva</span>
+        <span class="pill">Buena práctica → reconocimiento</span>
+      </div>
+    </div>
+
+    <div class="slide slide-content" data-index="2">
+      <div class="content-header">
+        <div class="ch-ey">Clasificación práctica · ISO 42001</div>
+        <h2 class="ch-ti">Criterios de clasificación de hallazgos específicos de ISO 42001</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Hallazgo</th><th>Clasificación</th><th>Criterio determinante</th></tr></thead>
+          <tbody>
+            <tr><td>El AIIA no analiza el impacto sobre los individuos afectados por las decisiones del sistema de IA</td><td><span class="tv tv-r">NC Mayor</span></td><td>La cláusula 6.1.4 es un requisito fundamental del AIMS; sin AIIA conforme el sistema de gestión no puede ser eficaz</td></tr>
+            <tr><td>El control A.6.8 está implementado pero los umbrales de alerta no están documentados</td><td><span class="tv tv-a">NC Menor</span></td><td>El monitoreo existe y funciona, pero la ausencia de umbrales formales supone un riesgo de inconsistencia en la respuesta</td></tr>
+            <tr><td>El programa de AI Literacy tiene un 92% de completado pero hay 3 empleados en alcance sin completar</td><td><span class="tv tv-a">NC Menor</span></td><td>Incumplimiento puntual con baja incidencia; el programa en general funciona</td></tr>
+            <tr><td>El sistema de IA de triaje hospitalario no tiene procedimiento documentado de supervisión humana</td><td><span class="tv tv-r">NC Mayor</span></td><td>Es un sistema de alto riesgo bajo el EU AI Act; la ausencia de A.9.4 efectivo representa un riesgo de seguridad para los pacientes</td></tr>
+            <tr><td>El canal para afectados (A.8.5) existe pero el SLA de respuesta no está documentado</td><td><span class="tv tv-a">NC Menor</span></td><td>El canal existe y se usa, pero la ausencia de SLA hace la respuesta inconsistente</td></tr>
+            <tr><td>Un contrato con proveedor de API de IA de 2022 no tiene cláusulas de gobernanza de IA</td><td><span class="tv tv-g">Observación</span></td><td>Los contratos de renovación post-AIMS ya tienen las cláusulas; el contrato antiguo se renegociará en la próxima renovación</td></tr>
+            <tr><td>La organización tiene model cards para todos los sistemas de IA con métricas de fairness actualizadas después de cada reentrenamiento</td><td><span class="tv tv-b">Buena práctica</span></td><td>Supera lo estrictamente requerido por A.8.2; es un ejemplo de gestión madura del ciclo de vida</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 12 · Evaluación</span></div>
+      <p class="quiz-q">Un auditor encuentra que el SoA de la organización incluye el control A.6.5 (verificación y pruebas) pero, al solicitar el informe de pruebas del último despliegue en producción, se confirma que el modelo fue desplegado sin informe de pruebas formal y sin fairness testing. ¿Qué clasificación es correcta?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,3)"><span class="opt-l">A</span>NC Mayor: el control A.6.5 está declarado en el SoA pero no fue implementado en el despliegue real. Desplegar sin pruebas de fairness es un incumplimiento grave que puede haber introducido sesgo en producción sin detección</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,3)"><span class="opt-l">B</span>NC Menor: el procedimiento de pruebas existe aunque no se aplicó en este caso concreto</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,3)"><span class="opt-l">C</span>Observación: el equipo técnico ya planea hacer las pruebas en el próximo sprint</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,3)"><span class="opt-l">D</span>Conforme: el control está en el SoA, lo que demuestra la intención de la organización de implementarlo</button>
+      </div>
+      <div id="fb-3" class="quiz-fb"></div>
+      <div id="must-3" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-accordion" data-index="4">
+      <div class="acc-hd">
+        <div class="acc-ey">Redacción de NC · Estructura correcta</div>
+        <h2 class="acc-ti">Cómo redactar una no conformidad en ISO 42001 — Estructura y ejemplos</h2>
+        <p class="acc-su">Una NC mal redactada puede ser impugnada por la organización y dificulta la acción correctiva. La estructura correcta es: Evidencia → Referencia normativa → Hallazgo</p>
+      </div>
+      <div class="acc-list">
+        <div class="acc-item open">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">1</div><span class="acc-label">La estructura correcta de una NC</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Toda NC debe tener tres elementos obligatorios:
+            <ul><li><strong>Evidencia:</strong> Qué observó el auditor, con referencia específica (documento, versión, fecha, persona entrevistada, página)</li>
+            <li><strong>Referencia normativa:</strong> Qué cláusula o control del Anexo A exige lo que falta (p.ej. "ISO/IEC 42001:2023, cláusula 6.1.4 y Anexo A, control A.5.2")</li>
+            <li><strong>Hallazgo:</strong> En qué consiste el incumplimiento (qué se requiere vs. qué se encontró) sin incluir la causa raíz (eso es responsabilidad de la organización)</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">2</div><span class="acc-label">Ejemplo de NC bien redactada (A.6.8)</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            <strong>Evidencia:</strong> "Durante la auditoría de etapa 2 (14/06/2026), la revisión del dashboard de monitoreo del sistema de scoring crediticio (versión 3.2) mostró que la precisión global cayó un 12% entre el 01/04/2026 y el 31/05/2026. El Responsable de MLOps (entrevista 14/06/2026, 10:30h) confirmó que no se configuraron umbrales de alerta para esta métrica y que no se tomó ninguna acción documentada durante ese período."
+            <br><br><strong>Referencia:</strong> ISO/IEC 42001:2023, cláusula 8.3 y Anexo A, control A.6.8.
+            <br><br><strong>Hallazgo:</strong> El control A.6.8 requiere monitoreo continuo con umbrales de acción definidos. La ausencia de umbrales configurados y la falta de respuesta documentada ante una degradación del 12% durante 8 semanas evidencian que el control no es eficaz en la práctica.
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">3</div><span class="acc-label">Errores frecuentes en la redacción de NC</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            <ul><li><strong>NC sin evidencia específica:</strong> "El monitoreo no funciona bien" → sin referencia a qué documento o qué observación lo evidencia</li>
+            <li><strong>NC que incluye la causa raíz:</strong> "El control A.6.8 no se implementó porque el equipo no tenía tiempo" → la causa raíz la determina la organización, no el auditor</li>
+            <li><strong>NC que da la solución:</strong> "El equipo debe implementar un sistema de alertas automáticas" → el auditor no prescribe soluciones</li>
+            <li><strong>NC con referencia incorrecta:</strong> Citar la cláusula 9.1 cuando la NC es del A.6.8 → confunde a la organización sobre qué requisito incumple</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">4</div><span class="acc-label">Buenas prácticas: cómo documentarlas</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Las buenas prácticas no son obligatorias en el informe pero añaden valor y motivan a la organización.
+            <ul><li>Documentar en el informe con la misma estructura: evidencia + por qué supera el estándar + sugerencia de difusión</li>
+            <li>Ejemplo: "La organización actualiza automáticamente la model card y el AIIA tras cada reentrenamiento, superando el requisito mínimo de A.8.2 y A.6.1.4. Esta práctica podría compartirse como referencia en el programa de auditoría del organismo certificador."</li></ul>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="5" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 12 · Evaluación</span></div>
+      <p class="quiz-q">Un auditor redacta la siguiente NC: "El control A.9.4 (supervisión humana) no se implementa correctamente porque el equipo no recibió formación suficiente, probablemente por falta de presupuesto. Se recomienda implementar un programa de formación con simulacros trimestrales." ¿Cuál es el problema con esta redacción?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,5)"><span class="opt-l">A</span>La NC no tiene problema: es completa porque incluye la causa raíz y la recomendación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,5)"><span class="opt-l">B</span>Solo falta la referencia normativa (A.9.4); el resto es correcto</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,5)"><span class="opt-l">C</span>Hay dos problemas: (1) incluye una suposición de causa raíz ("probablemente por falta de presupuesto") que el auditor no puede conocer, y (2) prescribe la solución ("simulacros trimestrales"), que es responsabilidad de la organización, no del auditor. Además falta evidencia específica de la entrevista</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,5)"><span class="opt-l">D</span>La NC debería clasificarse como observación, no como NC</button>
+      </div>
+      <div id="fb-5" class="quiz-fb"></div>
+      <div id="must-5" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-content" data-index="6">
+      <div class="content-header">
+        <div class="ch-ey">Informe de auditoría · Estructura</div>
+        <h2 class="ch-ti">Estructura del informe de auditoría ISO 42001</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Sección</th><th>Contenido obligatorio</th><th>Específico de ISO 42001</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1. Datos de la auditoría</strong></td><td>Organización, alcance, fechas, equipo auditor, criterios, metodología</td><td>Incluir los sistemas de IA auditados y su clasificación de riesgo (EU AI Act)</td></tr>
+            <tr><td><strong>2. Resumen ejecutivo</strong></td><td>Conclusión general, número y clasificación de hallazgos, recomendación de certificación</td><td>Destacar los riesgos de IA más significativos encontrados o no encontrados</td></tr>
+            <tr><td><strong>3. Hallazgos por cláusula</strong></td><td>NC (mayor/menor), observaciones y buenas prácticas con evidencia y referencia</td><td>Hallazgos sobre AIIA, fairness testing, monitoreo de drift y supervisión humana</td></tr>
+            <tr><td><strong>4. Conclusión de certificación</strong></td><td>Recomendar / no recomendar certificación y condiciones</td><td>Si hay NC mayores: condiciones específicas de cierre antes de emitir certificado</td></tr>
+            <tr><td><strong>5. Plan de seguimiento</strong></td><td>Plazos de cierre de NC, método de verificación, próxima auditoría</td><td>Si aplica: plazos de cumplimiento regulatorio (EU AI Act) que afectan a los hallazgos</td></tr>
+            <tr><td><strong>6. Distribución y confidencialidad</strong></td><td>Destinatarios del informe, nivel de confidencialidad, advertencia sobre uso externo</td><td>El informe no puede distribuirse a terceros sin consentimiento del cliente</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 12 · Evaluación</span></div>
+      <p class="quiz-q">Al final de la auditoría de etapa 2, el equipo auditor ha encontrado 1 NC mayor (AIIA incompleto — sin análisis de individuos afectados), 3 NC menores y 2 observaciones. ¿Cuál es la recomendación correcta del auditor jefe?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,7)"><span class="opt-l">A</span>Recomendar la certificación: la NC mayor afecta solo a un documento y puede corregirse tras la certificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,7)"><span class="opt-l">B</span>No recomendar la certificación hasta que la NC mayor (AIIA incompleto) sea corregida y verificada. Las NC menores pueden gestionarse con un plan de acción post-certificación una vez que se cierre la NC mayor</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,7)"><span class="opt-l">C</span>Recomendar certificación condicionada: las NC menores son suficiente para certificar</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,7)"><span class="opt-l">D</span>Solicitar una nueva auditoría de etapa 2 completa para verificar todas las NC</button>
+      </div>
+      <div id="fb-7" class="quiz-fb"></div>
+      <div id="must-7" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-case" data-index="8">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso práctico · Cierre de auditoría</div>
+        <h2 class="case-ttl">LogiAI: Cierre de NC Mayor en un sistema de optimización logística — Del hallazgo al certificado</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'nc')">NC Mayor detectada</button>
+        <button class="case-tab" onclick="switchCase(this,'ac')">Acción correctiva</button>
+        <button class="case-tab" onclick="switchCase(this,'ver')">Verificación y certificado</button>
+      </div>
+      <div class="case-pnl active" id="cp-nc">
+        <div class="c-st">NC Mayor identificada en auditoría de etapa 2</div>
+        <div class="c-hl"><strong>NC Mayor #1 — A.5.2 + cláusula 6.1.4:</strong> El AIIA de LogiAI para su sistema de optimización de rutas de reparto (que determina qué conductores reciben los pedidos más rentables) no incluye análisis del impacto sobre los conductores como individuos afectados. El AIIA solo analiza el impacto operacional para LogiAI (reducción de costes, eficiencia). Los conductores, que son los individuos que reciben asignaciones de trabajo condicionadas por el sistema, no están mencionados como afectados.</div>
+        <p class="c-tx">El auditor no recomienda la certificación hasta que esta NC sea resuelta y verificada. Plazo acordado: 45 días.</p>
+      </div>
+      <div class="case-pnl" id="cp-ac">
+        <div class="c-st">Acción correctiva de LogiAI (30 días)</div>
+        <div class="c-hl"><strong>Análisis de causa raíz:</strong> El equipo que elaboró el AIIA interpretó que los "individuos afectados" eran los clientes finales (destinatarios de paquetes), no los conductores que son los usuarios del sistema y quienes reciben sus decisiones de asignación.</div>
+        <div class="c-hl"><strong>AIIA actualizado incluye:</strong> (1) Identificación de conductores como individuos afectados primarios. (2) Análisis de distribución de asignaciones: ¿los conductores de ciertas zonas geográficas o antigüedad reciben sistemáticamente pedidos de menor valor? Demographic parity ratio por zona: 0.87 (dentro del umbral 0.8-1.2 acordado). (3) Canal para conductores: formulario en la app de conductor para reportar asignaciones que perciban injustas. SLA de revisión: 48h.</div>
+      </div>
+      <div class="case-pnl" id="cp-ver">
+        <div class="c-st">Verificación del cierre de NC Mayor (día 45)</div>
+        <div class="c-hl">✅ <strong>Auditor verifica:</strong> El AIIA actualizado incluye a los conductores como individuos afectados. El análisis de fairness muestra demographic parity ratio de 0.87 con metodología documentada. El canal para conductores está activo en la app y tiene 3 casos recibidos y resueltos en las 2 primeras semanas.</div>
+        <div class="c-hl">✅ <strong>NC Mayor cerrada.</strong> Las 3 NC menores tienen plan de acción acordado con fechas. El auditor emite recomendación de certificación al organismo certificador. Certificado ISO 42001:2023 emitido el 15/07/2026. Próxima auditoría de vigilancia: julio 2027.</div>
+      </div>
+    </div>
+
+    <div class="slide slide-content" data-index="9">
+      <div class="content-header">
+        <div class="ch-ey">Programa de auditoría · Ciclo de 3 años</div>
+        <h2 class="ch-ti">Gestión del programa de auditoría en el ciclo de certificación de 3 años</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Auditoría</th><th>Año</th><th>Alcance</th><th>Duración típica</th><th>Objetivo</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Etapa 1 (documentación)</strong></td><td>Año 1</td><td>Toda la documentación del AIMS</td><td>1 día (remota)</td><td>Verificar que el AIMS está desarrollado y es auditable</td></tr>
+            <tr><td><strong>Etapa 2 (certificación)</strong></td><td>Año 1</td><td>AIMS completo: cláusulas 4-10 + Anexo A + todos los sistemas de IA</td><td>2-4 días (in situ)</td><td>Verificar implementación efectiva y emitir certificado</td></tr>
+            <tr><td><strong>Vigilancia 1</strong></td><td>Año 2</td><td>Cláusulas 9-10 + controles de mayor riesgo + NC menores pendientes</td><td>1-2 días (in situ)</td><td>Verificar que el AIMS se mantiene conforme y mejora continuamente</td></tr>
+            <tr><td><strong>Vigilancia 2</strong></td><td>Año 3</td><td>Cláusulas 6-8 + Anexo A (parte) + nuevos sistemas de IA incorporados</td><td>1-2 días (in situ)</td><td>Preparar la renovación; verificar evolución del AIMS</td></tr>
+            <tr><td><strong>Renovación</strong></td><td>Año 3</td><td>AIMS completo (igual que etapa 2 pero más rápido por la historia conocida)</td><td>2-3 días (in situ)</td><td>Renovar el certificado por 3 años adicionales</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 12 · Evaluación</span></div>
+      <p class="quiz-q">En la reunión de cierre de la auditoría de etapa 2, el Director General de la organización solicita al auditor que "suavice" la redacción de una NC mayor para que parezca NC menor, argumentando que están trabajando en resolverla y que la NC mayor dañaría su reputación con los clientes. ¿Qué debe hacer el auditor?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-l">A</span>Acepta el cambio: si la organización se compromete a corregirlo, puede clasificarse como NC menor</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-l">B</span>Acepta parcialmente: cambia la redacción para que sea menos severa aunque mantiene la clasificación como NC mayor</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-l">C</span>Consulta con el organismo certificador antes de decidir si puede modificar la clasificación</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-l">D</span>Mantiene la clasificación como NC mayor. El principio de presentación ecuánime (ISO 19011) exige que el auditor informe con verdad y objetividad. La presión externa no puede modificar la clasificación de un hallazgo. El auditor puede explicar el proceso de cierre de NC mayores y el impacto real en el certificado</button>
+      </div>
+      <div id="fb-10" class="quiz-fb"></div>
+      <div id="must-10" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <div class="slide slide-content" data-index="11">
+      <div class="content-header">
+        <div class="ch-ey">Examen PECB · Dominio 5</div>
+        <h2 class="ch-ti">Dominio 5 del examen PECB: "Managing the AIMS Audit Programme" — 23,75%</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Área del Dominio 5</th><th>Temas frecuentes en el examen</th><th>Módulo de referencia</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Clasificación de hallazgos</strong></td><td>Distinguir NC mayor vs. menor en escenarios de ISO 42001; criterios de clasificación de hallazgos de IA</td><td>M12 slides 2-3</td></tr>
+            <tr><td><strong>Redacción de NC</strong></td><td>Identificar errores en NC redactadas (causa raíz incluida, solución prescrita, sin evidencia); corregir NC mal redactadas</td><td>M12 slide 5</td></tr>
+            <tr><td><strong>Proceso de cierre de NC</strong></td><td>Qué puede certificarse con NC menores; qué requiere cierre previo de NC mayor; verificación de acciones correctivas</td><td>M12 slides 4, 9</td></tr>
+            <tr><td><strong>Gestión del programa de auditoría</strong></td><td>Alcance de vigilancias; cuándo revisar el programa ante cambios; cómo integrar ISO 42001 con ISO 27001 en programas de auditoría</td><td>M12 slide 10</td></tr>
+            <tr><td><strong>Independencia y principios de auditoría</strong></td><td>Identificar conflictos de independencia; aplicar el principio de presentación ecuánime bajo presión</td><td>M10 + M12 slide 11</td></tr>
+            <tr><td><strong>Informe de auditoría</strong></td><td>Elementos obligatorios del informe; confidencialidad; distribución del informe</td><td>M12 slide 7</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="slide slide-concept" data-index="12">
+      <div class="concept-icon">🏆</div>
+      <div class="concept-tag">Módulos M10-M12 completados</div>
+      <h2 class="concept-title">Dominas el proceso completo de Lead Auditor ISO 42001</h2>
+      <p class="concept-body">Con los módulos 10, 11 y 12 completados, tienes el proceso de auditoría de principio a fin: planificación (M10), técnicas en el terreno (M11) y gestión de hallazgos y cierre (M12). Juntos cubren los Dominios 3, 4 y 5 del examen PECB Lead Auditor, que representan el <strong style="color:#fff">60% del peso total del examen</strong>. Los módulos restantes del curso abordarán: casos reales de empresas certificadas (M13-M14), el marco regulatorio EU AI Act + NIST + LGPD (M15-M16), las plantillas y herramientas prácticas (M17), y el simulacro de examen completo (M18).</p>
+      <div class="concept-pills">
+        <span class="pill">D3 (18,75%) + D4 (17,5%) + D5 (23,75%) = 60%</span>
+        <span class="pill">M13-M18 pendientes</span>
+      </div>
+    </div>
+
+    <div class="slide slide-result" data-index="13">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 12</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+</div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updDots();_updProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+
+var C=0,TOTAL=14;
+var QS=[3,5,7,10],QA={3:false,5:false,7:false,10:false};
+var QC={3:0,5:2,7:1,10:3};
+var QSC={3:false,5:false,7:false,10:false};
+var FB={
+  3:{ok:"✅ Correcto. Desplegar en producción sin informe de pruebas y sin fairness testing es una NC Mayor porque: (1) el control A.6.5 está declarado en el SoA como implementado pero no se aplicó, lo que es una falsedad en el sistema de gestión; y (2) el riesgo de haber introducido sesgo en producción sin detección es grave y sistémico, no puntual.",
+     fail:"❌ Incorrecto. Desplegar sin pruebas de fairness no es una NC Menor ni una observación cuando el control A.6.5 está declarado en el SoA. Es una NC Mayor porque: (1) el SoA declara algo que no es verdad para ese despliegue, comprometiendo la integridad del sistema de gestión; (2) hay riesgo real de sesgo en producción; y (3) el incumplimiento afecta la eficacia del AIMS."},
+  5:{ok:"✅ Correcto. La NC tiene dos problemas graves: incluye una suposición de causa raíz ('probablemente por falta de presupuesto') que el auditor no puede conocer — la causa raíz es determinada por la organización, no por el auditor — y prescribe la solución ('simulacros trimestrales'), que también es responsabilidad de la organización. El auditor describe qué no cumple y por qué referencia normativa, sin entrar en el por qué ni en cómo resolverlo.",
+     fail:"❌ Incorrecto. El problema de la NC no es solo la referencia normativa: incluir una suposición de causa raíz ('probablemente por falta de presupuesto') y prescribir la solución ('simulacros trimestrales') son errores igualmente graves. El auditor describe evidencias e incumplimientos; la causa raíz y la solución son responsabilidad de la organización."},
+  7:{ok:"✅ Correcto. Una NC mayor impide la emisión del certificado hasta que sea cerrada y verificada. Las NC menores, en cambio, pueden cerrarse con un plan de acción después de la certificación (con un plazo acordado, normalmente 3-6 meses). Esta distinción es fundamental: el auditor no puede emitir un certificado con NC mayores abiertas, independientemente del número de NC menores.",
+     fail:"❌ Incorrecto. Una NC mayor pendiente impide la certificación — no puede cerrarse después del certificado. Una nueva auditoría de etapa 2 completa no es necesaria si la NC mayor se cierra y se verifica (puede hacerse de forma documental si no requiere visita in situ). Las NC menores sí pueden gestionarse post-certificación con plan de acción acordado."},
+  10:{ok:"✅ Correcto. El principio de presentación ecuánime de ISO 19011 exige que el auditor informe con verdad, precisión y objetividad. La presión del cliente, independientemente de su cargo, no puede modificar la clasificación de un hallazgo. El auditor puede — y debe — explicar que la NC mayor no impide necesariamente la certificación definitiva si se cierra antes de emitir el certificado, y que el proceso de cierre no tiene por qué ser público más allá del informe confidencial.",
+     fail:"❌ Incorrecto. Ningún argumento del cliente puede modificar la clasificación de un hallazgo. El principio de presentación ecuánime y el de independencia de ISO 19011 exigen que el auditor mantenga su juicio objetivo. Aceptar cambios bajo presión violaría los principios de la auditoría y podría comprometer la acreditación del organismo certificador."}
+};
+var NEXT_MSG='<strong>¡Proceso de auditoría completado!</strong> Con M10-M12 dominas los Dominios 3, 4 y 5 del examen PECB (60% del peso total). Los módulos siguientes: M13-M14 (casos reales de empresas certificadas: AWS, Microsoft, KPMG), M15-M16 (EU AI Act + NIST AI RMF + LGPD Brasil), M17 (plantillas y herramientas) y M18 (simulacro examen PECB).';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa la clasificación de NC mayor vs. menor (slides 2-3), la estructura de redacción de NC (slide 5), y el proceso de cierre (slides 9 y 10). Son los temas con mayor peso en el Dominio 5 del examen PECB.';
+_initDots(TOTAL);_updProg();</script>
+</body></html>

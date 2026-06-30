@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M03 – Liderazgo (Cláusula 5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;
+  --verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;
+  --gris-claro:#F4F6FA;--gris-medio:#8A9BB0;
+  --blanco:#FFFFFF;--texto:#1C2B3A;
+  --trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+
+/* ══ COVER ══ */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:20px;display:inline-block}
+.cover-module{font-size:13px;color:rgba(255,255,255,.5);font-weight:500;margin-bottom:6px}
+.cover-clause{font-size:14px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:10px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(26px,4.5vw,48px);color:#fff;line-height:1.15;margin-bottom:14px;max-width:780px}
+.cover-subtitle{font-size:15px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:28px}
+.cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.meta-item{display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.55)}
+.cover-objectives{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 24px;text-align:left;max-width:680px;width:100%}
+.cover-objectives h3{font-size:13px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.cover-objectives li{list-style:none;font-size:13.5px;color:rgba(255,255,255,.75);padding:4px 0 4px 20px;position:relative;line-height:1.5}
+.cover-objectives li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+
+/* ══ CONCEPT ══ */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:56px;margin-bottom:20px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,38px);color:#fff;margin-bottom:16px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15.5px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:24px}
+.concept-pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+
+/* ══ CONTENT TABLE ══ */
+.slide-content{background:var(--gris-claro);padding:36px 36px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-36px -36px 28px;padding:22px 32px}
+.ch-eyebrow{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-title{font-family:'DM Serif Display',serif;font-size:clamp(18px,3vw,28px);color:#fff}
+.content-body{flex:1}
+.content-table{width:100%;border-collapse:collapse;font-size:14px}
+.content-table th{background:var(--azul);color:#fff;padding:11px 14px;text-align:left;font-weight:600;font-size:12.5px;letter-spacing:.04em}
+.content-table th:first-child{border-radius:8px 0 0 0}.content-table th:last-child{border-radius:0 8px 0 0}
+.content-table td{padding:11px 14px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.6;color:var(--texto)}
+.content-table tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.content-table tr:last-child td{border-bottom:none}
+.tag-verde{display:inline-block;background:#d4f0e1;color:var(--verde);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+.tag-azul{display:inline-block;background:#dde8f5;color:var(--azul-mid);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+.tag-acento{display:inline-block;background:#fde8df;color:var(--acento);font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+.tag-amarillo{display:inline-block;background:#fef3d6;color:#a06b00;font-size:11px;font-weight:700;padding:2px 10px;border-radius:10px}
+
+/* ══ SPLIT (dos columnas comparativa) ══ */
+.slide-split{background:var(--gris-claro);padding:0;min-height:100%;display:flex;flex-direction:column}
+.split-header{background:var(--azul);padding:20px 32px;flex-shrink:0}
+.split-eyebrow{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.split-title{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,26px);color:#fff}
+.split-cols{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0}
+.split-col{padding:24px 28px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.split-col-a{background:#fff;border-right:3px solid var(--gris-claro)}
+.split-col-b{background:var(--azul)}
+.split-col-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:12px;display:inline-block;margin-bottom:4px}
+.label-a{background:#fde8df;color:var(--acento)}
+.label-b{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+.split-item{border-radius:10px;padding:14px 16px}
+.split-item-a{background:var(--gris-claro);border-left:4px solid var(--acento)}
+.split-item-b{background:rgba(255,255,255,.08);border-left:4px solid var(--amarillo)}
+.split-item-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.title-a{color:var(--azul)}
+.title-b{color:#fff}
+.split-item-text{font-size:12.5px;line-height:1.6}
+.text-a{color:#4a5a6a}
+.text-b{color:rgba(255,255,255,.75)}
+.split-divider{display:flex;align-items:center;justify-content:center;background:var(--gris-claro);width:40px;margin:0 auto;font-size:18px;writing-mode:vertical-rl;color:var(--gris-medio);flex-shrink:0}
+
+/* ══ HOTSPOT (SVG org chart clicable) ══ */
+.slide-hotspot{background:var(--gris-claro);padding:24px 32px;min-height:100%;display:flex;flex-direction:column}
+.hs-header{text-align:center;margin-bottom:16px}
+.hs-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hs-title{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.hs-sub{font-size:13px;color:var(--gris-medio)}
+.hs-body{display:flex;gap:20px;flex:1;min-height:0;align-items:flex-start}
+.hs-svg-wrap{flex:1;min-width:0}
+.hs-svg-wrap svg{width:100%;height:auto;max-height:340px}
+.hs-info-panel{width:280px;flex-shrink:0;background:#fff;border-radius:12px;border:2px solid var(--azul-mid);padding:18px;min-height:200px;display:flex;flex-direction:column;justify-content:center}
+.hs-info-empty{text-align:center;color:var(--gris-medio);font-size:13px}
+.hs-info-title{font-size:14px;font-weight:700;color:var(--azul);margin-bottom:8px}
+.hs-info-clause{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.hs-info-text{font-size:13px;color:var(--texto);line-height:1.65}
+.hs-info-items{list-style:none;margin-top:8px}
+.hs-info-items li{font-size:12.5px;color:#3a4a5c;padding:3px 0 3px 16px;position:relative;line-height:1.4}
+.hs-info-items li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:16px;line-height:1.2}
+.hs-node{cursor:pointer;transition:all .2s}
+.hs-node:hover rect,.hs-node:hover ellipse{filter:brightness(1.12)}
+.hs-node.active-node rect{stroke-width:3px!important}
+
+/* ══ POLICY BUILDER ══ */
+.slide-policy{background:var(--gris-claro);padding:24px 32px;min-height:100%;display:flex;flex-direction:column}
+.policy-header{text-align:center;margin-bottom:16px}
+.policy-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.policy-title{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.policy-sub{font-size:13px;color:var(--gris-medio)}
+.policy-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1}
+.policy-controls{display:flex;flex-direction:column;gap:10px}
+.policy-ctrl-group{background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #dde3ee}
+.policy-ctrl-group h4{font-size:12px;font-weight:700;color:var(--azul);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.policy-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f6;font-size:13px;color:var(--texto)}
+.policy-toggle-row:last-child{border-bottom:none}
+.toggle-switch{position:relative;width:38px;height:20px;flex-shrink:0;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:#cdd3dd;border-radius:20px;transition:.3s}
+.toggle-switch input:checked + .toggle-track{background:var(--verde)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle-switch input:checked ~ .toggle-knob{left:20px}
+.policy-preview{background:var(--azul);border-radius:12px;padding:18px 20px;overflow-y:auto}
+.pp-label{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.pp-doc{background:rgba(255,255,255,.06);border-radius:8px;padding:14px 16px}
+.pp-org{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.pp-date{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:12px}
+.pp-section{margin-bottom:10px}
+.pp-section-title{font-size:11.5px;font-weight:700;color:var(--amarillo);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.pp-section-text{font-size:12.5px;color:rgba(255,255,255,.8);line-height:1.6}
+.pp-placeholder{font-size:12px;color:rgba(255,255,255,.3);font-style:italic}
+
+/* ══ DRAG & DROP (match) ══ */
+.slide-drag{background:var(--gris-claro);padding:24px 32px;min-height:100%;display:flex;flex-direction:column}
+.drag-header{text-align:center;margin-bottom:16px}
+.drag-eyebrow{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.drag-title{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.drag-sub{font-size:13px;color:var(--gris-medio)}
+.drag-body{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;align-items:start}
+.drag-sources{display:flex;flex-direction:column;gap:8px}
+.drag-sources h4{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.drag-chip{background:var(--azul);color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;cursor:grab;user-select:none;transition:var(--trans);border:2px solid transparent;line-height:1.4}
+.drag-chip:hover{background:var(--azul-mid);transform:translateY(-1px)}
+.drag-chip.dragging{opacity:.5;cursor:grabbing}
+.drag-chip.placed{opacity:.4;cursor:default;background:var(--gris-medio)}
+.drag-targets{display:flex;flex-direction:column;gap:10px}
+.drag-targets h4{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.drag-zone{border:2px dashed #c0cad8;border-radius:10px;padding:10px 14px;min-height:52px;display:flex;align-items:center;background:#fff;transition:var(--trans);position:relative}
+.drag-zone.drag-over{border-color:var(--azul-mid);background:#f0f5fb}
+.drag-zone.correct-drop{border-color:var(--verde)!important;border-style:solid!important;background:#e8f7ef!important}
+.drag-zone.wrong-drop{border-color:var(--rojo)!important;border-style:solid!important;background:#fdecea!important}
+.drag-zone-label{font-size:12px;font-weight:700;color:var(--azul);min-width:120px;flex-shrink:0;padding-right:10px;border-right:1px solid #dde3ee;margin-right:10px;line-height:1.3}
+.drag-zone-drop{flex:1;font-size:12.5px;color:var(--gris-medio);font-style:italic}
+.drag-zone-drop.filled{color:var(--texto);font-style:normal;font-weight:500}
+.drag-result-badge{position:absolute;right:10px;font-size:16px}
+.drag-btn{margin-top:12px;background:var(--azul-mid);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.drag-btn:hover{background:var(--azul)}
+.drag-score{font-size:14px;font-weight:600;color:var(--azul-mid);margin-top:10px;display:none}
+
+/* ══ QUIZ ══ */
+.slide-quiz{background:var(--gris-claro);padding:28px 36px;min-height:100%;display:flex;flex-direction:column}
+.quiz-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.quiz-badge{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-progress-text{font-size:13px;color:var(--gris-medio)}
+.quiz-question{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:22px;line-height:1.4;max-width:720px}
+.quiz-options{display:flex;flex-direction:column;gap:10px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:14px 18px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:12px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.quiz-opt .opt-letter{width:28px;height:28px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-letter{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-letter{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-feedback{margin-top:18px;padding:14px 18px;border-radius:10px;font-size:14px;line-height:1.6;display:none;max-width:720px}
+.quiz-feedback.show{display:block}
+.quiz-feedback.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.quiz-feedback.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must-answer{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:10px;display:none;max-width:720px}
+.quiz-must-answer.show{display:block}
+
+/* ══ RESULT ══ */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 32px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.result-icon{font-size:64px;margin-bottom:16px;line-height:1}
+.result-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,38px);color:#fff;margin-bottom:8px}
+.result-score{font-family:'DM Serif Display',serif;font-size:clamp(48px,8vw,80px);line-height:1;margin:8px 0}
+.result-sub{font-size:15px;color:rgba(255,255,255,.65);margin-bottom:24px;max-width:500px;line-height:1.7}
+.result-breakdown{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.rb-item{text-align:center}
+.rb-num{font-family:'DM Serif Display',serif;font-size:32px;color:#fff}
+.rb-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.result-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:16px 24px;max-width:560px;font-size:14px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:20px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:12px 32px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 15</div>
+  </div>
+
+  <div id="stage">
+
+    <!-- ══ SLIDE 1: COVER ══ -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 3 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 5 — Liderazgo</div>
+      <h1 class="cover-title">El Compromiso que lo Cambia Todo:<br>Liderazgo y Política de IA</h1>
+      <p class="cover-subtitle">Sin liderazgo real de la alta dirección, un AIMS es papel mojado. La cláusula 5 convierte la gobernanza de IA de un proyecto técnico en una responsabilidad corporativa vinculante —y los auditores saben exactamente cómo verificarlo.</p>
+      <div class="cover-meta">
+        <span class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          50 minutos
+        </span>
+        <span class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          15 slides · 4 preguntas
+        </span>
+        <span class="meta-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Nivel aplicado
+        </span>
+      </div>
+      <div class="cover-objectives">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Identificar las evidencias concretas de compromiso directivo exigidas por la cláusula 5.1</li>
+          <li>Redactar una Política de IA conforme a los requisitos del cláusula 5.2</li>
+          <li>Distinguir los roles obligatorios del AIMS y sus responsabilidades (cláusula 5.3)</li>
+          <li>Entender por qué la cláusula 5 es la que más no conformidades menores genera en auditorías de etapa 2</li>
+          <li>Construir la estructura de gobernanza de IA para tres tipos de organización distintos</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 2: CONCEPT ══ -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">👔</div>
+      <div class="concept-tag">Cláusula 5 · Visión general</div>
+      <h2 class="concept-title">¿Por qué la cláusula 5 es la más crítica del AIMS?</h2>
+      <p class="concept-body">En ISO/IEC 42001, la cláusula 5 no es burocracia: es la <strong style="color:#fff">distribución de responsabilidad legal</strong>. Los auditores de certificación buscan en la cláusula 5 evidencias de que la alta dirección <em>realmente</em> dirige el AIMS —no que lo delega y olvida. Las multas del EU AI Act van al CEO, no al departamento de IT. Esa realidad debe reflejarse en la estructura de gobernanza.</p>
+      <div class="concept-pills">
+        <span class="pill">5.1 Compromiso directivo</span>
+        <span class="pill">5.2 Política de IA</span>
+        <span class="pill">5.3 Roles y responsabilidades</span>
+        <span class="pill">Evidencias verificables</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 3: SPLIT — 5.1 comprometido vs. nominal ══ -->
+    <div class="slide slide-split" data-index="2">
+      <div class="split-header">
+        <div class="split-eyebrow">Cláusula 5.1 · Análisis comparativo</div>
+        <div class="split-title">Liderazgo real vs. liderazgo nominal: lo que distingue una certificación de un papel</div>
+      </div>
+      <div class="split-cols">
+        <div class="split-col split-col-a">
+          <span class="split-col-label label-a">❌ Liderazgo nominal (genera NC)</span>
+          <div class="split-item split-item-a">
+            <div class="split-item-title title-a">Delegación total al departamento técnico</div>
+            <div class="split-item-text text-a">La dirección designa un "responsable de IA" en TI y no participa más. El auditor pedirá actas de revisión por la dirección: no existen.</div>
+          </div>
+          <div class="split-item split-item-a">
+            <div class="split-item-title title-a">Política de IA desconocida por el comité directivo</div>
+            <div class="split-item-text text-a">Se redacta la política pero los directivos no saben que existe ni qué dice. En auditoría, se entrevista a la alta dirección: no pueden explicar los objetivos de IA de la organización.</div>
+          </div>
+          <div class="split-item split-item-a">
+            <div class="split-item-title title-a">Recursos insuficientes asignados</div>
+            <div class="split-item-text text-a">La cláusula 5.1.f) exige que la alta dirección asegure los recursos necesarios. Sin presupuesto ni personas asignadas al AIMS, el auditor levanta no conformidad.</div>
+          </div>
+          <div class="split-item split-item-a">
+            <div class="split-item-title title-a">Sin integración en la estrategia corporativa</div>
+            <div class="split-item-text text-a">El AIMS opera como proyecto aislado sin conexión con el plan de negocio. La cláusula 5.1.b) pide integración en los procesos de negocio de la organización.</div>
+          </div>
+        </div>
+        <div class="split-col split-col-b">
+          <span class="split-col-label label-b">✅ Liderazgo real (evidencias verificables)</span>
+          <div class="split-item split-item-b">
+            <div class="split-item-title title-b">Actas de Comité de IA con presencia directiva</div>
+            <div class="split-item-text text-b">Reuniones periódicas del Comité de Gobernanza de IA donde el CEO o CXO relevante preside, revisa riesgos y aprueba decisiones. Las actas son la evidencia principal del 5.1.</div>
+          </div>
+          <div class="split-item split-item-b">
+            <div class="split-item-title title-b">Política de IA firmada y comunicada al personal</div>
+            <div class="split-item-text text-b">El máximo responsable firma la política. Existe evidencia de comunicación (email corporativo, intranet, sesiones de formación). La dirección puede explicar los principios clave.</div>
+          </div>
+          <div class="split-item split-item-b">
+            <div class="split-item-title title-b">Presupuesto AIMS en plan financiero</div>
+            <div class="split-item-text text-b">El presupuesto para recursos del AIMS (herramientas, formación, consultoría) aparece en el plan financiero anual aprobado por la dirección. Cláusula 5.1.f) + 7.1.</div>
+          </div>
+          <div class="split-item split-item-b">
+            <div class="split-item-title title-b">Objetivos de IA en el plan estratégico</div>
+            <div class="split-item-text text-b">Los objetivos del AIMS están alineados con los objetivos corporativos y aparecen en el plan estratégico. Cláusula 5.1.c): integración en los procesos de negocio.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 4: QUIZ 1 ══ -->
+    <div class="slide slide-quiz" data-index="3" data-quiz="true" data-correct="2">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 1 / 4</span>
+        <span class="quiz-progress-text">Módulo 3 · Evaluación</span>
+      </div>
+      <p class="quiz-question">Durante una auditoría de certificación ISO 42001 en etapa 2, el auditor entrevista al Director General. Este afirma que el AIMS "es responsabilidad de nuestro equipo técnico de IA" y no puede explicar la política de IA ni los objetivos del AIMS. ¿Cuál es la conclusión correcta del auditor?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,3)"><span class="opt-letter">A</span>Conforme: la cláusula 5.1 permite delegar totalmente la responsabilidad del AIMS en equipos técnicos especializados</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,3)"><span class="opt-letter">B</span>Observación: se recomienda mayor implicación directiva pero no es un requisito obligatorio</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,3)"><span class="opt-letter">C</span>No conformidad: la cláusula 5.1 exige que la alta dirección demuestre liderazgo y compromiso personal con el AIMS, lo que incluye conocer y poder comunicar la política y objetivos de IA</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,3)"><span class="opt-letter">D</span>No conformidad menor: es suficiente con que el equipo técnico conozca la política, no la dirección</button>
+      </div>
+      <div id="feedback-3" class="quiz-feedback"></div>
+      <div id="must-3" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 5: POLICY BUILDER ══ -->
+    <div class="slide slide-policy" data-index="4">
+      <div class="policy-header">
+        <div class="policy-eyebrow">Herramienta interactiva · Cláusula 5.2</div>
+        <h2 class="policy-title">Constructor de Política de IA — Elementos obligatorios</h2>
+        <p class="policy-sub">Activa los elementos y genera el borrador de tu Política de IA. La cláusula 5.2 exige que incluya todos los elementos marcados en rojo.</p>
+      </div>
+      <div class="policy-body">
+        <div class="policy-controls">
+          <div class="policy-ctrl-group">
+            <h4>⚠ Elementos obligatorios (cláusula 5.2)</h4>
+            <div class="policy-toggle-row">
+              <span>Propósito del AIMS y la organización</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-proposito" checked onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Marco para establecer objetivos de IA</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-objetivos" checked onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Compromiso con la mejora continua</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-mejora" checked onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Disponible como información documentada</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-doc" checked onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Comunicada a partes interesadas pertinentes</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-comunicada" checked onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+          </div>
+          <div class="policy-ctrl-group">
+            <h4>✅ Elementos recomendados (buena práctica)</h4>
+            <div class="policy-toggle-row">
+              <span>Principios de IA responsable</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-principios" onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Referencia al EU AI Act / LGPD</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-regulacion" onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Supervisión humana como principio rector</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-humano" onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+            <div class="policy-toggle-row">
+              <span>Canal de reporte de incidentes de IA</span>
+              <label class="toggle-switch"><input type="checkbox" id="pt-canal" onchange="updatePolicy()"><div class="toggle-track"></div><div class="toggle-knob"></div></label>
+            </div>
+          </div>
+        </div>
+        <div class="policy-preview">
+          <div class="pp-label">📄 Vista previa — Política de IA (borrador)</div>
+          <div class="pp-doc">
+            <div class="pp-org">POLÍTICA DE INTELIGENCIA ARTIFICIAL</div>
+            <div class="pp-date">Versión 1.0 · Aprobada por: [Alta Dirección] · Fecha: [dd/mm/aaaa]</div>
+            <div id="pp-proposito" class="pp-section">
+              <div class="pp-section-title">1. Propósito y alcance</div>
+              <div class="pp-section-text">[Nombre de la organización] establece el presente AIMS para garantizar el desarrollo, uso y gestión responsable de los sistemas de inteligencia artificial dentro del alcance definido en el documento DOC-AIMS-ALC-001.</div>
+            </div>
+            <div id="pp-objetivos" class="pp-section">
+              <div class="pp-section-title">2. Objetivos de IA</div>
+              <div class="pp-section-text">La organización establece, revisa y actualiza periódicamente los objetivos de IA, alineados con esta política y con los objetivos estratégicos corporativos. Los objetivos son medibles, monitorizados y comunicados a las partes pertinentes.</div>
+            </div>
+            <div id="pp-mejora" class="pp-section">
+              <div class="pp-section-title">3. Mejora continua</div>
+              <div class="pp-section-text">La organización se compromete a la mejora continua del AIMS, incluyendo la actualización de controles, la revisión periódica de riesgos e impactos de IA, y la incorporación de lecciones aprendidas de incidentes y auditorías.</div>
+            </div>
+            <div id="pp-principios" class="pp-section" style="display:none">
+              <div class="pp-section-title">4. Principios de IA responsable</div>
+              <div class="pp-section-text">La organización adopta los principios de transparencia, equidad, no discriminación, privacidad por diseño, robustez y responsabilidad (accountability) como rectores de toda actividad relacionada con sistemas de IA.</div>
+            </div>
+            <div id="pp-regulacion" class="pp-section" style="display:none">
+              <div class="pp-section-title">5. Marco regulatorio</div>
+              <div class="pp-section-text">Esta política es coherente con el Reglamento (UE) 2024/1689 (EU AI Act), el Reglamento (UE) 2016/679 (GDPR) y demás normativa aplicable. La organización mantiene un registro actualizado del panorama regulatorio de IA relevante.</div>
+            </div>
+            <div id="pp-humano" class="pp-section" style="display:none">
+              <div class="pp-section-title">6. Supervisión humana</div>
+              <div class="pp-section-text">Para todos los sistemas de IA clasificados como de alto riesgo, la organización garantiza mecanismos efectivos de supervisión humana que permitan interrumpir, corregir o anular las decisiones del sistema cuando sea necesario.</div>
+            </div>
+            <div id="pp-canal" class="pp-section" style="display:none">
+              <div class="pp-section-title">7. Reporte de incidentes</div>
+              <div class="pp-section-text">Se establece un canal de reporte de incidentes, comportamientos inesperados o preocupaciones relacionadas con los sistemas de IA (ref. control A.3.3 y A.8.4). Todo el personal puede reportar de forma confidencial sin temor a represalias.</div>
+            </div>
+            <div id="pp-firma" class="pp-section">
+              <div class="pp-section-title" style="color:rgba(255,255,255,.4)">— Firma y aprobación —</div>
+              <div class="pp-section-text" style="color:rgba(255,255,255,.4);font-size:12px">[Nombre y cargo del máximo responsable] · [Fecha de aprobación] · Próxima revisión: [dd/mm/aaaa+1año]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 6: CONCEPT — requisitos de la política ══ -->
+    <div class="slide slide-concept" data-index="5">
+      <div class="concept-icon">📜</div>
+      <div class="concept-tag">Cláusula 5.2 · Elemento clave</div>
+      <h2 class="concept-title">El error más común en la Política de IA: copiar la política de seguridad</h2>
+      <p class="concept-body">El 70% de los primeros borradores de Política de IA que revisan los auditores son políticas de seguridad de la información con "IA" insertada. La cláusula 5.2 de ISO 42001 exige elementos <strong style="color:#fff">específicos de IA</strong> que no existen en ISO 27001: el marco para los objetivos de IA responsable, los principios éticos aplicables, y la referencia al rol de la organización respecto a los sistemas de IA. Una política copiada genera no conformidad en el primer ciclo de auditoría.</p>
+      <div class="concept-pills">
+        <span class="pill">Marco de objetivos IA</span>
+        <span class="pill">Principios éticos explícitos</span>
+        <span class="pill">Rol de la org. (4.1)</span>
+        <span class="pill">Firmada por la dirección</span>
+        <span class="pill">Comunicada y disponible</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 7: HOTSPOT — estructura de roles ══ -->
+    <div class="slide slide-hotspot" data-index="6">
+      <div class="hs-header">
+        <div class="hs-eyebrow">Cláusula 5.3 · Organigrama interactivo</div>
+        <h2 class="hs-title">Estructura de gobernanza de IA — Haz clic en cada rol para ver sus responsabilidades</h2>
+        <p class="hs-sub">ISO/IEC 42001 exige asignar y comunicar roles y responsabilidades. Aquí tienes el modelo más auditado.</p>
+      </div>
+      <div class="hs-body">
+        <div class="hs-svg-wrap">
+          <svg viewBox="0 0 520 370" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif">
+            <!-- Lines -->
+            <line x1="260" y1="78" x2="260" y2="108" stroke="#8A9BB0" stroke-width="2"/>
+            <line x1="260" y1="138" x2="100" y2="178" stroke="#8A9BB0" stroke-width="2"/>
+            <line x1="260" y1="138" x2="260" y2="178" stroke="#8A9BB0" stroke-width="2"/>
+            <line x1="260" y1="138" x2="420" y2="178" stroke="#8A9BB0" stroke-width="2"/>
+            <line x1="100" y1="218" x2="100" y2="258" stroke="#8A9BB0" stroke-width="1.5"/>
+            <line x1="100" y1="258" x2="60" y2="298" stroke="#8A9BB0" stroke-width="1.5"/>
+            <line x1="100" y1="258" x2="140" y2="298" stroke="#8A9BB0" stroke-width="1.5"/>
+            <!-- Top: Alta Dirección -->
+            <g class="hs-node" id="hs-dir" onclick="hsClick('dir')">
+              <rect x="170" y="30" width="180" height="48" rx="10" fill="#1A3A5C" stroke="#2563A8" stroke-width="2"/>
+              <text x="260" y="51" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Alta Dirección / CEO</text>
+              <text x="260" y="68" text-anchor="middle" fill="#F0A500" font-size="11">§ 5.1 · Compromiso</text>
+            </g>
+            <!-- Comité IA -->
+            <g class="hs-node" id="hs-comite" onclick="hsClick('comite')">
+              <rect x="170" y="108" width="180" height="48" rx="10" fill="#2563A8" stroke="#4a8fd4" stroke-width="2"/>
+              <text x="260" y="129" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Comité de Gobernanza</text>
+              <text x="260" y="145" text-anchor="middle" fill="rgba(255,255,255,.7)" font-size="11">de Inteligencia Artificial</text>
+            </g>
+            <!-- RAIMS -->
+            <g class="hs-node" id="hs-raims" onclick="hsClick('raims')">
+              <rect x="30" y="178" width="140" height="48" rx="10" fill="#E85820" stroke="#f07040" stroke-width="2"/>
+              <text x="100" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Responsable AIMS</text>
+              <text x="100" y="215" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="11">§ 5.3 · Coord. general</text>
+            </g>
+            <!-- AI Risk Officer -->
+            <g class="hs-node" id="hs-risk" onclick="hsClick('risk')">
+              <rect x="190" y="178" width="140" height="48" rx="10" fill="#2D8B5A" stroke="#4ab07a" stroke-width="2"/>
+              <text x="260" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">AI Risk Officer</text>
+              <text x="260" y="215" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="11">§ 6.1 · Evaluación riesgos</text>
+            </g>
+            <!-- DPO/CISO -->
+            <g class="hs-node" id="hs-dpo" onclick="hsClick('dpo')">
+              <rect x="350" y="178" width="140" height="48" rx="10" fill="#6B48A8" stroke="#9070c8" stroke-width="2"/>
+              <text x="420" y="199" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DPO / CISO</text>
+              <text x="420" y="215" text-anchor="middle" fill="rgba(255,255,255,.8)" font-size="11">§ 5.3 · GDPR / 27001</text>
+            </g>
+            <!-- Team Lead IA -->
+            <g class="hs-node" id="hs-team" onclick="hsClick('team')">
+              <rect x="30" y="258" width="140" height="48" rx="10" fill="#1A3A5C" stroke="#2563A8" stroke-width="1.5"/>
+              <text x="100" y="279" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Team Lead IA</text>
+              <text x="100" y="295" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="11">Equipos técnicos</text>
+            </g>
+            <!-- Auditor Interno -->
+            <g class="hs-node" id="hs-audit" onclick="hsClick('audit')">
+              <rect x="-10" y="298" width="130" height="46" rx="10" fill="#1A3A5C" stroke="#2563A8" stroke-width="1.5"/>
+              <text x="55" y="318" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="600">Auditor Interno</text>
+              <text x="55" y="334" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="10.5">§ 9.2 · Auditorías</text>
+            </g>
+            <!-- Propietarios de sistemas IA -->
+            <g class="hs-node" id="hs-owners" onclick="hsClick('owners')">
+              <rect x="130" y="298" width="130" height="46" rx="10" fill="#1A3A5C" stroke="#2563A8" stroke-width="1.5"/>
+              <text x="195" y="318" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="600">Propietarios</text>
+              <text x="195" y="334" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="10.5">de sistemas de IA</text>
+            </g>
+            <!-- Click hint -->
+            <text x="400" y="340" fill="#8A9BB0" font-size="11" font-style="italic">👆 Haz clic en un rol</text>
+          </svg>
+        </div>
+        <div class="hs-info-panel" id="hs-panel">
+          <div class="hs-info-empty" id="hs-empty">← Haz clic en cualquier rol del organigrama para ver sus responsabilidades, evidencias requeridas y su relación con la cláusula 5.3</div>
+          <div id="hs-content" style="display:none">
+            <div class="hs-info-clause" id="hs-clause"></div>
+            <div class="hs-info-title" id="hs-role-title"></div>
+            <div class="hs-info-text" id="hs-role-text"></div>
+            <ul class="hs-info-items" id="hs-role-items"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 8: QUIZ 2 ══ -->
+    <div class="slide slide-quiz" data-index="7" data-quiz="true" data-correct="1">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 2 / 4</span>
+        <span class="quiz-progress-text">Módulo 3 · Evaluación</span>
+      </div>
+      <p class="quiz-question">¿Cuál de los siguientes elementos es obligatorio en una Política de IA conforme a la cláusula 5.2 de ISO/IEC 42001, pero NO es obligatorio en la política de seguridad de la información de ISO 27001?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,7)"><span class="opt-letter">A</span>El compromiso de cumplir con los requisitos aplicables</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,7)"><span class="opt-letter">B</span>Un marco para establecer objetivos de IA responsable, incluyendo principios éticos y la referencia al rol de la organización respecto a los sistemas de IA</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,7)"><span class="opt-letter">C</span>El compromiso con la mejora continua del sistema de gestión</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,7)"><span class="opt-letter">D</span>Que la política esté disponible como información documentada</button>
+      </div>
+      <div id="feedback-7" class="quiz-feedback"></div>
+      <div id="must-7" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 9: CONTENT TABLE — evidencias de liderazgo ══ -->
+    <div class="slide slide-content" data-index="8">
+      <div class="content-header">
+        <div class="ch-eyebrow">Checklist del Auditor · Cláusula 5.1 + 5.3</div>
+        <h2 class="ch-title">Evidencias de liderazgo que todo auditor ISO 42001 solicitará</h2>
+      </div>
+      <div class="content-body">
+        <table class="content-table">
+          <thead>
+            <tr><th>Evidencia</th><th>Cláusula</th><th>Cómo se verifica en auditoría</th><th>Riesgo si falta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Actas del Comité de Gobernanza de IA</strong></td>
+              <td><span class="tag-azul">5.1</span></td>
+              <td>El auditor solicita las últimas 3 actas y verifica que hay asistencia directiva, se revisan riesgos de IA y se toman decisiones documentadas</td>
+              <td><span class="tag-acento">NC mayor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Política de IA firmada y fechada</strong></td>
+              <td><span class="tag-azul">5.2</span></td>
+              <td>Firma del máximo responsable, fecha de aprobación, evidencia de distribución al personal. Entrevistas: el personal conoce los principios básicos</td>
+              <td><span class="tag-acento">NC menor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Descripción de roles AIMS documentada</strong></td>
+              <td><span class="tag-azul">5.3</span></td>
+              <td>Documento de roles y responsabilidades (o sección en el manual del AIMS) con nombres reales o títulos de cargo. Los titulares conocen sus responsabilidades</td>
+              <td><span class="tag-acento">NC menor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Presupuesto AIMS aprobado por dirección</strong></td>
+              <td><span class="tag-azul">5.1.f</span></td>
+              <td>Documento de aprobación presupuestaria. No es necesario revelar cifras, pero debe existir asignación formal de recursos</td>
+              <td><span class="tag-amarillo">Observación</span></td>
+            </tr>
+            <tr>
+              <td><strong>Registro de comunicación de la política</strong></td>
+              <td><span class="tag-azul">5.2.d</span></td>
+              <td>Email de distribución, registro de formación, publicación en intranet con fecha. Al menos el 80% del personal en alcance debe conocer la política</td>
+              <td><span class="tag-acento">NC menor</span></td>
+            </tr>
+            <tr>
+              <td><strong>Carta / mensaje de compromiso directivo</strong></td>
+              <td><span class="tag-azul">5.1.a</span></td>
+              <td>Comunicado del CEO/DG sobre la importancia del AIMS y la IA responsable. Puede ser un email corporativo, mensaje en la intranet o prefacio del manual del AIMS</td>
+              <td><span class="tag-verde">Buena práctica</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 10: DRAG — emparejar roles con responsabilidades ══ -->
+    <div class="slide slide-drag" data-index="9">
+      <div class="drag-header">
+        <div class="drag-eyebrow">Actividad interactiva · Cláusula 5.3</div>
+        <h2 class="drag-title">Asigna cada responsabilidad al rol correcto</h2>
+        <p class="drag-sub">Arrastra (o haz clic para seleccionar y luego clic en el destino) cada responsabilidad al rol que la asume según ISO/IEC 42001</p>
+      </div>
+      <div class="drag-body">
+        <div>
+          <div class="drag-sources">
+            <h4>Responsabilidades</h4>
+            <div class="drag-chip" id="chip-0" draggable="true" ondragstart="dragStart(event,'chip-0')" onclick="chipClick('chip-0')">Aprobar la Política de IA y garantizar recursos</div>
+            <div class="drag-chip" id="chip-1" draggable="true" ondragstart="dragStart(event,'chip-1')" onclick="chipClick('chip-1')">Gestionar el AI Risk Assessment (§ 6.1.2) y el registro de riesgos</div>
+            <div class="drag-chip" id="chip-2" draggable="true" ondragstart="dragStart(event,'chip-2')" onclick="chipClick('chip-2')">Asegurar la integración AIMS + SGSI y cumplimiento GDPR en sistemas de IA</div>
+            <div class="drag-chip" id="chip-3" draggable="true" ondragstart="dragStart(event,'chip-3')" onclick="chipClick('chip-3')">Mantener el inventario de sistemas de IA y coordinar la operación del AIMS</div>
+            <div class="drag-chip" id="chip-4" draggable="true" ondragstart="dragStart(event,'chip-4')" onclick="chipClick('chip-4')">Realizar las auditorías internas del AIMS (§ 9.2)</div>
+          </div>
+          <button class="drag-btn" onclick="checkDrag()">Verificar asignaciones ✓</button>
+          <div class="drag-score" id="drag-score"></div>
+        </div>
+        <div>
+          <div class="drag-targets">
+            <h4>Roles del AIMS</h4>
+            <div class="drag-zone" id="zone-0" ondragover="dragOver(event)" ondrop="drop(event,'zone-0')" onclick="zoneClick('zone-0')">
+              <div class="drag-zone-label">Alta Dirección</div>
+              <div class="drag-zone-drop" id="zdrop-0">Suelta aquí</div>
+              <span class="drag-result-badge" id="zbadge-0"></span>
+            </div>
+            <div class="drag-zone" id="zone-1" ondragover="dragOver(event)" ondrop="drop(event,'zone-1')" onclick="zoneClick('zone-1')">
+              <div class="drag-zone-label">AI Risk Officer</div>
+              <div class="drag-zone-drop" id="zdrop-1">Suelta aquí</div>
+              <span class="drag-result-badge" id="zbadge-1"></span>
+            </div>
+            <div class="drag-zone" id="zone-2" ondragover="dragOver(event)" ondrop="drop(event,'zone-2')" onclick="zoneClick('zone-2')">
+              <div class="drag-zone-label">DPO / CISO</div>
+              <div class="drag-zone-drop" id="zdrop-2">Suelta aquí</div>
+              <span class="drag-result-badge" id="zbadge-2"></span>
+            </div>
+            <div class="drag-zone" id="zone-3" ondragover="dragOver(event)" ondrop="drop(event,'zone-3')" onclick="zoneClick('zone-3')">
+              <div class="drag-zone-label">Responsable AIMS</div>
+              <div class="drag-zone-drop" id="zdrop-3">Suelta aquí</div>
+              <span class="drag-result-badge" id="zbadge-3"></span>
+            </div>
+            <div class="drag-zone" id="zone-4" ondragover="dragOver(event)" ondrop="drop(event,'zone-4')" onclick="zoneClick('zone-4')">
+              <div class="drag-zone-label">Auditor Interno</div>
+              <div class="drag-zone-drop" id="zdrop-4">Suelta aquí</div>
+              <span class="drag-result-badge" id="zbadge-4"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 11: QUIZ 3 ══ -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="3">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 3 / 4</span>
+        <span class="quiz-progress-text">Módulo 3 · Evaluación</span>
+      </div>
+      <p class="quiz-question">Una empresa tiene un CISO con amplios conocimientos en ISO 27001 que asume también el rol de Responsable del AIMS. El auditor observa que el mismo individuo realiza además las auditorías internas del AIMS. ¿Es esto conforme a ISO/IEC 42001?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-letter">A</span>Sí, es perfectamente válido: ISO 42001 no prohíbe que una persona acumule varios roles del AIMS</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-letter">B</span>Sí, siempre que el CISO tenga las competencias necesarias para los tres roles</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-letter">C</span>No, porque el CISO y el Responsable del AIMS deben ser personas distintas según la cláusula 5.3</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-letter">D</span>No conforme: la cláusula 9.2 exige que los auditores internos sean independientes del área auditada. Una persona no puede auditar su propio trabajo</button>
+      </div>
+      <div id="feedback-10" class="quiz-feedback"></div>
+      <div id="must-10" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 12: CONCEPT — pequeñas organizaciones ══ -->
+    <div class="slide slide-concept" data-index="11">
+      <div class="concept-icon">🏗️</div>
+      <div class="concept-tag">Aplicación práctica · Cláusula 5.3</div>
+      <h2 class="concept-title">¿Cómo aplica la cláusula 5 en organizaciones pequeñas?</h2>
+      <p class="concept-body">ISO/IEC 42001 es escalable. En una organización de 20 personas, el CEO puede ser el Responsable del AIMS y el mismo directivo puede asumir varios roles —excepto el de auditor interno de su propio trabajo. Lo que la norma exige no es una estructura de cargos, sino que las <strong style="color:#fff">responsabilidades estén asignadas, documentadas, comunicadas y que las personas competentes las ejerzan de verdad</strong>. Un organigrama de tres personas puede ser perfectamente conforme si cada uno sabe exactamente qué hace y hay evidencias de ello.</p>
+      <div class="concept-pills">
+        <span class="pill">Escalable a cualquier tamaño</span>
+        <span class="pill">Roles ≠ personas distintas</span>
+        <span class="pill">Excepción: auditor interno</span>
+        <span class="pill">Competencia demostrable</span>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 13: QUIZ 4 ══ -->
+    <div class="slide slide-quiz" data-index="12" data-quiz="true" data-correct="0">
+      <div class="quiz-header">
+        <span class="quiz-badge">PREGUNTA 4 / 4</span>
+        <span class="quiz-progress-text">Módulo 3 · Evaluación</span>
+      </div>
+      <p class="quiz-question">En el contexto del AIMS, la cláusula 5.3 exige que la alta dirección asigne roles, responsabilidades y autoridades. ¿Cuál de las siguientes afirmaciones es correcta respecto a la comunicación de esos roles?</p>
+      <div class="quiz-options">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,12)"><span class="opt-letter">A</span>Los roles y responsabilidades deben estar documentados Y comunicados dentro de la organización; no basta con asignarlos internamente sin comunicarlos</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,12)"><span class="opt-letter">B</span>Es suficiente con que la alta dirección conozca los roles; no es necesario comunicarlos al resto del personal</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,12)"><span class="opt-letter">C</span>Los roles del AIMS solo deben publicarse externamente en la declaración de alcance</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,12)"><span class="opt-letter">D</span>La comunicación de roles solo es obligatoria para organizaciones de más de 250 empleados</button>
+      </div>
+      <div id="feedback-12" class="quiz-feedback"></div>
+      <div id="must-12" class="quiz-must-answer">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- ══ SLIDE 14: CONTENT TABLE — diferencias 27001 vs 42001 cláusula 5 ══ -->
+    <div class="slide slide-content" data-index="13">
+      <div class="content-header">
+        <div class="ch-eyebrow">Para auditores ISO 27001 · Cláusula 5</div>
+        <h2 class="ch-title">Qué cambia en la cláusula 5 de ISO 42001 vs. ISO 27001:2022</h2>
+      </div>
+      <div class="content-body">
+        <table class="content-table">
+          <thead>
+            <tr><th>Aspecto</th><th>ISO 27001:2022</th><th>ISO/IEC 42001:2023</th><th>Impacto práctico</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Política</strong></td>
+              <td>Política de seguridad de la información (CIA)</td>
+              <td>Política de IA (responsabilidad, ética, objetivos IA)</td>
+              <td>Documento separado o claramente diferenciado; no se puede reutilizar</td>
+            </tr>
+            <tr>
+              <td><strong>Liderazgo</strong></td>
+              <td>Dirección garantiza recursos y promueve la seguridad</td>
+              <td>Igual + dirección entiende y comunica los riesgos específicos de IA y el rol de la organización</td>
+              <td>Las entrevistas de auditoría van a los C-Level, no solo a TI</td>
+            </tr>
+            <tr>
+              <td><strong>Rol nuevo</strong></td>
+              <td>No existe equivalente</td>
+              <td><strong>AI Risk Officer</strong> (o equivalente) específico para evaluación de impacto y riesgo de IA</td>
+              <td>Requiere nueva designación o ampliación formal del rol existente (DPO/CISO)</td>
+            </tr>
+            <tr>
+              <td><strong>Consideraciones éticas</strong></td>
+              <td>No requeridas explícitamente</td>
+              <td>La política debe reflejar los principios éticos adoptados para la IA (fairness, transparency, accountability)</td>
+              <td>Requiere decisión corporativa documentada sobre valores de IA</td>
+            </tr>
+            <tr>
+              <td><strong>Sinergias</strong></td>
+              <td colspan="2" style="text-align:center;color:var(--verde);font-weight:600">Estructura HLS 4–10 compartida · Anexo D orienta la integración · ~50% del andamiaje de gestión reutilizable</td>
+              <td>El esfuerzo adicional se concentra en la capa de IA específica</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SLIDE 15: RESULT ══ -->
+    <div class="slide slide-result" data-index="14" id="result-slide">
+      <div class="result-icon" id="result-icon">🎯</div>
+      <h2 class="result-title" id="result-title">Resultado del Módulo 3</h2>
+      <div class="result-score" id="result-score" style="color:var(--amarillo)">—</div>
+      <p class="result-sub" id="result-sub">Calculando tu puntuación...</p>
+      <div class="result-breakdown">
+        <div class="rb-item"><div class="rb-num" id="rb-correct">—</div><div class="rb-label">Correctas</div></div>
+        <div class="rb-item"><div class="rb-num" id="rb-wrong">—</div><div class="rb-label">Incorrectas</div></div>
+        <div class="rb-item"><div class="rb-num">4</div><div class="rb-label">Total</div></div>
+      </div>
+      <div class="result-msg" id="result-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar módulo y reintentar</button>
+    </div>
+
+  </div><!-- /stage -->
+
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+
+<script>
+/* ── SCORM 1.2 ── */
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');
+lms('LMSSetValue','cmi.core.lesson_status','incomplete');
+lms('LMSSetValue','cmi.core.lesson_location','0');
+
+/* ── CORE STATE ── */
+const TOTAL=15;
+const QUIZ_SLIDES=[3,7,10,12];
+const CORRECT={3:2,7:1,10:3,12:0};
+const FEEDBACK={
+  3:{
+    ok:"✅ Correcto. La cláusula 5.1 de ISO/IEC 42001 exige que la alta dirección demuestre liderazgo y compromiso personal. Esto incluye conocer y poder comunicar la política de IA, los objetivos del AIMS y los principios de IA responsable adoptados. Un Director General que no puede explicar su política de IA generará una no conformidad en cualquier auditoría de etapa 2.",
+    fail:"❌ Incorrecto. ISO/IEC 42001 requiere evidencias concretas de compromiso directivo personal, no delegación total. La cláusula 5.1 lista explícitamente las responsabilidades que la alta dirección debe asumir: establecer la política, garantizar recursos, integrar el AIMS en la estrategia y promover la mejora continua. La delegación completa genera no conformidad."
+  },
+  7:{
+    ok:"✅ Correcto. El marco para objetivos de IA responsable, incluyendo la referencia explícita a principios éticos (equidad, transparencia, responsabilidad) y al rol de la organización respecto a los sistemas de IA, es un requisito específico de la cláusula 5.2 de ISO 42001 que no tiene equivalente en ISO 27001. Los otros tres elementos (cumplimiento de requisitos, mejora continua, información documentada) son comunes en ambas normas.",
+    fail:"❌ Incorrecto. Los elementos A, C y D (cumplimiento de requisitos, mejora continua e información documentada) son requisitos de la política en ambas normas (ISO 27001 cláusula 5.2 y ISO 42001 cláusula 5.2). El elemento diferenciador y específico de ISO 42001 es el marco para establecer objetivos de IA responsable, que incluye principios éticos y la referencia al rol de la organización respecto a la IA."
+  },
+  10:{
+    ok:"✅ Correcto. La cláusula 9.2 de ISO/IEC 42001 (y la norma ISO 19011 aplicable) exige que los auditores internos sean independientes del área auditada. Una persona no puede auditar su propio trabajo: sería una flagrante pérdida de independencia y objetividad. En organizaciones pequeñas se puede resolver contratando un auditor externo para las auditorías internas o intercambiando auditores con otra empresa. El CISO puede ser Responsable del AIMS, pero no puede auditar el AIMS que gestiona.",
+    fail:"❌ Incorrecto. Aunque ISO 42001 no impide que una persona acumule roles (Responsable AIMS + CISO), la cláusula 9.2 exige que los auditores internos sean independientes y objetivos respecto al área auditada. Auditar tu propio trabajo es una violación del principio de independencia del auditor, reconocida como no conformidad en todas las normas de sistemas de gestión."
+  },
+  12:{
+    ok:"✅ Correcto. La cláusula 5.3 exige que los roles y responsabilidades estén asignados Y comunicados dentro de la organización. No basta con que la dirección lo sepa internamente: debe existir evidencia de que las personas con roles del AIMS conocen sus responsabilidades. Un auditor verificará esto mediante entrevistas a los titulares de los roles.",
+    fail:"❌ Incorrecto. La cláusula 5.3 exige explícitamente que los roles y responsabilidades estén 'comunicados dentro de la organización'. En auditoría se verifica mediante entrevistas a los titulares de los roles: si no conocen sus responsabilidades, es evidencia de que la comunicación no fue efectiva, generando una no conformidad. No existe límite de tamaño organizacional."
+  }
+};
+
+let current=0;
+const quizAnswered={3:false,7:false,10:false,12:false};
+const quizScores={3:false,7:false,10:false,12:false};
+
+const dotsEl=document.getElementById('slide-dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+function updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===current?' active':(i<current?' done':''));});}
+function updateProgress(){
+  document.getElementById('progress-bar').style.width=(((current+1)/TOTAL)*100)+'%';
+  document.getElementById('slide-counter').textContent=(current+1)+' / '+TOTAL;
+  lms('LMSSetValue','cmi.core.lesson_location',String(current));
+}
+function navigate(dir){
+  const t=current+dir;
+  if(t<0||t>=TOTAL)return;
+  if(dir>0&&QUIZ_SLIDES.includes(current)&&!quizAnswered[current]){
+    document.getElementById('must-'+current).classList.add('show');return;
+  }
+  goTo(t);
+}
+function goTo(idx){
+  if(idx<0||idx>=TOTAL)return;
+  const slides=document.querySelectorAll('.slide');
+  slides[current].classList.remove('active');
+  slides[current].classList.add('exit-left');
+  setTimeout(()=>slides[current].classList.remove('exit-left'),460);
+  current=idx;
+  slides[current].classList.add('active');
+  document.getElementById('btn-prev').disabled=(current===0);
+  const nb=document.getElementById('btn-next');
+  nb.disabled=(current===TOTAL-1)||(QUIZ_SLIDES.includes(current)&&!quizAnswered[current]);
+  updateDots();updateProgress();
+  if(current===TOTAL-1)showResult();
+}
+function answerQuiz(btn,chosen,si){
+  if(quizAnswered[si])return;
+  quizAnswered[si]=true;
+  const correct=CORRECT[si];
+  btn.closest('.quiz-options').querySelectorAll('.quiz-opt').forEach((o,i)=>{
+    o.disabled=true;o.classList.add('disabled');
+    if(i===correct)o.classList.add('correct');
+    if(i===chosen&&chosen!==correct)o.classList.add('wrong');
+  });
+  const ok=(chosen===correct);
+  quizScores[si]=ok;
+  const fb=document.getElementById('feedback-'+si);
+  fb.textContent=ok?FEEDBACK[si].ok:FEEDBACK[si].fail;
+  fb.className='quiz-feedback show '+(ok?'fb-ok':'fb-fail');
+  document.getElementById('must-'+si).classList.remove('show');
+  document.getElementById('btn-next').disabled=false;
+}
+function showResult(){
+  const vals=Object.values(quizScores),c=vals.filter(Boolean).length,t=4;
+  const pct=Math.round((c/t)*100),passed=pct>=70;
+  document.getElementById('result-icon').textContent=passed?'🏆':'📚';
+  document.getElementById('result-title').textContent=passed?'¡Módulo 3 superado!':'Módulo 3 — Repasa el contenido';
+  document.getElementById('result-score').textContent=pct+'%';
+  document.getElementById('result-score').style.color=passed?'#2ecc71':'var(--amarillo)';
+  document.getElementById('rb-correct').textContent=c;
+  document.getElementById('rb-wrong').textContent=t-c;
+  document.getElementById('result-sub').textContent=passed
+    ?'Has superado la evaluación con '+c+' de '+t+' respuestas correctas.'
+    :'Has obtenido '+c+' de '+t+' respuestas correctas. Necesitas un 70% para avanzar.';
+  document.getElementById('result-msg').innerHTML=passed
+    ?'<strong>Próximo paso:</strong> El Módulo 4 cubre la Cláusula 6 — Planificación: el corazón técnico del AIMS. Aprenderás a hacer el AI Risk Assessment, el AI Impact Assessment (AIIA) y a construir el Statement of Applicability (SoA), los tres artefactos más exigentes de toda la implementación.'
+    :'<strong>Recomendación:</strong> Revisa las slides 3 (liderazgo real vs. nominal), 5 (Policy Builder) y 7 (organigrama de roles). La independencia del auditor interno (slide 11) es un concepto clave que aparece sistemáticamente en exámenes de Lead Auditor.';
+  if(!passed)document.getElementById('btn-retry').style.display='inline-block';
+  lms('LMSSetValue','cmi.core.score.raw',String(pct));
+  lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');
+  lms('LMSFinish','');
+}
+function retryQuiz(){goTo(0);}
+
+/* ── POLICY BUILDER ── */
+function updatePolicy(){
+  const ids=['proposito','objetivos','mejora','principios','regulacion','humano','canal'];
+  ids.forEach(id=>{
+    const el=document.getElementById('pp-'+id);
+    if(el){
+      const chk=document.getElementById('pt-'+id);
+      el.style.display=chk&&chk.checked?'block':'none';
+    }
+  });
+}
+
+/* ── HOTSPOT ── */
+const hsData={
+  dir:{clause:'§ 5.1 · Compromiso de la Alta Dirección',title:'Alta Dirección / CEO',text:'Es el máximo responsable del AIMS ante la ley y ante el cuerpo certificador. Debe demostrar liderazgo activo, no pasivo.',items:['Aprobar y firmar la Política de IA','Garantizar recursos presupuestarios y humanos','Presidir las revisiones por la dirección (§ 9.3)','Ser capaz de explicar los objetivos de IA en entrevista de auditoría']},
+  comite:{clause:'§ 5.1 + 5.3 · Órgano de Gobernanza',title:'Comité de Gobernanza de IA',text:'Órgano colegiado que supervisa el AIMS. Sus actas son la evidencia principal de que el liderazgo es real y no nominal.',items:['Revisión periódica de riesgos e impactos de IA','Aprobación de decisiones sobre sistemas de alto riesgo','Seguimiento de objetivos y KPIs del AIMS','Representación de áreas: Legal, TI, RRHH, Negocio, DPO']},
+  raims:{clause:'§ 5.3 · Responsable del AIMS',title:'Responsable del AIMS (RAIMS)',text:'Equivalente al CISO en ISO 27001, pero para el AIMS. Puede ser el mismo CISO con rol ampliado o un cargo dedicado.',items:['Coordinar la implementación y mantenimiento del AIMS','Mantener el inventario de sistemas de IA actualizado','Gestionar la Declaración de Aplicabilidad (SoA)','Preparar informes de estado para el Comité y la Dirección']},
+  risk:{clause:'§ 6.1 · AI Risk Officer',title:'AI Risk Officer',text:'Rol específico de ISO 42001 sin equivalente directo en ISO 27001. Puede ser una persona o función compartida según el tamaño.',items:['Liderar el AI Risk Assessment (§ 6.1.2)','Coordinar el AI Impact Assessment — AIIA (§ 6.1.4)','Mantener el registro de riesgos de IA','Proponer tratamientos de riesgo y verificar su eficacia']},
+  dpo:{clause:'§ 5.3 · Integración ISMS/AIMS',title:'DPO / CISO',text:'En ISO 42001, el DPO y CISO son partes clave del AIMS porque la IA genera riesgos de privacidad y seguridad que se solapan con sus competencias.',items:['Asegurar la coherencia entre AIMS y SGSI (ISO 27001)','Verificar cumplimiento GDPR en sistemas de IA (decisiones automatizadas, Art. 22)','Participar en el AI Impact Assessment (componente de privacidad)','Gestionar incidentes de IA con componente de seguridad/privacidad']},
+  team:{clause:'§ 5.3 · Operación',title:'Team Lead de IA / Equipos Técnicos',text:'Responsables de la implementación técnica de los controles del Anexo A en el día a día.',items:['Implementar los controles del Anexo A en los sistemas de IA','Documentar el ciclo de vida de los modelos (A.6)','Gestionar la calidad y procedencia de datos (A.7)','Notificar comportamientos anómalos o incidentes al RAIMS']},
+  audit:{clause:'§ 9.2 · Auditoría interna',title:'Auditor Interno del AIMS',text:'Debe ser independiente del área que audita. En organizaciones pequeñas se puede externalizar. No puede ser el Responsable del AIMS.',items:['Planificar y ejecutar las auditorías internas del AIMS','Reportar no conformidades y observaciones a la Dirección','Verificar la implementación efectiva de los controles del Anexo A','Mantener independencia objetiva del área auditada (ISO 19011)']},
+  owners:{clause:'§ 5.3 + 8 · Operación',title:'Propietarios de Sistemas de IA',text:'Cada sistema de IA dentro del AIMS tiene un propietario responsable de su operación segura y conforme.',items:['Responsable de que el sistema opera dentro del alcance del AIMS','Documenta los cambios del sistema (versiones, reentrenamientos)','Coordina con el AI Risk Officer en evaluaciones de riesgo e impacto','Aprueba el uso del sistema por parte de los usuarios finales']}
+};
+function hsClick(id){
+  const d=hsData[id];
+  if(!d)return;
+  document.querySelectorAll('.hs-node').forEach(n=>n.classList.remove('active-node'));
+  document.getElementById('hs-'+id).classList.add('active-node');
+  document.getElementById('hs-empty').style.display='none';
+  const c=document.getElementById('hs-content');c.style.display='block';
+  document.getElementById('hs-clause').textContent=d.clause;
+  document.getElementById('hs-role-title').textContent=d.title;
+  document.getElementById('hs-role-text').textContent=d.text;
+  document.getElementById('hs-role-items').innerHTML=d.items.map(i=>`<li>${i}</li>`).join('');
+}
+
+/* ── DRAG & DROP ── */
+const CORRECT_DRAG={0:0,1:1,2:2,3:3,4:4};
+let dragging=null,selectedChip=null;
+const zoneContents={};
+
+function dragStart(e,id){dragging=id;e.dataTransfer.setData('text/plain',id);}
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function drop(e,zoneId){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const chipId=e.dataTransfer.getData('text/plain')||dragging;
+  if(!chipId)return;
+  placeChip(chipId,zoneId);
+  dragging=null;
+}
+function chipClick(chipId){
+  if(document.getElementById(chipId).classList.contains('placed'))return;
+  if(selectedChip===chipId){
+    document.getElementById(chipId).style.outline='';
+    selectedChip=null;return;
+  }
+  if(selectedChip)document.getElementById(selectedChip).style.outline='';
+  selectedChip=chipId;
+  document.getElementById(chipId).style.outline='2px solid var(--amarillo)';
+}
+function zoneClick(zoneId){
+  if(!selectedChip)return;
+  placeChip(selectedChip,zoneId);
+  selectedChip=null;
+}
+function placeChip(chipId,zoneId){
+  const chip=document.getElementById(chipId);
+  if(!chip||chip.classList.contains('placed'))return;
+  const old=Object.keys(zoneContents).find(z=>zoneContents[z]===chipId);
+  if(old){
+    const oldChip=document.getElementById(zoneContents[old]);
+    if(oldChip){oldChip.classList.remove('placed');oldChip.style.outline='';}
+    delete zoneContents[old];
+    const odrop=document.getElementById('zdrop-'+old.split('-')[1]);
+    if(odrop){odrop.textContent='Suelta aquí';odrop.classList.remove('filled');}
+    document.getElementById(old).classList.remove('correct-drop','wrong-drop');
+    document.getElementById('zbadge-'+old.split('-')[1]).textContent='';
+  }
+  zoneContents[zoneId]=chipId;
+  chip.classList.add('placed');chip.style.outline='';
+  const zIdx=zoneId.split('-')[1];
+  const drop=document.getElementById('zdrop-'+zIdx);
+  drop.textContent=chip.textContent;drop.classList.add('filled');
+}
+function checkDrag(){
+  let correct=0;
+  for(let i=0;i<5;i++){
+    const zoneId='zone-'+i;
+    const zone=document.getElementById(zoneId);
+    const badge=document.getElementById('zbadge-'+i);
+    zone.classList.remove('correct-drop','wrong-drop');
+    badge.textContent='';
+    if(zoneContents[zoneId]){
+      const chipIdx=parseInt(zoneContents[zoneId].split('-')[1]);
+      if(CORRECT_DRAG[chipIdx]===i){
+        zone.classList.add('correct-drop');badge.textContent='✅';correct++;
+      } else {
+        zone.classList.add('wrong-drop');badge.textContent='❌';
+      }
+    }
+  }
+  const scoreEl=document.getElementById('drag-score');
+  scoreEl.style.display='block';
+  scoreEl.textContent=correct===5?'🎉 ¡Perfecto! 5/5 asignaciones correctas.':`${correct}/5 correctas. Las zonas marcadas en rojo tienen asignación incorrecta. Puedes seguir ajustando.`;
+}
+
+/* INIT */
+updateProgress();
+updatePolicy();
+</script>
+</body>
+</html>

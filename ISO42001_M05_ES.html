@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISO/IEC 42001 | M05 – Soporte (Cláusula 7)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+:root{--azul:#1A3A5C;--azul-mid:#2563A8;--acento:#E85820;--verde:#2D8B5A;--rojo:#C0392B;--amarillo:#F0A500;--morado:#6B48A8;--gris-claro:#F4F6FA;--gris-medio:#8A9BB0;--texto:#1C2B3A;--trans:all .35s cubic-bezier(.4,0,.2,1);--radio:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--azul);color:var(--texto)}
+#shell{display:flex;flex-direction:column;height:100vh;max-width:1100px;margin:0 auto;padding:0 12px}
+#progress-wrap{height:5px;background:rgba(255,255,255,.18);margin:0 -12px;flex-shrink:0}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--acento),var(--amarillo));width:0%;transition:width .5s ease}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0}
+#course-label{font-size:11px;font-weight:600;letter-spacing:.12em;color:rgba(255,255,255,.55);text-transform:uppercase}
+#slide-counter{font-size:13px;font-weight:600;color:rgba(255,255,255,.7);background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px}
+#stage{flex:1;position:relative;overflow:hidden;border-radius:var(--radio)}
+.slide{position:absolute;inset:0;opacity:0;transform:translateX(60px);transition:opacity .45s ease,transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.exit-left{opacity:0;transform:translateX(-60px)}
+#navbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0;flex-shrink:0;gap:12px}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 24px;border-radius:30px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:var(--trans);white-space:nowrap}
+#btn-prev{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+#btn-prev:hover:not(:disabled){background:rgba(255,255,255,.22)}
+#btn-prev:disabled{opacity:.35;cursor:default}
+#btn-next{background:var(--acento);color:#fff}
+#btn-next:hover:not(:disabled){background:#d14a16;transform:translateY(-1px)}
+#btn-next:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+#slide-dots{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:var(--trans)}
+.dot.active{background:var(--acento);transform:scale(1.3)}
+.dot.done{background:rgba(255,255,255,.55)}
+/* COVER */
+.slide-cover{background:linear-gradient(135deg,var(--azul) 0%,#0D2340 50%,#1A1A2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 32px;min-height:100%}
+.cover-badge{background:var(--acento);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:14px;display:inline-block}
+.cover-module{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px}
+.cover-clause{font-size:13px;font-weight:700;color:var(--amarillo);letter-spacing:.06em;margin-bottom:8px}
+.cover-title{font-family:'DM Serif Display',serif;font-size:clamp(24px,4vw,44px);color:#fff;line-height:1.15;margin-bottom:12px;max-width:780px}
+.cover-subtitle{font-size:14px;color:rgba(255,255,255,.65);max-width:600px;line-height:1.7;margin-bottom:20px}
+.cover-meta{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.cover-obj{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;text-align:left;max-width:680px;width:100%}
+.cover-obj h3{font-size:12px;font-weight:700;color:var(--acento);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.cover-obj li{list-style:none;font-size:13px;color:rgba(255,255,255,.75);padding:3px 0 3px 18px;position:relative;line-height:1.5}
+.cover-obj li::before{content:"→";position:absolute;left:0;color:var(--acento);font-weight:700}
+/* CONCEPT */
+.slide-concept{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:var(--azul-mid)}
+.concept-icon{font-size:52px;margin-bottom:16px;line-height:1}
+.concept-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+.concept-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,36px);color:#fff;margin-bottom:14px;max-width:700px;line-height:1.2}
+.concept-body{font-size:15px;color:rgba(255,255,255,.82);max-width:640px;line-height:1.8;margin-bottom:20px}
+.concept-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.18)}
+/* CONTENT TABLE */
+.slide-content{background:var(--gris-claro);padding:30px;min-height:100%;display:flex;flex-direction:column}
+.content-header{background:var(--azul);border-radius:12px 12px 0 0;margin:-30px -30px 22px;padding:18px 26px}
+.ch-ey{font-size:11px;font-weight:700;color:var(--acento);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.ch-ti{font-family:'DM Serif Display',serif;font-size:clamp(15px,2.6vw,24px);color:#fff}
+.content-body{flex:1}
+.ct{width:100%;border-collapse:collapse;font-size:13.5px}
+.ct th{background:var(--azul);color:#fff;padding:10px 11px;text-align:left;font-weight:600;font-size:12px}
+.ct th:first-child{border-radius:8px 0 0 0}.ct th:last-child{border-radius:0 8px 0 0}
+.ct td{padding:9px 11px;border-bottom:1px solid #dde3ee;vertical-align:top;line-height:1.55;color:var(--texto)}
+.ct tr:nth-child(even) td{background:rgba(37,99,168,.04)}
+.ct tr:last-child td{border-bottom:none}
+.tv{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px}
+.tv-g{background:#d4f0e1;color:var(--verde)}.tv-b{background:#dde8f5;color:var(--azul-mid)}
+.tv-a{background:#fde8df;color:var(--acento)}.tv-y{background:#fef3d6;color:#a06b00}
+.tv-r{background:#fdecea;color:var(--rojo)}.tv-p{background:#ede0f5;color:var(--morado)}
+/* ACCORDION */
+.slide-accordion{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.acc-hd{text-align:center;margin-bottom:18px}
+.acc-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.acc-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.acc-su{font-size:13px;color:var(--gris-medio)}
+.acc-list{display:flex;flex-direction:column;gap:7px;flex:1}
+.acc-item{background:#fff;border-radius:10px;border:1.5px solid #dde3ee;overflow:hidden;transition:var(--trans)}
+.acc-item.open{border-color:var(--azul-mid)}
+.acc-trigger{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
+.acc-trigger:hover{background:rgba(37,99,168,.04)}
+.acc-num{width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:var(--trans)}
+.acc-item.open .acc-num{background:var(--acento)}
+.acc-label{font-size:14px;font-weight:600;color:var(--azul);flex:1}
+.acc-arrow{font-size:11px;color:var(--gris-medio);transition:transform .3s;margin-left:6px}
+.acc-item.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.acc-item.open .acc-body{max-height:400px}
+.acc-content{padding:0 16px 14px 57px;font-size:13px;color:var(--texto);line-height:1.7}
+.acc-content ul{list-style:none;margin-top:5px}
+.acc-content li{padding:2px 0 2px 14px;position:relative;color:#3a4a5c}
+.acc-content li::before{content:"·";position:absolute;left:0;color:var(--acento);font-weight:900;font-size:15px;line-height:1.2}
+/* FLIP CARDS */
+.slide-reveal{background:var(--gris-claro);padding:24px 28px;min-height:100%;display:flex;flex-direction:column}
+.rv-hd{text-align:center;margin-bottom:18px}
+.rv-ey{font-size:11px;font-weight:700;color:var(--azul-mid);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.rv-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.rv-su{font-size:13px;color:var(--gris-medio)}
+.flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;flex:1}
+.flip-card{perspective:800px;cursor:pointer;min-height:160px}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:var(--azul);box-shadow:0 4px 14px rgba(26,58,92,.18)}
+.flip-front .ff-icon{font-size:30px;margin-bottom:9px}
+.flip-front .ff-title{font-size:13.5px;font-weight:600;color:#fff;line-height:1.3}
+.flip-front .ff-hint{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:5px}
+.flip-back{background:#fff;border:2px solid var(--azul-mid);transform:rotateY(180deg)}
+.flip-back .fb-text{font-size:12.5px;color:var(--texto);line-height:1.6}
+.flip-hint{text-align:center;margin-top:12px;font-size:11.5px;color:var(--gris-medio)}
+/* TIMELINE */
+.slide-timeline{background:var(--gris-claro);padding:24px 30px;min-height:100%;display:flex;flex-direction:column}
+.tl-hd{text-align:center;margin-bottom:18px}
+.tl-ti{font-family:'DM Serif Display',serif;font-size:clamp(17px,2.8vw,24px);color:var(--azul);margin-bottom:4px}
+.tl-su{font-size:13px;color:var(--gris-medio)}
+.tl-wrap{position:relative;max-width:800px;margin:0 auto;width:100%}
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--azul),var(--acento));transform:translateX(-50%);border-radius:2px}
+.tl-item{display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;cursor:pointer;position:relative}
+.tl-item:nth-child(odd){flex-direction:row}
+.tl-item:nth-child(even){flex-direction:row-reverse}
+.tl-box{background:#fff;border-radius:10px;padding:12px 14px;flex:1;border:1.5px solid transparent;transition:var(--trans);box-shadow:0 2px 8px rgba(26,58,92,.07)}
+.tl-item.tl-active .tl-box{border-color:var(--azul-mid);box-shadow:0 4px 16px rgba(37,99,168,.15)}
+.tl-dot{width:13px;height:13px;border-radius:50%;background:var(--azul);border:3px solid #fff;box-shadow:0 0 0 2px var(--azul);flex-shrink:0;margin-top:12px;z-index:2;transition:var(--trans)}
+.tl-item.tl-active .tl-dot{background:var(--acento);box-shadow:0 0 0 2px var(--acento)}
+.tl-date{font-size:11px;font-weight:700;color:var(--acento);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.tl-ev{font-size:13.5px;font-weight:600;color:var(--azul);margin-bottom:3px}
+.tl-det{font-size:12px;color:var(--gris-medio);line-height:1.5;display:none}
+.tl-item.tl-active .tl-det{display:block}
+/* CASE */
+.slide-case{background:var(--gris-claro);padding:22px 26px;min-height:100%;display:flex;flex-direction:column}
+.case-hdr{background:linear-gradient(135deg,var(--azul),#0f2347);border-radius:12px;padding:16px 20px;margin-bottom:14px;flex-shrink:0}
+.case-bdg{font-size:11px;font-weight:700;color:var(--amarillo);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.case-ttl{font-family:'DM Serif Display',serif;font-size:clamp(14px,2.2vw,20px);color:#fff;line-height:1.3}
+.case-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;flex-shrink:0}
+.case-tab{padding:6px 14px;border-radius:20px;border:1.5px solid #dde3ee;background:#fff;font-size:12.5px;font-weight:500;color:var(--gris-medio);cursor:pointer;transition:var(--trans)}
+.case-tab.active{background:var(--azul-mid);color:#fff;border-color:var(--azul-mid)}
+.case-pnl{display:none;flex:1;overflow-y:auto}
+.case-pnl.active{display:block}
+.c-st{font-size:12px;font-weight:700;color:var(--azul-mid);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.c-tx{font-size:13.5px;color:var(--texto);line-height:1.75;margin-bottom:10px}
+.c-hl{background:#fff;border-left:4px solid var(--acento);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;color:var(--texto);line-height:1.6;margin:8px 0}
+/* STAT */
+.slide-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px 32px;min-height:100%;background:linear-gradient(135deg,#0f2d5a 0%,#1a3a5c 100%)}
+.stat-ey{font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acento);margin-bottom:12px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:clamp(52px,9vw,96px);color:#fff;line-height:1;margin-bottom:6px}
+.stat-unit{font-size:18px;color:rgba(255,255,255,.6);font-weight:300;margin-bottom:16px}
+.stat-desc{font-size:15.5px;color:rgba(255,255,255,.8);max-width:560px;line-height:1.75;margin-bottom:22px}
+.stat-src{font-size:11px;color:rgba(255,255,255,.35)}
+.stat-cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px;max-width:760px}
+.sc-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 18px;text-align:left;flex:1;min-width:150px}
+.sc-n{font-family:'DM Serif Display',serif;font-size:26px;color:var(--amarillo);line-height:1}
+.sc-l{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.4}
+/* QUIZ */
+.slide-quiz{background:var(--gris-claro);padding:26px 30px;min-height:100%;display:flex;flex-direction:column}
+.quiz-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.quiz-bdg{background:var(--azul-mid);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:.1em;white-space:nowrap}
+.quiz-prog{font-size:13px;color:var(--gris-medio)}
+.quiz-q{font-family:'DM Serif Display',serif;font-size:clamp(16px,2.5vw,23px);color:var(--azul);margin-bottom:18px;line-height:1.4;max-width:720px}
+.quiz-opts{display:flex;flex-direction:column;gap:9px;max-width:720px}
+.quiz-opt{background:#fff;border:2px solid #dde3ee;border-radius:10px;padding:12px 15px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);transition:var(--trans);display:flex;align-items:center;gap:11px}
+.quiz-opt:hover:not(:disabled){border-color:var(--azul-mid);background:#f0f5fb}
+.opt-l{width:26px;height:26px;border-radius:50%;background:var(--gris-claro);border:2px solid #cdd3dd;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--gris-medio);flex-shrink:0;transition:var(--trans)}
+.quiz-opt.correct{border-color:var(--verde)!important;background:#e8f7ef!important}
+.quiz-opt.correct .opt-l{background:var(--verde)!important;border-color:var(--verde)!important;color:#fff!important}
+.quiz-opt.wrong{border-color:var(--rojo)!important;background:#fdecea!important}
+.quiz-opt.wrong .opt-l{background:var(--rojo)!important;border-color:var(--rojo)!important;color:#fff!important}
+.quiz-opt.disabled{cursor:default}
+.quiz-fb{margin-top:15px;padding:12px 15px;border-radius:10px;font-size:13.5px;line-height:1.6;display:none;max-width:720px}
+.quiz-fb.show{display:block}
+.fb-ok{background:#e8f7ef;border-left:4px solid var(--verde);color:#1a5c38}
+.fb-fail{background:#fdecea;border-left:4px solid var(--rojo);color:#7a1a1a}
+.quiz-must{font-size:12.5px;color:var(--acento);font-weight:600;margin-top:8px;display:none;max-width:720px}
+.quiz-must.show{display:block}
+/* RESULT */
+.slide-result{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 28px;min-height:100%;background:linear-gradient(135deg,var(--azul) 0%,#0D2340 100%)}
+.res-icon{font-size:58px;margin-bottom:14px;line-height:1}
+.res-ti{font-family:'DM Serif Display',serif;font-size:clamp(20px,3.5vw,34px);color:#fff;margin-bottom:7px}
+.res-sc{font-family:'DM Serif Display',serif;font-size:clamp(44px,7vw,72px);line-height:1;margin:7px 0}
+.res-su{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:18px;max-width:500px;line-height:1.7}
+.res-bk{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.rb{text-align:center}
+.rb-n{font-family:'DM Serif Display',serif;font-size:28px;color:#fff}
+.rb-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.res-msg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 20px;max-width:560px;font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.7}
+.btn-retry{margin-top:16px;background:var(--acento);color:#fff;border:none;border-radius:30px;padding:10px 26px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{background:#d14a16;transform:translateY(-2px)}
+
+
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="topbar">
+    <div id="course-label">ISO/IEC 42001:2023 — Lead Auditor &amp; Implementer</div>
+    <div id="slide-counter">1 / 14</div>
+  </div>
+  <div id="stage">
+
+    <!-- S1 COVER -->
+    <div class="slide slide-cover active" data-index="0">
+      <div class="cover-badge">Módulo 5 de 18</div>
+      <div class="cover-module">ISO/IEC 42001:2023 · Lead Auditor &amp; Implementer</div>
+      <div class="cover-clause">Cláusula 7 — Soporte</div>
+      <h1 class="cover-title">Los Cimientos Habilitadores:<br>Recursos, Competencias y Comunicación</h1>
+      <p class="cover-subtitle">Sin personas competentes, sin información documentada bien gestionada y sin comunicación efectiva, el AIMS más sofisticado fracasa en la auditoría. La cláusula 7 convierte las intenciones de liderazgo en capacidad operativa real.</p>
+      <div class="cover-meta">
+        <span class="meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>45 min</span>
+        <span class="meta-item">14 slides · 4 preguntas</span>
+      </div>
+      <div class="cover-obj">
+        <h3>Objetivos de aprendizaje</h3>
+        <ul>
+          <li>Identificar los recursos específicos de IA que exige la cláusula 7.1 (más allá de los de ISO 27001)</li>
+          <li>Diseñar un plan de competencias en IA para los tres perfiles clave del AIMS</li>
+          <li>Distinguir información documentada obligatoria vs. recomendada en ISO 42001</li>
+          <li>Establecer el programa de concienciación en IA responsable para el personal</li>
+          <li>Definir la matriz de comunicación interna y externa del AIMS</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- S2 CONCEPT -->
+    <div class="slide slide-concept" data-index="1">
+      <div class="concept-icon">🧰</div>
+      <div class="concept-tag">Cláusula 7 · Visión general</div>
+      <h2 class="concept-title">Cláusula 7: cinco habilitadores que el auditor verifica juntos</h2>
+      <p class="concept-body">La cláusula 7 tiene cinco subclausulas. Un auditor de ISO 42001 las agrupa mentalmente en dos bloques: <strong style="color:#fff">capacidad humana</strong> (7.1 recursos, 7.2 competencias, 7.3 concienciación) y <strong style="color:#fff">flujos de información</strong> (7.4 comunicación, 7.5 información documentada). El bloque de capacidad humana es donde ISO 42001 más se diferencia de ISO 27001, porque la IA requiere competencias técnicas y éticas que la seguridad clásica no demandaba.</p>
+      <div class="concept-pills">
+        <span class="pill">7.1 Recursos</span><span class="pill">7.2 Competencias</span>
+        <span class="pill">7.3 Concienciación</span><span class="pill">7.4 Comunicación</span>
+        <span class="pill">7.5 Info. documentada</span>
+      </div>
+    </div>
+
+    <!-- S3 ACCORDION — 5 subclausulas -->
+    <div class="slide slide-accordion" data-index="2">
+      <div class="acc-hd">
+        <div class="acc-ey">Referencia normativa · Cláusula 7</div>
+        <h2 class="acc-ti">Las cinco subclausulas de la Cláusula 7 en detalle</h2>
+        <p class="acc-su">Haz clic en cada subcláusula para ver requisitos, evidencias y errores frecuentes en auditoría</p>
+      </div>
+      <div class="acc-list">
+        <div class="acc-item open">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">7.1</div><span class="acc-label">Recursos para el AIMS</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Determinar y proporcionar los recursos necesarios: <strong>humanos</strong> (AI Risk Officer, RAIMS, auditores internos), <strong>técnicos</strong> (herramientas de evaluación de sesgo, plataformas de monitoreo de modelos, GRC tools) e <strong>infraestructura</strong> (entornos de pruebas seguros).
+            <ul><li>Evidencia: presupuesto AIMS aprobado, descripción de puestos actualizada</li>
+            <li>Específico de IA: recursos para detección de drift, evaluación de sesgo, explicabilidad</li>
+            <li>NC frecuente: no incluir las herramientas de gobernanza de IA en el inventario de recursos</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">7.2</div><span class="acc-label">Competencia en IA</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Determinar las competencias necesarias para el AIMS, asegurarse de que las personas las tienen (o las adquieren), y conservar evidencias documentadas.
+            <ul><li>Evidencia: matriz de competencias IA, registros de formación, certificaciones</li>
+            <li>Específico de IA: competencias técnicas (ML, datos) + competencias éticas (bias, fairness)</li>
+            <li>NC frecuente: formación genérica en IA sin alineación con las funciones del AIMS</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">7.3</div><span class="acc-label">Concienciación en IA responsable</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            El personal dentro del alcance debe conocer: la política de IA, su contribución al AIMS y las implicaciones del incumplimiento. El EU AI Act (Art. 4) exige además <strong>AI Literacy</strong> para todos los empleados desde el 2 feb 2025.
+            <ul><li>Evidencia: plan de concienciación, registros de asistencia, cuestionarios post-formación</li>
+            <li>Específico de IA: incluir casos de sesgo y discriminación como ejemplos formativos</li>
+            <li>NC frecuente: no documentar los resultados del programa de concienciación</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">7.4</div><span class="acc-label">Comunicación interna y externa</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Determinar qué, cuándo, a quién, cómo y quién comunica sobre el AIMS, tanto internamente (empleados, dirección) como externamente (reguladores, clientes, individuos afectados).
+            <ul><li>Evidencia: matriz de comunicación AIMS, registros de comunicaciones realizadas</li>
+            <li>Específico de IA: canal de comunicación hacia individuos afectados por decisiones de IA (control A.8.5)</li>
+            <li>NC frecuente: no tener definido el canal de respuesta a solicitudes de explicación (GDPR Art. 22)</li></ul>
+          </div></div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-trigger" onclick="toggleAcc(this)">
+            <div class="acc-num">7.5</div><span class="acc-label">Información documentada</span><span class="acc-arrow">▼</span>
+          </button>
+          <div class="acc-body"><div class="acc-content">
+            Crear, actualizar y controlar la información documentada requerida por la norma y la necesaria para la eficacia del AIMS. El control de documentos incluye: formato, revisión, aprobación, distribución, protección, acceso y retención.
+            <ul><li>Evidencia: listado maestro de documentos AIMS, procedimiento de control documental</li>
+            <li>Específico de IA: gestión de versiones de model cards, registros de reentrenamiento, logs de inferencia</li>
+            <li>NC frecuente: documentos del AIMS sin control de versiones ni aprobación formal</li></ul>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 CONTENT TABLE — matriz de competencias -->
+    <div class="slide slide-content" data-index="3">
+      <div class="content-header">
+        <div class="ch-ey">Cláusula 7.2 · Matriz de competencias</div>
+        <h2 class="ch-ti">Competencias en IA exigidas por perfil del AIMS</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Rol / Perfil</th><th>Competencias técnicas IA</th><th>Competencias éticas y regulatorias</th><th>Evidencia de formación</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Responsable AIMS</strong></td><td>Fundamentos ML, arquitecturas de sistemas de IA, evaluación de riesgos</td><td>ISO 42001 completo, EU AI Act, principios IA responsable</td><td><span class="tv tv-b">Certificación Lead Implementer</span></td></tr>
+            <tr><td><strong>AI Risk Officer</strong></td><td>Evaluación de sesgo, métricas de fairness (demographic parity, equalized odds), técnicas de explicabilidad (SHAP, LIME)</td><td>AIIA, GDPR Art. 22, técnicas de mitigación de impacto</td><td><span class="tv tv-b">Formación especializada + práctica documentada</span></td></tr>
+            <tr><td><strong>DPO / CISO</strong></td><td>Privacidad en IA, ataques adversariales, seguridad de modelos</td><td>GDPR + IA, cruce con ISO 27001, responsabilidad en cadena de suministro</td><td><span class="tv tv-b">Formación de actualización anual</span></td></tr>
+            <tr><td><strong>Equipo técnico IA</strong></td><td>MLOps, control de versiones de modelos, pruebas de IA (robustez, fairness testing)</td><td>Uso ético de datos, documentación de decisiones de diseño, model cards</td><td><span class="tv tv-g">Formación interna + certificación técnica</span></td></tr>
+            <tr><td><strong>Todo el personal en alcance</strong></td><td>Fundamentos básicos de IA (qué es, cómo funciona, limitaciones)</td><td>Política de IA, canal de reporte, derechos de los afectados</td><td><span class="tv tv-g">Programa de AI Literacy (EU AI Act Art. 4)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S5 QUIZ 1 -->
+    <div class="slide slide-quiz" data-index="4" data-quiz="true" data-correct="2">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 1 / 4</span><span class="quiz-prog">Módulo 5 · Evaluación</span></div>
+      <p class="quiz-q">El EU AI Act, en vigor desde el 2 de febrero de 2025, introduce una obligación nueva que tiene impacto directo en la cláusula 7.3 de ISO 42001. ¿Cuál es?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,4)"><span class="opt-l">A</span>Obtener la certificación ISO 42001 para todos los sistemas de IA antes de agosto 2026</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,4)"><span class="opt-l">B</span>Publicar en el DOUE la lista de sistemas de IA de la organización</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,4)"><span class="opt-l">C</span>Garantizar un nivel adecuado de AI Literacy (competencias básicas en IA) para todos los empleados que trabajan con sistemas de IA</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,4)"><span class="opt-l">D</span>Designar un AI Officer con dedicación exclusiva en organizaciones de más de 250 empleados</button>
+      </div>
+      <div id="fb-4" class="quiz-fb"></div>
+      <div id="must-4" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S6 REVEAL — información documentada obligatoria -->
+    <div class="slide slide-reveal" data-index="5">
+      <div class="rv-hd">
+        <div class="rv-ey">Cláusula 7.5 · Interactivo</div>
+        <h2 class="rv-ti">Información documentada obligatoria en ISO 42001</h2>
+        <p class="rv-su">Haz clic en cada tarjeta para ver qué cláusula la exige y qué debe contener</p>
+      </div>
+      <div class="flip-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">📋</div><div class="ff-title">Alcance del AIMS</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 4.3</strong> — Delimita qué sistemas de IA, unidades y ubicaciones están dentro. Incluye justificación de exclusiones. Revisión mínimo anual.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">📜</div><div class="ff-title">Política de IA</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 5.2</strong> — Marco de objetivos de IA responsable. Firmada por la alta dirección. Comunicada y disponible para todas las partes pertinentes.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">⚠️</div><div class="ff-title">Registro de riesgos de IA</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 6.1.2</strong> — Riesgos identificados, probabilidad, impacto, decisión de tratamiento, propietario, estado. Actualización continua y ante cambios.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">📊</div><div class="ff-title">Statement of Applicability</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 6.1.3</strong> — Los 38 controles del Anexo A con su estado (incluido/excluido), justificación de exclusiones y referencia a la implementación.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">👥</div><div class="ff-title">Evidencias de competencia</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 7.2</strong> — Registros de formación, certificaciones, evaluaciones de competencia. Incluye el programa de AI Literacy (EU AI Act Art. 4).</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🔍</div><div class="ff-title">Resultados del AI Risk Assessment</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 6.1.2</strong> — Los resultados de cada ciclo de evaluación deben conservarse. El auditor compara evolución de riesgos entre ciclos anuales.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">💥</div><div class="ff-title">AI Impact Assessment (AIIA)</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 6.1.4</strong> — Impacto sobre individuos, grupos y sociedad. Análisis de sesgo y fairness. Medidas de mitigación. Actualizar ante cambios del sistema de IA.</div></div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-inner">
+            <div class="flip-front"><div class="ff-icon">🎯</div><div class="ff-title">Objetivos de IA + Plan</div><div class="ff-hint">Toca para ver</div></div>
+            <div class="flip-back"><div class="fb-text"><strong>Cláusula 6.2</strong> — Objetivos SMART-AI: qué, KPI, responsable, plazo, recursos. Seguimiento documentado del avance. Presentados en revisión por la dirección.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-hint">Haz clic en cada tarjeta para revelar el contenido</div>
+    </div>
+
+    <!-- S7 QUIZ 2 -->
+    <div class="slide slide-quiz" data-index="6" data-quiz="true" data-correct="1">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 2 / 4</span><span class="quiz-prog">Módulo 5 · Evaluación</span></div>
+      <p class="quiz-q">Un auditor solicita los registros de competencia del equipo de data science responsable del reentrenamiento de modelos de IA. La organización presenta certificados de cursos de Python y TensorFlow, pero no puede demostrar que el equipo ha recibido formación en evaluación de sesgo ni en el proceso de AI Risk Assessment. ¿Cuál es la clasificación correcta?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,6)"><span class="opt-l">A</span>Conforme: la formación técnica en las herramientas de desarrollo es suficiente para la cláusula 7.2</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,6)"><span class="opt-l">B</span>No conformidad: la cláusula 7.2 exige que las competencias cubran también las funciones específicas del AIMS; para el equipo técnico de IA, esto incluye la evaluación de sesgo y el proceso de gestión de riesgos</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,6)"><span class="opt-l">C</span>Observación: se recomienda añadir formación en ética de IA pero no es obligatorio</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,6)"><span class="opt-l">D</span>Conforme: la evaluación de sesgo es responsabilidad del AI Risk Officer, no del equipo de data science</button>
+      </div>
+      <div id="fb-6" class="quiz-fb"></div>
+      <div id="must-6" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S8 CONTENT TABLE — info documentada -->
+    <div class="slide slide-content" data-index="7">
+      <div class="content-header">
+        <div class="ch-ey">Cláusula 7.5 · Control documental</div>
+        <h2 class="ch-ti">Gestión de información documentada específica de IA</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Tipo de documento IA</th><th>Requisito de control</th><th>Retención mínima</th><th>Particularidad IA</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Model cards</strong></td><td>Versión, fecha de entrenamiento, aprobación técnica y ética</td><td>Vida del modelo + 2 años</td><td><span class="tv tv-b">Obligatorio en Anexo A.6</span></td></tr>
+            <tr><td><strong>Registros de reentrenamiento</strong></td><td>Qué datos, cuándo, quién aprobó, métricas antes/después</td><td>Vida del modelo + 2 años</td><td><span class="tv tv-b">Evidencia de gestión del ciclo de vida</span></td></tr>
+            <tr><td><strong>Logs de inferencia</strong> (decisiones)</td><td>Registro auditable de decisiones del sistema de IA</td><td>Según regulación aplicable (GDPR: mínimo ejercicio siguiente)</td><td><span class="tv tv-a">GDPR Art. 22 + EU AI Act</span></td></tr>
+            <tr><td><strong>Resultados de auditorías de sesgo</strong></td><td>Métricas de fairness, hallazgos, acciones correctivas</td><td>3 años mínimo</td><td><span class="tv tv-b">Evidencia del AIIA actualizado</span></td></tr>
+            <tr><td><strong>Registros de incidentes de IA</strong></td><td>Descripción, impacto, causa raíz, acción correctiva, cierre</td><td>5 años (o según sector)</td><td><span class="tv tv-a">EU AI Act: notificación autoridades en 15 días</span></td></tr>
+            <tr><td><strong>Actas de revisión por la dirección</strong></td><td>Aprobación de la dirección, acciones y plazos</td><td>3 años</td><td><span class="tv tv-g">Evidencia de liderazgo activo (§ 5.1)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S9 QUIZ 3 -->
+    <div class="slide slide-quiz" data-index="8" data-quiz="true" data-correct="0">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 3 / 4</span><span class="quiz-prog">Módulo 5 · Evaluación</span></div>
+      <p class="quiz-q">La cláusula 7.5.3 exige que la información documentada del AIMS esté "disponible y sea adecuada para su uso". ¿Qué significa esto en el contexto práctico de una auditoría ISO 42001?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,8)"><span class="opt-l">A</span>Los documentos deben ser accesibles para las personas que los necesitan, estar actualizados y aprobados, y protegidos contra modificación no autorizada. El auditor puede solicitar cualquier documento del AIMS y debe poder acceder a él en el acto</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,8)"><span class="opt-l">B</span>Significa que todos los documentos del AIMS deben estar publicados en la web corporativa</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,8)"><span class="opt-l">C</span>Significa que los documentos deben estar en papel, con firma original</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,8)"><span class="opt-l">D</span>Solo los documentos obligatorios necesitan estar disponibles; los recomendados pueden estar sin finalizar</button>
+      </div>
+      <div id="fb-8" class="quiz-fb"></div>
+      <div id="must-8" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S10 CASE -->
+    <div class="slide slide-case" data-index="9">
+      <div class="case-hdr">
+        <div class="case-bdg">📋 Caso práctico · Cláusula 7</div>
+        <h2 class="case-ttl">TechRetail: Programa de concienciación en IA responsable para 1.200 empleados</h2>
+      </div>
+      <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(this,'sit')">Situación</button>
+        <button class="case-tab" onclick="switchCase(this,'prog')">Programa</button>
+        <button class="case-tab" onclick="switchCase(this,'res')">Resultado auditoría</button>
+      </div>
+      <div class="case-pnl active" id="cp-sit">
+        <div class="c-st">Contexto</div>
+        <p class="c-tx">TechRetail opera sistemas de IA para: personalización de ofertas (LLM+recomendaciones), detección de fraude en pagos, y análisis de comportamiento de empleados para turnos. Con 1.200 empleados y el EU AI Act en vigor, deben implementar AI Literacy para todos y competencias específicas para los equipos del AIMS.</p>
+        <div class="c-hl">⚡ <strong>Reto:</strong> Los 1.200 empleados van desde cajeros con educación secundaria hasta data scientists con doctorado. El programa de concienciación debe ser eficaz para todos.</div>
+      </div>
+      <div class="case-pnl" id="cp-prog">
+        <div class="c-st">Programa implementado</div>
+        <div class="c-hl"><strong>Nivel 1 — AI Literacy (todos, 2h):</strong> Módulo e-learning "¿Qué es la IA y cómo nos afecta?" + política de IA en 5 puntos clave + canal de reporte de incidentes. Evidencia: % completado por departamento.</div>
+        <div class="c-hl"><strong>Nivel 2 — Usuarios de sistemas IA (200 personas, 8h):</strong> Formación en uso responsable del sistema de recomendaciones y el sistema de análisis de turnos. Énfasis en limitaciones y supervisión humana requerida.</div>
+        <div class="c-hl"><strong>Nivel 3 — Equipo AIMS (15 personas, 40h):</strong> ISO 42001 completo, AI Risk Assessment, AIIA, técnicas de evaluación de sesgo, GDPR IA. Evidencia: evaluación final con 70% de aprobación.</div>
+      </div>
+      <div class="case-pnl" id="cp-res">
+        <div class="c-st">Resultado en auditoría</div>
+        <div class="c-hl">✅ <strong>Hallazgo positivo:</strong> El auditor valoró muy positivamente la segmentación del programa por perfiles. Las evidencias (registros de % completado por departamento, evaluaciones del Nivel 3) permitieron cerrar la cláusula 7.2 y 7.3 sin no conformidades.</div>
+        <div class="c-hl">⚠ <strong>Observación:</strong> El programa de Nivel 2 no incluía información sobre el canal de reclamaciones para empleados afectados por el sistema de análisis de turnos (sus propios derechos como individuos afectados por IA). Se añadió en la siguiente iteración.</div>
+        <p class="c-tx"><strong>Lección:</strong> El personal puede ser a la vez usuario de un sistema de IA Y individuo afectado por él. Ambas perspectivas deben cubrirse en el programa de concienciación.</p>
+      </div>
+    </div>
+
+    <!-- S11 QUIZ 4 -->
+    <div class="slide slide-quiz" data-index="10" data-quiz="true" data-correct="3">
+      <div class="quiz-hdr"><span class="quiz-bdg">PREGUNTA 4 / 4</span><span class="quiz-prog">Módulo 5 · Evaluación</span></div>
+      <p class="quiz-q">En relación a la cláusula 7.4 (Comunicación), ¿qué elemento específico exige ISO/IEC 42001 que no suele estar presente en la matriz de comunicación de un SGSI (ISO 27001)?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answerQuiz(this,0,10)"><span class="opt-l">A</span>Un informe anual de ciberseguridad para la junta directiva</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,1,10)"><span class="opt-l">B</span>Comunicación de brechas de seguridad a la autoridad de protección de datos</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,2,10)"><span class="opt-l">C</span>Un boletín trimestral de seguridad para empleados</button>
+        <button class="quiz-opt" onclick="answerQuiz(this,3,10)"><span class="opt-l">D</span>Un canal de comunicación específico para que los individuos afectados por decisiones de IA puedan solicitar explicaciones, impugnar decisiones o reportar preocupaciones (control A.8.5)</span></button>
+      </div>
+      <div id="fb-10" class="quiz-fb"></div>
+      <div id="must-10" class="quiz-must">⚠ Debes seleccionar una respuesta antes de continuar</div>
+    </div>
+
+    <!-- S12 CONTENT TABLE — checklist 7 -->
+    <div class="slide slide-content" data-index="11">
+      <div class="content-header">
+        <div class="ch-ey">Checklist del Auditor · Cláusula 7</div>
+        <h2 class="ch-ti">Evidencias clave que el auditor verificará en la cláusula 7</h2>
+      </div>
+      <div class="content-body">
+        <table class="ct">
+          <thead><tr><th>Evidencia</th><th>Cláusula</th><th>Verificación del auditor</th><th>Clasificación NC</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Matriz de competencias IA</strong></td><td><span class="tv tv-b">7.2</span></td><td>Roles AIMS vs. competencias requeridas vs. competencias acreditadas. Entrevistas a titulares de roles</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Registros de formación AI Literacy</strong></td><td><span class="tv tv-b">7.3</span></td><td>% de personal en alcance que ha completado la formación. Registros con fechas y evaluaciones</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Listado maestro de documentos AIMS</strong></td><td><span class="tv tv-b">7.5</span></td><td>Todos los documentos obligatorios, versión vigente, fecha de revisión, aprobador</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Canal de comunicación para afectados por IA</strong></td><td><span class="tv tv-b">7.4</span></td><td>Evidencia de que el canal existe, está publicado y las solicitudes se gestionan con SLA</td><td><span class="tv tv-a">NC menor</span></td></tr>
+            <tr><td><strong>Registros de revisión de documentos</strong></td><td><span class="tv tv-b">7.5.3</span></td><td>Historial de cambios, aprobaciones de nuevas versiones, distribución de actualizaciones</td><td><span class="tv tv-g">Observación</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- S13 CONCEPT -->
+    <div class="slide slide-concept" data-index="12">
+      <div class="concept-icon">🔗</div>
+      <div class="concept-tag">Conexión con el examen PECB</div>
+      <h2 class="concept-title">Por qué la cláusula 7 es determinante en el examen Lead Auditor</h2>
+      <p class="concept-body">El examen de Lead Auditor PECB ISO 42001 dedica el <strong style="color:#fff">Dominio 4 (Conducting the Audit) un 17,5%</strong> del peso a la verificación de evidencias documentales. La cláusula 7.5 es el marco donde se gana o se pierde esa parte del examen: los auditores deben saber exactamente qué documentos exige la norma, cómo se controlan, y cuándo la ausencia de un documento genera NC menor vs. NC mayor. Además, la <strong style="color:#fff">AI Literacy del EU AI Act</strong> (Art. 4) es un tema recurrente en las preguntas de caso del examen desde 2025.</p>
+      <div class="concept-pills">
+        <span class="pill">Dominio 4 PECB: 17,5%</span>
+        <span class="pill">AI Literacy EU AI Act Art. 4</span>
+        <span class="pill">Control documental IA</span>
+        <span class="pill">Evidencias de competencia</span>
+      </div>
+    </div>
+
+    <!-- S14 RESULT -->
+    <div class="slide slide-result" data-index="13">
+      <div class="res-icon" id="res-icon">🎯</div>
+      <h2 class="res-ti" id="res-ti">Resultado del Módulo 5</h2>
+      <div class="res-sc" id="res-sc" style="color:var(--amarillo)">—</div>
+      <p class="res-su" id="res-sub"></p>
+      <div class="res-bk">
+        <div class="rb"><div class="rb-n" id="rb-c">—</div><div class="rb-l">Correctas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-w">—</div><div class="rb-l">Incorrectas</div></div>
+        <div class="rb"><div class="rb-n" id="rb-t">4</div><div class="rb-l">Total</div></div>
+      </div>
+      <div class="res-msg" id="res-msg"></div>
+      <button class="btn-retry" id="btn-retry" style="display:none" onclick="retryQuiz()">🔄 Revisar y reintentar</button>
+    </div>
+
+  </div>
+  <div id="navbar">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Anterior</button>
+    <div id="slide-dots"></div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Siguiente →</button>
+  </div>
+</div>
+<script>
+
+function findAPI(w){var t=0;while(!w.API&&t<7&&w.parent&&w.parent!=w){w=w.parent;t++;}return w.API||null;}
+var scormAPI=findAPI(window);
+function lms(fn,...a){if(scormAPI){try{return scormAPI[fn](...a)}catch(e){}}return null;}
+lms('LMSInitialize','');lms('LMSSetValue','cmi.core.lesson_status','incomplete');lms('LMSSetValue','cmi.core.lesson_location','0');
+function _initDots(total){const el=document.getElementById('slide-dots');for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=()=>goTo(i);el.appendChild(d);}}
+function _updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>{d.className='dot'+(i===C?' active':(i<C?' done':''));});}
+function _updateProg(){document.getElementById('progress-bar').style.width=(((C+1)/TOTAL)*100)+'%';document.getElementById('slide-counter').textContent=(C+1)+' / '+TOTAL;lms('LMSSetValue','cmi.core.lesson_location',String(C));}
+function navigate(dir){const t=C+dir;if(t<0||t>=TOTAL)return;if(dir>0&&QS.includes(C)&&!QA[C]){document.getElementById('must-'+C).classList.add('show');return;}goTo(t);}
+function goTo(idx){if(idx<0||idx>=TOTAL)return;const sl=document.querySelectorAll('.slide');sl[C].classList.remove('active');sl[C].classList.add('exit-left');setTimeout(()=>sl[C].classList.remove('exit-left'),460);C=idx;sl[C].classList.add('active');document.getElementById('btn-prev').disabled=(C===0);const nb=document.getElementById('btn-next');nb.disabled=(C===TOTAL-1)||(QS.includes(C)&&!QA[C]);_updateDots();_updateProg();if(C===TOTAL-1)showResult();}
+function answerQuiz(btn,chosen,si){if(QA[si])return;QA[si]=true;const correct=QC[si];btn.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach((o,i)=>{o.disabled=true;o.classList.add('disabled');if(i===correct)o.classList.add('correct');if(i===chosen&&chosen!==correct)o.classList.add('wrong');});const ok=(chosen===correct);QSC[si]=ok;const fb=document.getElementById('fb-'+si);fb.textContent=ok?FB[si].ok:FB[si].fail;fb.className='quiz-fb show '+(ok?'fb-ok':'fb-fail');document.getElementById('must-'+si).classList.remove('show');document.getElementById('btn-next').disabled=false;}
+function showResult(){const vals=Object.values(QSC),c=vals.filter(Boolean).length,t=Object.keys(QC).length;const pct=Math.round((c/t)*100),passed=pct>=70;document.getElementById('res-icon').textContent=passed?'🏆':'📚';document.getElementById('res-ti').textContent=passed?'¡Módulo superado!':'Repasa el contenido';document.getElementById('res-sc').textContent=pct+'%';document.getElementById('res-sc').style.color=passed?'#2ecc71':'var(--amarillo)';document.getElementById('rb-c').textContent=c;document.getElementById('rb-w').textContent=t-c;document.getElementById('rb-t').textContent=t;document.getElementById('res-sub').textContent=passed?'Has superado con '+c+'/'+t+' respuestas correctas.':'Obtuviste '+c+'/'+t+'. Necesitas 70% para avanzar.';document.getElementById('res-msg').innerHTML=passed?NEXT_MSG:RETRY_MSG;if(!passed)document.getElementById('btn-retry').style.display='inline-block';lms('LMSSetValue','cmi.core.score.raw',String(pct));lms('LMSSetValue','cmi.core.lesson_status',passed?'passed':'failed');lms('LMSFinish','');}
+function retryQuiz(){goTo(0);}
+function toggleAcc(btn){btn.closest('.acc-item').classList.toggle('open');}
+function switchCase(btn,id){document.querySelectorAll('.case-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.case-pnl').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('cp-'+id).classList.add('active');}
+function toggleTL(el){el.classList.toggle('tl-active');}
+
+
+var C=0,TOTAL=14;
+var QS=[4,6,8,10],QA={4:false,6:false,8:false,10:false};
+var QC={4:2,6:1,8:0,10:3};
+var QSC={4:false,6:false,8:false,10:false};
+var FB={
+  4:{ok:"✅ Correcto. El artículo 4 del EU AI Act, aplicable desde el 2 de febrero de 2025, exige que los proveedores y deployadores de sistemas de IA garanticen un nivel suficiente de alfabetización en IA (AI Literacy) para su personal. Esta obligación se documenta y verifica en el AIMS bajo la cláusula 7.3 de ISO 42001.",
+     fail:"❌ Incorrecto. El Art. 4 del EU AI Act (vigente desde feb 2025) exige AI Literacy — alfabetización básica en IA — para todos los empleados que trabajan con sistemas de IA. No requiere certificación ISO 42001 universal ni un AI Officer exclusivo. Es una obligación de formación y concienciación que se gestiona en la cláusula 7.3 del AIMS."},
+  6:{ok:"✅ Correcto. La cláusula 7.2 exige que las competencias cubran las funciones específicas que cada persona realiza dentro del AIMS. Para el equipo técnico que gestiona el reentrenamiento de modelos, las competencias en evaluación de sesgo y en el proceso de AI Risk Assessment son parte de su rol en el AIMS, no opcionales.",
+     fail:"❌ Incorrecto. La cláusula 7.2 no se limita a competencias técnicas de desarrollo. Exige las competencias necesarias para que cada rol del AIMS funcione correctamente. Un equipo de data science que reentrena modelos y no conoce la evaluación de sesgo ni el AI Risk Assessment tiene una brecha de competencia bajo ISO 42001."},
+  8:{ok:"✅ Correcto. 'Disponible y adecuada' (§ 7.5.3) significa que el auditor puede solicitar cualquier documento del AIMS y debe poder acceder a él en el acto — sin que esté desactualizado, sin aprobación, o protegido por contraseña que nadie conoce. Es el estándar básico de control documental aplicable en formato papel o digital.",
+     fail:"❌ Incorrecto. La cláusula 7.5.3 no impone formato (papel vs. digital). 'Disponible y adecuada para su uso' significa accesible para quien la necesita, actualizada y aprobada, y protegida de modificaciones no autorizadas. La publicación web no es obligatoria, y los documentos recomendados también deben estar controlados si se crean."},
+  10:{ok:"✅ Correcto. El control A.8.5 de ISO 42001 exige un canal específico para que los individuos afectados por sistemas de IA puedan ejercer sus derechos (solicitar explicación, impugnar una decisión, reportar un problema). Este canal no existe en ISO 27001, donde la comunicación se centra en incidentes de seguridad y brechas de datos, no en los derechos de las personas objeto de decisiones automatizadas.",
+     fail:"❌ Incorrecto. Lo que diferencia a la comunicación del AIMS (ISO 42001) de la del SGSI (ISO 27001) es la necesidad de un canal externo específico para los individuos afectados por las decisiones de IA. Esto refleja la cláusula 7.4 y el control A.8.5: las personas que reciben decisiones automatizadas tienen derecho a comunicarse con la organización, impugnar y obtener explicaciones."}
+};
+var NEXT_MSG='<strong>Próximo paso:</strong> El Módulo 6 cubre la Cláusula 8 — Operación: el ciclo de vida del sistema de IA, los controles operacionales y cómo se implementan los 38 controles del Anexo A en el día a día. Es el módulo más extenso del curso.';
+var RETRY_MSG='<strong>Recomendación:</strong> Revisa la AI Literacy del EU AI Act (slide 3), la matriz de competencias por rol (slide 4), y el canal de comunicación para afectados (slides 3 y 11). Son los conceptos más examinados de esta cláusula.';
+
+_initDots(TOTAL);_updateProg();
+</script>
+</body>
+</html>
